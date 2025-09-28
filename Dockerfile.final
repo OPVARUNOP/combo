@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install production dependencies only
+COPY package*.json ./
+RUN npm ci
+
+# Install axios explicitly
+RUN npm install axios
+
+# Copy app source
+COPY . .
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=8080
+ENV REDIS_HOST=localhost
+ENV REDIS_PORT=6379
+ENV JAMENDO_CLIENT_ID=c1eea382
+ENV JAMENDO_CLIENT_SECRET=245483b397b6bd04e7e3937d4458e5f2
+ENV DISABLE_AUTH=true
+
+# Run the web service on container startup
+CMD ["node", "server.js"]
