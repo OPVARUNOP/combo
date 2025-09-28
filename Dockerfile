@@ -1,37 +1,34 @@
-# Use Node.js 20
-FROM node:20-alpine
+# Use Node.js 20 for better Firebase compatibility
+FROM node:20-slim
 
-# Create and set the working directory
+# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy application code (excluding files in .dockerignore)
+# Copy source code
 COPY . .
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=8080
-ENV TRUST_PROXY=1
+# Create non-root user for security
+RUN addgroup --gid 1001 --system nodejs && \
+    adduser --uid 1001 --system nextjs
 
-# Expose the port the app runs on
-EXPOSE 8080
-
-# Create non-root user and set permissions
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S -u 1001 nodejs && \
-    chown -R nodejs:nodejs /app
+# Change ownership of app directory
+RUN chown -R nextjs:nodejs /app
 
 # Switch to non-root user
-USER nodejs
+USER nextjs
+
+# Expose port
+EXPOSE 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
 
 # Start the application
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
