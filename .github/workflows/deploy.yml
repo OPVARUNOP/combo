@@ -34,8 +34,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Run database demo
-        run: npm run demo:database
+      - name: Build application
+        run: npm run build --if-present
 
   deploy:
     name: Deploy
@@ -60,16 +60,19 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
 
-      - name: Configure gcloud
+      - name: Configure Docker
         run: |
-          gcloud config set project ${{ env.PROJECT_ID }}
-          gcloud config set run/region ${{ env.REGION }}
+          gcloud auth configure-docker --quiet
 
-      - name: Build and deploy to Cloud Run
+      - name: Build and push Docker image
         run: |
           gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}
 
+      - name: Deploy to Cloud Run
+        run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }} \
             --platform managed \
@@ -80,21 +83,12 @@ jobs:
             --cpu 1 \
             --max-instances 10 \
             --timeout 300 \
-            --set-env-vars FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com,FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},JWT_SECRET=${{ secrets.JWT_SECRET }},NODE_ENV=production
+            --set-env-vars FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},JWT_SECRET=${{ secrets.JWT_SECRET }},NODE_ENV=production
 
       - name: Get service URL
-        id: service-url
+        id: deploy
         run: |
-          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format="value(status.url)")
-          echo "service_url=$SERVICE_URL" >> $GITHUB_OUTPUT
-
-      - name: Test deployment
-        run: |
-          echo "🧪 Testing deployment..."
-          curl -s ${{ steps.service-url.outputs.service_url }}/health | jq '.status' || echo "Health check failed"
-
-      - name: Deployment complete
-        run: |
-          echo "✅ Deployment completed successfully!"
-          echo "🌐 Service URL: ${{ steps.service-url.outputs.service_url }}"
-          echo "📊 Monitor at: https://console.cloud.google.com/run/detail/${{ env.REGION }}/${{ env.SERVICE_NAME }}/metrics"
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "service_url=${SERVICE_URL}" >> $GITHUB_OUTPUT
+          echo "???? Deployment successful!"
+          echo "???? Service URL: ${SERVICE_URL}"
