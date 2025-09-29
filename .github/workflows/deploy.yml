@@ -63,13 +63,35 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
-      - name: Configure Docker
+      - name: Configure Docker and Artifact Registry
         run: |
-          gcloud auth configure-docker --quiet
+          # Configure Docker to use gcloud as a credential helper
+          gcloud auth configure-docker --quiet us-central1-docker.pkg.dev
+          
+          # Verify authentication
+          echo "Testing Docker authentication..."
+          gcloud auth list
+          gcloud config get-value project
+          
+          # Verify Artifact Registry access
+          echo "Testing Artifact Registry access..."
+          gcloud artifacts repositories list --project=${{ env.PROJECT_ID }} || echo "Warning: Failed to list Artifact Registry repositories"
 
       - name: Build and push Docker image
         run: |
-          gcloud builds submit --tag us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} --suppress-logs --no-user-output-enabled
+          # Set the project explicitly
+          gcloud config set project ${{ env.PROJECT_ID }}
+          
+          # Build and push with more detailed output
+          echo "Starting build process..."
+          gcloud builds submit \
+            --tag us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
+            --suppress-logs \
+            --no-user-output-enabled \
+            --verbosity=debug || \
+            (echo "Build failed with status $?" && exit 1)
+            
+          echo "Build completed successfully"
 
       - name: Deploy to Cloud Run
         run: |
