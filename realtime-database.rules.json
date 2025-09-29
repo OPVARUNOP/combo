@@ -1,0 +1,44 @@
+{
+  "rules": {
+    "users": {
+      ".indexOn": ["email"],
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "songs": {
+      ".indexOn": ["title", "artist", "genre"],
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "playlists": {
+      ".indexOn": ["name", "createdBy"],
+      "$playlistId": {
+        ".read": true,
+        ".write": "auth != null && (!data.exists() || data.child('createdBy').val() === auth.uid)"
+      }
+    },
+    "favorites": {
+      ".indexOn": ["userId"],
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "recentlyPlayed": {
+      ".indexOn": ["userId", "timestamp"],
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    },
+    "userStats": {
+      ".indexOn": ["userId"],
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
+      }
+    }
+  }
+}
