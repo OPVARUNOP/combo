@@ -69,12 +69,12 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}
+          gcloud builds submit --tag us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} --suppress-logs
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }} \
+            --image us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
             --platform managed \
             --region ${{ env.REGION }} \
             --allow-unauthenticated \
