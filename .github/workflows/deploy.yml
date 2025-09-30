@@ -107,30 +107,12 @@ jobs:
           gcloud builds submit \
             --config=cloudbuild.yaml \
             --project=${{ env.PROJECT_ID }} \
-            --substitutions=_FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL},_FIREBASE_DATABASE_SECRET=${FIREBASE_DATABASE_SECRET},_JWT_SECRET=${JWT_SECRET} \
+            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }},_PLATFORM=managed \
             --verbosity=debug
           
           echo "Build completed successfully"
 
-      - name: Deploy to Cloud Run
-        env:
-          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
-          FIREBASE_DATABASE_SECRET: ${{ secrets.FIREBASE_DATABASE_SECRET }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        run: |
-          # Deploy the service with the latest image and environment variables
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/combo-backend:latest \
-            --region ${{ env.REGION }} \
-            --platform managed \
-            --allow-unauthenticated \
-            --port 8080 \
-            --memory 1Gi \
-            --cpu 1 \
-            --max-instances 10 \
-            --timeout 300 \
-            --update-env-vars "FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL},FIREBASE_DATABASE_SECRET=${FIREBASE_DATABASE_SECRET},JWT_SECRET=${JWT_SECRET},NODE_ENV=production" \
-            --quiet
+      # The deployment is now handled by cloudbuild.yaml
 
       - name: Get service URL
         id: deploy
