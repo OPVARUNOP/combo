@@ -3,8 +3,18 @@ const { v4: uuidv4 } = require('uuid');
 
 class DatabaseService {
   constructor() {
-    this.DATABASE_URL = process.env.FIREBASE_DATABASE_URL || 'https://combo-624e1-default-rtdb.firebaseio.com';
-    this.DATABASE_SECRET = process.env.FIREBASE_DATABASE_SECRET || 'mqucsRC7MHfDLdYSbNTU1srwlK4l6RsOtKKgqB4m';
+    const url = process.env.FIREBASE_DATABASE_URL;
+    const secret = process.env.FIREBASE_DATABASE_SECRET;
+
+    if (!url) {
+      throw new Error('Missing required environment variable: FIREBASE_DATABASE_URL');
+    }
+    if (!secret) {
+      throw new Error('Missing required environment variable: FIREBASE_DATABASE_SECRET');
+    }
+
+    this.DATABASE_URL = url;
+    this.DATABASE_SECRET = secret;
     this.axios = axios.create({
       baseURL: this.DATABASE_URL,
       timeout: 10000,
