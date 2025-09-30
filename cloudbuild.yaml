@@ -8,24 +8,22 @@ substitutions:
   _REGION: us-central1
   _FIREBASE_DATABASE_URL: https://combo-624e1-default-rtdb.firebaseio.com
 
-# Grant access to secrets from Secret Manager
-availableSecrets:
-  secretManager:
-  - versionName: projects/combo-624e1/secrets/JWT_SECRET/versions/latest
-    env: 'JWT_SECRET'
+# No availableSecrets - we'll use gcloud to access secrets directly
 
 steps:
   # Create a temporary .env file with the JWT_SECRET for the build
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Create .env file'
     entrypoint: 'bash'
-    secretEnv: ['JWT_SECRET']
     args:
       - '-c'
       - |
+        # Get JWT_SECRET from Secret Manager
+        JWT_SECRET=$(gcloud secrets versions access latest --secret=JWT_SECRET --project=combo-624e1)
+        
         # Create .env file with JWT_SECRET
         echo "JWT_SECRET=$JWT_SECRET" > backend/.env
-        echo "JWT_SECRET used in build"
+        echo "Created .env file with JWT_SECRET"
 
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
