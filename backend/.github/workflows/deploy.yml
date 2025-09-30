@@ -99,7 +99,7 @@ jobs:
           echo "Starting build process in $(pwd)"
           echo "Starting build (logs will be available in Cloud Build console)..."
           
-          cd backend
+          cd backend &&
           gcloud builds submit 
             --config=cloudbuild.yaml \
             --project=${{ env.PROJECT_ID }} \
