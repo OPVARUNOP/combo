@@ -1,22 +1,16 @@
 steps:
-  # Change to the backend directory
+  # Debug: Show current directory structure
   - name: 'ubuntu'
-    id: 'Change to backend directory'
+    id: 'Show directory structure'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Changing to backend directory"
-        if [ -d "backend" ]; then
-          cd backend
-          echo "Changed to backend directory"
-          ls -la
-        else
-          echo "Backend directory not found. Current directory:"
-          pwd
-          ls -la
-          exit 1
-        fi
+        echo "Current directory structure:"
+        pwd
+        ls -la
+        echo -e "\nContents of current directory:"
+        find . -maxdepth 1 -type d | sort
 
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -28,7 +22,6 @@ steps:
       '--build-arg', 'NODE_ENV=production',
       '.'
     ]
-    dir: 'backend'
 
   # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -37,7 +30,6 @@ steps:
       'push',
       'us-central1-docker.pkg.dev/$PROJECT_ID/combo-repo/combo-backend'
     ]
-    dir: 'backend'
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -56,9 +48,9 @@ steps:
       '--timeout', '300',
       '--clear-env-vars',
       '--update-env-vars',
-      'FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL},FIREBASE_DATABASE_SECRET=${_FIREBASE_DATABASE_SECRET},JWT_SECRET=${_JWT_SECRET},NODE_ENV=production'
+      'FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL},FIREBASE_DATABASE_SECRET=${_FIREBASE_DATABASE_SECRET},JWT_SECRET=${_JWT_SECRET},NODE_ENV=production',
+      '--quiet'
     ]
-    dir: 'backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY

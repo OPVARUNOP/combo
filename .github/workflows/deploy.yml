@@ -82,18 +82,18 @@ jobs:
           # Set the project explicitly
           gcloud config set project ${{ env.PROJECT_ID }}
           
-          # Navigate to the backend directory
-          cd backend
+          # Show current directory structure for debugging
+          echo "Current directory structure:"
+          pwd
+          ls -la
           
           # Build and push with more detailed output
           echo "Starting build process in $(pwd)"
-          echo "Current directory contents:"
-          ls -la
           
           # Build and push the image with no log streaming
           echo "Starting build (logs will be available in Cloud Build console)..."
           gcloud builds submit \
-            --config=../cloudbuild.yaml \
+            --config=cloudbuild.yaml \
             --substitutions=_FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},_FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},_JWT_SECRET=${{ secrets.JWT_SECRET }} \
             --suppress-logs \
             --no-user-output-enabled \
