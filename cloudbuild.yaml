@@ -33,9 +33,9 @@ steps:
       '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/combo-repo/combo-backend',
       '--no-cache',
       '--build-arg', 'NODE_ENV=production',
+      '-f', 'Dockerfile',
       '.'
     ]
-    dir: 'backend'
 
   # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
