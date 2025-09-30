@@ -12,66 +12,31 @@ steps:
         echo -e "\nContents of current directory:"
         find . -maxdepth 1 -type d | sort
 
-  # Show current directory structure after build
-  - name: 'ubuntu'
-    id: 'Show directory structure 2'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "Current directory structure:"
-        pwd
-        ls -la
-        echo -e "\nContents of current directory:"
-        find . -maxdepth 1 -type d | sort
-
-  # Create .env file with secrets
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Create .env file'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        # Create backend directory if it doesn't exist
-        mkdir -p backend
-        
-        # Create .env file with JWT_SECRET
-        echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=JWT_SECRET --project=combo-624e1)" > backend/.env
-        
-        # Add FIREBASE_DATABASE_URL to .env
-        echo "FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com" >> backend/.env
-        
-        echo "Created .env file with secrets"
-
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
-    dir: '.'  # Run from the root directory
+    dir: 'backend'  # Run from the backend directory
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
       '--no-cache',
       '--build-arg', 'NODE_ENV=production',
-      '-f', 'backend/Dockerfile',
-      'backend'
+      '.'
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Push Docker image'
     args: [
       'push',
-      'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend'
+      'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest'
     ]
+    
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy to Cloud Run'
     entrypoint: bash
     args:
       - '-c'
       - |
-        # Get secrets from Secret Manager
-        export FIREBASE_DATABASE_SECRET=$(gcloud secrets versions access latest --secret=FIREBASE_DATABASE_SECRET --project=combo-624e1)
-        export JWT_SECRET=$(gcloud secrets versions access latest --secret=JWT_SECRET --project=combo-624e1)
-        
         # Deploy the service with secrets
         gcloud run deploy combo-backend \
           --image=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest \
@@ -83,6 +48,6 @@ steps:
           --cpu=1 \
           --max-instances=10 \
           --timeout=300 \
-          --update-env-vars="NODE_ENV=production" \
+          --update-env-vars="NODE_ENV=production,FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com" \
           --set-secrets="FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest" \
           --quiet
