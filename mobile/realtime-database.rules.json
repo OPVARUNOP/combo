@@ -1,0 +1,100 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "public": {
+      ".read": true,
+      ".write": false,
+      "$publicData": {
+        ".read": true,
+        ".write": false
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        "playlists": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "likedTracks": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "recentlyPlayed": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "listeningHistory": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "preferences": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "stats": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    },
+    "playlists": {
+      "$playlistId": {
+        ".read": "data.child('isPublic').val() == true || (auth != null && data.child('userId').val() == auth.uid)",
+        ".write": "auth != null && data.child('userId').val() == auth.uid",
+        "tracks": {
+          ".read": "data.parent().child('isPublic').val() == true || (auth != null && data.parent().child('userId').val() == auth.uid)",
+          ".write": "auth != null && data.parent().child('userId').val() == auth.uid"
+        },
+        "metadata": {
+          ".read": "data.parent().child('isPublic').val() == true || (auth != null && data.parent().child('userId').val() == auth.uid)",
+          ".write": "auth != null && data.parent().child('userId').val() == auth.uid"
+        }
+      }
+    },
+    "sessions": {
+      "$sessionId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "participants": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        },
+        "playlist": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      }
+    },
+    "social": {
+      "followers": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || data.child(auth.uid).exists())",
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      },
+      "following": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || data.child(auth.uid).exists())",
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      },
+      "shared": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "analytics": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "admin": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

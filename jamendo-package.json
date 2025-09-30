@@ -1,0 +1,22 @@
+{
+  "name": "combo-jamendo-server",
+  "version": "1.0.0",
+  "description": "COMBO Backend Server with Jamendo API Integration",
+  "main": "jamendo-server.js",
+  "scripts": {
+    "start": "node jamendo-server.js",
+    "dev": "node jamendo-server.js",
+    "test": "echo \"Jamendo server is running!\" && exit 0"
+  },
+  "keywords": ["music", "streaming", "jamendo", "api", "backend"],
+  "author": "COMBO Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

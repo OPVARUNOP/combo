@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "ComboMobile",
+    "slug": "combo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "combo",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0F0F23",
+    "primaryColor": "#3B82F6",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F23"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "bundler": "metro"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.combo.app",
+      "buildNumber": "1.0.0",
+      "requireFullScreen": false,
+      "backgroundColor": "#0F0F23"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0F0F23"
+      },
+      "package": "com.combo.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK"
+      ],
+      "backgroundColor": "#0F0F23"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}

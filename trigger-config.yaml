@@ -1,0 +1,12 @@
+github:
+  name: combo
+  owner: OPVARUNOP
+  push:
+    branch: ^main$
+name: combo-backend-trigger
+description: Build and deploy combo-backend on push to main
+filename: cloudbuild.yaml
+substitutions:
+  _SERVICE_NAME: combo-backend
+  _REGION: us-central1
+  _PLATFORM: managed

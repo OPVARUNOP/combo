@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for COMBO Music App
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profile images - users can upload their own images
+    match /users/{userId}/profile/{fileName} {
+      allow read: if true; // Anyone can view profile images
+      allow write: if isOwner(userId) &&
+                   fileName.matches('.*\\.(jpg|jpeg|png|gif)$') &&
+                   request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    // Playlist cover images
+    match /playlists/{playlistId}/cover/{fileName} {
+      allow read: if true; // Anyone can view playlist covers
+      allow write: if isAuthenticated() &&
+                   fileName.matches('.*\\.(jpg|jpeg|png|gif)$') &&
+                   request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+
+    // Track artwork (cached from external sources)
+    match /tracks/{trackId}/artwork/{fileName} {
+      allow read: if true; // Public read access for track artwork
+      allow write: if false; // Only server-side uploads
+    }
+
+    // Temporary uploads for processing
+    match /temp/{userId}/{fileName} {
+      allow read, write: if isOwner(userId) &&
+                           fileName.matches('.*\\.(jpg|jpeg|png|gif|mp3|wav)$');
+    }
+
+    // Public assets (app icons, default images, etc.)
+    match /public/{fileName} {
+      allow read: if true;
+      allow write: if false; // Only server-side uploads
+    }
+
+    // Default deny rule for all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
