@@ -30,7 +30,7 @@ steps:
     id: 'Build Docker image'
     args: [
       'build',
-      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/combo-repo/combo-backend',
+      '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend',
       '--no-cache',
       '--build-arg', 'NODE_ENV=production',
       '-f', 'Dockerfile',
@@ -42,7 +42,7 @@ steps:
     id: 'Push Docker image'
     args: [
       'push',
-      'us-central1-docker.pkg.dev/$PROJECT_ID/combo-repo/combo-backend'
+      'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend'
     ]
 
   # Deploy to Cloud Run
@@ -51,7 +51,7 @@ steps:
     entrypoint: gcloud
     args: [
       'run', 'deploy', 'combo-backend',
-      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/combo-repo/combo-backend',
+      '--image', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend',
       '--region', 'us-central1',
       '--platform', 'managed',
       '--allow-unauthenticated',
