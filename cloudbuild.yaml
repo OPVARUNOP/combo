@@ -1,14 +1,3 @@
-# Cloud Build configuration with logging settings
-options:
-  logging: CLOUD_LOGGING_ONLY
-
-# Define substitutions with default values
-substitutions:
-  _SERVICE_NAME: combo-backend
-  _REGION: us-central1
-
-# No availableSecrets - we'll use gcloud to access secrets directly
-
 steps:
   # Create a temporary .env file with the secrets for the build
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -36,7 +25,7 @@ EOL
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
-    dir: 'backend'  # Run from the backend directory
+    dir: 'backend'
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
@@ -63,8 +52,8 @@ EOL
       - |
         # Set environment variables
         export PROJECT_ID=combo-624e1
-        export REGION=${_REGION}
-        export SERVICE_NAME=${_SERVICE_NAME}
+        export REGION=us-central1
+        export SERVICE_NAME=combo-backend
         export IMAGE=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest
         export FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com
         
@@ -76,9 +65,9 @@ EOL
           --quiet || true
         
         # Deploy the service with environment variables
-        gcloud run deploy $$SERVICE_NAME \
-          --image=$$IMAGE \
-          --region=$$REGION \
+        gcloud run deploy $SERVICE_NAME \
+          --image=$IMAGE \
+          --region=$REGION \
           --platform=managed \
           --allow-unauthenticated \
           --port=8080 \
@@ -86,16 +75,16 @@ EOL
           --cpu=1 \
           --max-instances=10 \
           --timeout=300 \
-          --update-env-vars="NODE_ENV=production,FIREBASE_DATABASE_URL=$$FIREBASE_DATABASE_URL" \
+          --update-env-vars="NODE_ENV=production,FIREBASE_DATABASE_URL=$FIREBASE_DATABASE_URL" \
           --quiet
 
         # Get the service URL
-        SERVICE_URL=$(gcloud run services describe $$SERVICE_NAME \
-          --region $$REGION \
+        SERVICE_URL=$(gcloud run services describe $SERVICE_NAME \
+          --region $REGION \
           --format 'value(status.url)')
         
-        echo "Service deployed successfully to: $$SERVICE_URL"
-        echo "Health check endpoint: $$SERVICE_URL/health"
+        echo "Service deployed successfully to: $SERVICE_URL"
+        echo "Health check endpoint: $SERVICE_URL/health"
         
         # Set the service URL as an output variable
-        echo "SERVICE_URL=$$SERVICE_URL" > service-url.txt
+        echo "SERVICE_URL=$SERVICE_URL" > service-url.txt
