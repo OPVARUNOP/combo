@@ -82,15 +82,45 @@ jobs:
           # Set the project explicitly
           gcloud config set project ${{ env.PROJECT_ID }}
           
+          # Create a logs bucket if it doesn't exist
+          LOGS_BUCKET="gs://${PROJECT_ID}_cloudbuild_logs"
+          if ! gsutil ls -b $LOGS_BUCKET &>/dev/null; then
+            echo "Creating logs bucket: $LOGS_BUCKET"
+            gsutil mb -l ${{ env.REGION }} $LOGS_BUCKET || echo "Logs bucket creation failed, continuing with default"
+          fi
+          
           # Build and push with more detailed output
           echo "Starting build process..."
+          set +e
+          
+          # First try with the custom logs bucket
           gcloud builds submit \
             --tag us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
+            --gcs-log-dir="${LOGS_BUCKET}/build_logs" \
             --suppress-logs \
             --no-user-output-enabled \
-            --verbosity=debug || \
-            (echo "Build failed with status $?" && exit 1)
-            
+            --verbosity=debug \
+            --async
+          
+          BUILD_ID=$(gcloud builds list --sort-by=create_time --limit=1 --format="value(ID)")
+          echo "Build started with ID: $BUILD_ID"
+          
+          # Wait for build to complete with timeout
+          echo "Waiting for build to complete..."
+          gcloud builds log --stream $BUILD_ID || \
+            echo "Streaming logs failed, check Cloud Build console for details"
+          
+          # Check build status
+          BUILD_STATUS=$(gcloud builds describe $BUILD_ID --format='value(status)')
+          echo "Build status: $BUILD_STATUS"
+          
+          if [ "$BUILD_STATUS" != "SUCCESS" ]; then
+            echo "Build failed with status: $BUILD_STATUS"
+            echo "Check the build logs at: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID"
+            exit 1
+          fi
+          
+          set -e
           echo "Build completed successfully"
 
       - name: Deploy to Cloud Run
