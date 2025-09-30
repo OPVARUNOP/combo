@@ -95,6 +95,12 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
+          # First, update the service with --clear-env-vars to remove any existing environment variables
+          gcloud run services update ${{ env.SERVICE_NAME }} \
+            --region ${{ env.REGION }} \
+            --clear-env-vars || true
+            
+          # Then deploy the new revision
           gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
             --platform managed \
@@ -105,7 +111,8 @@ jobs:
             --cpu 1 \
             --max-instances 10 \
             --timeout 300 \
-            --set-env-vars FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},JWT_SECRET=${{ secrets.JWT_SECRET }},NODE_ENV=production
+            --update-env-vars FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},JWT_SECRET=${{ secrets.JWT_SECRET }},NODE_ENV=production \
+            --no-cpu-throttling
 
       - name: Get service URL
         id: deploy
