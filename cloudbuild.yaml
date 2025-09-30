@@ -46,28 +46,24 @@ steps:
     ]
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy to Cloud Run'
-    entrypoint: bash
-    args:
-      - '-c'
-      - |
-        # Set environment variables from secrets
-        export FIREBASE_DATABASE_URL="$_FIREBASE_DATABASE_URL"
-        export FIREBASE_DATABASE_SECRET="$_FIREBASE_DATABASE_SECRET"
-        export JWT_SECRET="$_JWT_SECRET"
-        
-        # Deploy the service
-        gcloud run deploy combo-backend \
-          --image us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest \
-          --region us-central1 \
-          --platform managed \
-          --allow-unauthenticated \
-          --port 8080 \
-          --memory 1Gi \
-          --cpu 1 \
-          --max-instances 10 \
-          --timeout 300 \
-          --update-env-vars "FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL},FIREBASE_DATABASE_SECRET=${FIREBASE_DATABASE_SECRET},JWT_SECRET=${JWT_SECRET},NODE_ENV=production" \
-          --quiet
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', 'combo-backend',
+      '--image', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
+      '--region', 'us-central1',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '8080',
+      '--memory', '1Gi',
+      '--cpu', '1',
+      '--max-instances', '10',
+      '--timeout', '300',
+      '--set-env-vars', 'NODE_ENV=production',
+      '--set-env-vars', 'FIREBASE_DATABASE_URL=$_FIREBASE_DATABASE_URL',
+      '--set-env-vars', 'FIREBASE_DATABASE_SECRET=$_FIREBASE_DATABASE_SECRET',
+      '--set-env-vars', 'JWT_SECRET=$_JWT_SECRET',
+      '--quiet'
+    ]
 substitutions:
   _FIREBASE_DATABASE_URL: https://combo-624e1-default-rtdb.firebaseio.com
   _FIREBASE_DATABASE_SECRET: ${FIREBASE_DATABASE_SECRET}
