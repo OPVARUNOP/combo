@@ -78,11 +78,3 @@ steps:
         
         # Set the service URL as an output variable
         echo "SERVICE_URL=$$SERVICE_URL" > service-url.txt
-
-# Store the service URL as a build variable
-availableSecrets:
-  secretManager:
-  - versionName: projects/combo-624e1/secrets/FIREBASE_DATABASE_SECRET/versions/latest
-    env: 'FIREBASE_DATABASE_SECRET'
-  - versionName: projects/combo-624e1/secrets/JWT_SECRET/versions/latest
-    env: 'JWT_SECRET'
