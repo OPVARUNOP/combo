@@ -94,20 +94,14 @@ jobs:
             exit 1
           fi
           
-          # Set environment variables
-          export FIREBASE_DATABASE_URL="https://combo-624e1-default-rtdb.firebaseio.com"
-          export FIREBASE_DATABASE_SECRET="${{ secrets.FIREBASE_DATABASE_SECRET }}"
-          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-          
-          # Build and push with more detailed output
+          # Submit the build to Cloud Build with detailed output
           echo "Starting build process in $(pwd)"
-          
-          # Build and push the image
           echo "Starting build (logs will be available in Cloud Build console)..."
+          
           gcloud builds submit \
             --config=cloudbuild.yaml \
             --project=${{ env.PROJECT_ID }} \
-            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }},_PLATFORM=managed \
+            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }},_PLATFORM=managed
             --verbosity=debug
           
           echo "Build completed successfully"
