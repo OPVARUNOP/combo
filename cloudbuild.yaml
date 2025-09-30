@@ -8,6 +8,14 @@ substitutions:
   _REGION: us-central1
   _FIREBASE_DATABASE_URL: https://combo-624e1-default-rtdb.firebaseio.com
 
+# Grant access to secrets from Secret Manager
+availableSecrets:
+  secretManager:
+  - versionName: projects/combo-624e1/secrets/FIREBASE_DATABASE_SECRET/versions/latest
+    env: 'FIREBASE_DATABASE_SECRET'
+  - versionName: projects/combo-624e1/secrets/JWT_SECRET/versions/latest
+    env: 'JWT_SECRET'
+
 steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -43,6 +51,10 @@ steps:
         export SERVICE_NAME=${_SERVICE_NAME}
         export IMAGE=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest
         export FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL}
+        
+        # Access secrets from environment variables set by availableSecrets
+        export FIREBASE_DATABASE_SECRET="$FIREBASE_DATABASE_SECRET"
+        export JWT_SECRET="$JWT_SECRET"
 
         # Enable required services
         gcloud services enable run.googleapis.com \
