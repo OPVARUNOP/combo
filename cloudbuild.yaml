@@ -1,7 +1,7 @@
 steps:
-  # Debug: Show current directory structure
+  # Show current directory structure
   - name: 'ubuntu'
-    id: 'Show directory structure'
+    id: 'Show directory structure 1'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -12,9 +12,9 @@ steps:
         echo -e "\nContents of current directory:"
         find . -maxdepth 1 -type d | sort
 
-  # Show current directory structure
+  # Show current directory structure after build
   - name: 'ubuntu'
-    id: 'Show directory structure'
+    id: 'Show directory structure 2'
     entrypoint: 'bash'
     args:
       - '-c'
