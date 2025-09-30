@@ -1,55 +1,32 @@
 steps:
-  # Show current directory structure
-  - name: 'ubuntu'
-    id: 'Show directory structure 1'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "Current directory structure:"
-        pwd
-        ls -la
-        echo -e "\nContents of current directory:"
-        find . -maxdepth 1 -type d | sort
-
-  # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build Docker image'
-    dir: 'backend'
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
-      '--no-cache',
-      '--build-arg', 'NODE_ENV=production',
-      '.'
+      '-f', 'backend/Dockerfile',
+      'backend'
     ]
 
-  # Push Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'Push Docker image'
     args: [
       'push',
       'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest'
     ]
     
-  # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Deploy to Cloud Run'
-    entrypoint: bash
     args:
-      - '-c'
-      - |
-        # Deploy the service with secrets
-        gcloud run deploy combo-backend \
-          --image=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest \
-          --region=us-central1 \
-          --platform=managed \
-          --allow-unauthenticated \
-          --port=8080 \
-          --memory=1Gi \
-          --cpu=1 \
-          --max-instances=10 \
-          --timeout=300 \
-          --update-env-vars="NODE_ENV=production,FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com" \
-          --set-secrets="FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest" \
-          --quiet
+      - 'run'
+      - 'deploy'
+      - 'combo-backend'
+      - '--image=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--max-instances=10'
+      - '--timeout=300'
+      - '--update-env-vars=NODE_ENV=production,FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com'
+      - '--set-secrets=FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest'
+      - '--quiet'
