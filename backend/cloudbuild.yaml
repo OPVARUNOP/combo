@@ -15,7 +15,7 @@ steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
-    dir: 'backend'  # Run from the backend directory
+    dir: 'backend'
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
@@ -24,6 +24,7 @@ steps:
       '.'
     ]
 
+  # Push Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Push Docker image'
     args: [
@@ -31,6 +32,7 @@ steps:
       'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest'
     ]
     
+  # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy to Cloud Run'
     entrypoint: bash
