@@ -1,3 +1,8 @@
+# Cloud Build configuration with logging settings
+options:
+  logging: CLOUD_LOGGING_ONLY
+  logging_behavior: CLOUD_LOGGING_ONLY
+
 steps:
   # Show current directory structure
   - name: 'ubuntu'
