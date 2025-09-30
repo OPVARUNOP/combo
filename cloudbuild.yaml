@@ -1,13 +1,11 @@
 # Cloud Build configuration with logging settings
 options:
   logging: CLOUD_LOGGING_ONLY
-  logging_behavior: CLOUD_LOGGING_ONLY
 
 # Define substitutions with default values
 substitutions:
   _SERVICE_NAME: combo-backend
   _REGION: us-central1
-  _PLATFORM: managed
   _FIREBASE_DATABASE_URL: https://combo-624e1-default-rtdb.firebaseio.com
 
 steps:
@@ -54,9 +52,9 @@ steps:
           --quiet || true
 
         # Deploy the service with environment variables and secrets
-        gcloud run deploy $SERVICE_NAME \
-          --image=$IMAGE \
-          --region=$REGION \
+        gcloud run deploy $$SERVICE_NAME \
+          --image=$$IMAGE \
+          --region=$$REGION \
           --platform=managed \
           --allow-unauthenticated \
           --port=8080 \
@@ -65,21 +63,21 @@ steps:
           --max-instances=10 \
           --timeout=300 \
           --set-env-vars="NODE_ENV=production" \
-          --set-env-vars="FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}" \
+          --set-env-vars="FIREBASE_DATABASE_URL=$$FIREBASE_DATABASE_URL" \
           --set-secrets="FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest" \
           --set-secrets="JWT_SECRET=JWT_SECRET:latest" \
           --quiet
 
         # Get the service URL
-        SERVICE_URL=$(gcloud run services describe $SERVICE_NAME \
-          --region $REGION \
+        SERVICE_URL=$(gcloud run services describe $$SERVICE_NAME \
+          --region $$REGION \
           --format 'value(status.url)')
         
-        echo "Service deployed successfully to: $SERVICE_URL"
-        echo "Health check endpoint: $SERVICE_URL/health"
+        echo "Service deployed successfully to: $$SERVICE_URL"
+        echo "Health check endpoint: $$SERVICE_URL/health"
         
         # Set the service URL as an output variable
-        echo "SERVICE_URL=$SERVICE_URL" > service-url.txt
+        echo "SERVICE_URL=$$SERVICE_URL" > service-url.txt
 
 # Store the service URL as a build variable
 availableSecrets:

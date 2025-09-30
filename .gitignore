@@ -94,7 +94,6 @@ out
 
 # Ignore git submodules
 mobile/
-backend/
 
 # Ignore all files and directories
 */
@@ -104,6 +103,10 @@ backend/
 !.github/
 !.github/workflows/
 !.github/workflows/deploy.yml
+
+# Allow backend app to be tracked
+!backend/
+!backend/**
 
 # Allow these specific files
 !README.md

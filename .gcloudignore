@@ -1,0 +1,39 @@
+# Custom gcloudignore to include backend for Cloud Build
+# See: https://cloud.google.com/build/docs/speeding-up-builds#ignore
+
+# Git metadata
+.git
+**/.git
+.gitignore
+
+# Node modules and caches
+node_modules
+**/node_modules
+**/.cache
+**/.temp
+
+# OS/IDE files
+**/.DS_Store
+**/.idea
+**/.vscode
+
+# Logs and coverage
+**/*.log
+**/coverage
+
+# Build outputs
+**/dist
+**/build
+**/.next
+**/.nuxt
+
+# Environment files
+**/.env
+**/.env.*
+
+# Ensure these are included
+!cloudbuild.yaml
+!backend/**
+!.github/**
+!README.md
+!LICENSE

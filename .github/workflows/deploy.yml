@@ -23,9 +23,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -50,7 +47,7 @@ jobs:
           gcloud builds submit \
             --config=cloudbuild.yaml \
             --project=${{ env.PROJECT_ID }} \
-            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }},_PLATFORM=managed \
+            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }} \
             --verbosity=info
 
       - name: Fetch service URL
