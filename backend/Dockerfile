@@ -10,13 +10,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Set build arguments for secrets
-ARG JWT_SECRET
-ARG FIREBASE_DATABASE_SECRET
-
-# Create .env file with build arguments
-RUN echo "JWT_SECRET=$JWT_SECRET" > .env && \
-    echo "FIREBASE_DATABASE_SECRET=$FIREBASE_DATABASE_SECRET" >> .env
+# Copy the .env file created during build
+COPY .env .
 
 # Copy source code
 COPY . .

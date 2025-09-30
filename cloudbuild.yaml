@@ -11,24 +11,31 @@ substitutions:
 # Grant access to secrets from Secret Manager
 availableSecrets:
   secretManager:
-  - versionName: projects/combo-624e1/secrets/FIREBASE_DATABASE_SECRET/versions/latest
-    env: 'FIREBASE_DATABASE_SECRET'
   - versionName: projects/combo-624e1/secrets/JWT_SECRET/versions/latest
     env: 'JWT_SECRET'
 
 steps:
+  # Create a temporary .env file with the JWT_SECRET for the build
+  - name: 'gcr.io/cloud-builders/git'
+    id: 'Create .env file'
+    entrypoint: 'bash'
+    secretEnv: ['JWT_SECRET']
+    args:
+      - '-c'
+      - |
+        # Create .env file with JWT_SECRET
+        echo "JWT_SECRET=$JWT_SECRET" > backend/.env
+        echo "JWT_SECRET used in build"
+
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
     dir: 'backend'  # Run from the backend directory
-    secretEnv: ['JWT_SECRET', 'FIREBASE_DATABASE_SECRET']
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
       '--no-cache',
       '--build-arg', 'NODE_ENV=production',
-      '--build-arg', 'JWT_SECRET',
-      '--build-arg', 'FIREBASE_DATABASE_SECRET',
       '-f', 'Dockerfile',
       '.'
     ]
@@ -55,9 +62,8 @@ steps:
         export IMAGE=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest
         export FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL}
         
-        # Access secrets from environment variables set by availableSecrets
-        export FIREBASE_DATABASE_SECRET="$FIREBASE_DATABASE_SECRET"
-        export JWT_SECRET="$JWT_SECRET"
+        # Access Firebase database secret from Secret Manager
+        export FIREBASE_DATABASE_SECRET="$(gcloud secrets versions access latest --secret=FIREBASE_DATABASE_SECRET --project=combo-624e1)"
 
         # Enable required services
         gcloud services enable run.googleapis.com \
