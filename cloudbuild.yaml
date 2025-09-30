@@ -11,7 +11,7 @@ substitutions:
 # No availableSecrets - we'll use gcloud to access secrets directly
 
 steps:
-  # Create a temporary .env file with the JWT_SECRET for the build
+  # Create a temporary .env file with the secrets for the build
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Create .env file'
     entrypoint: 'bash'
@@ -21,14 +21,18 @@ steps:
         # Create backend directory if it doesn't exist
         mkdir -p backend
         
-        # Get JWT_SECRET from Secret Manager and save to .env
+        # Get secrets from Secret Manager
         JWT_SECRET=$(gcloud secrets versions access latest --secret=JWT_SECRET --project=combo-624e1)
-        echo "JWT_SECRET=$JWT_SECRET" > backend/.env
+        FIREBASE_DATABASE_SECRET=$(gcloud secrets versions access latest --secret=FIREBASE_DATABASE_SECRET --project=combo-624e1)
         
-        # Add FIREBASE_DATABASE_URL to .env
-        echo "FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com" >> backend/.env
+        # Create .env file with all secrets
+        cat > backend/.env <<EOL
+JWT_SECRET=$JWT_SECRET
+FIREBASE_DATABASE_SECRET=$FIREBASE_DATABASE_SECRET
+FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com
+EOL
         
-        echo "Created .env file with secrets"
+        echo "Created .env file with all required secrets"
 
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -65,20 +69,14 @@ steps:
         export IMAGE=us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest
         export FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL}
         
-        # Access Firebase database secret from Secret Manager
-        export FIREBASE_DATABASE_SECRET="$(gcloud secrets versions access latest --secret=FIREBASE_DATABASE_SECRET --project=combo-624e1)"
-
         # Enable required services
         gcloud services enable run.googleapis.com \
           cloudbuild.googleapis.com \
           artifactregistry.googleapis.com \
           secretmanager.googleapis.com \
           --quiet || true
-
-        # Get secrets from Secret Manager
-        FIREBASE_DATABASE_SECRET=$(gcloud secrets versions access latest --secret=FIREBASE_DATABASE_SECRET --project=combo-624e1)
         
-        # Deploy the service with environment variables and secrets
+        # Deploy the service with environment variables
         gcloud run deploy $$SERVICE_NAME \
           --image=$$IMAGE \
           --region=$$REGION \
@@ -90,7 +88,6 @@ steps:
           --max-instances=10 \
           --timeout=300 \
           --update-env-vars="NODE_ENV=production,FIREBASE_DATABASE_URL=$$FIREBASE_DATABASE_URL" \
-          --set-secrets="FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest" \
           --quiet
 
         # Get the service URL
