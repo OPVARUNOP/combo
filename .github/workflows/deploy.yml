@@ -82,38 +82,22 @@ jobs:
           # Set the project explicitly
           gcloud config set project ${{ env.PROJECT_ID }}
           
+          # Navigate to the backend directory
+          cd backend
+          
           # Build and push with more detailed output
-          echo "Starting build process..."
+          echo "Starting build process in $(pwd)"
+          echo "Current directory contents:"
+          ls -la
           
           # Build and push the image with no log streaming
           echo "Starting build (logs will be available in Cloud Build console)..."
           gcloud builds submit \
-            --tag us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
+            --config=../cloudbuild.yaml \
+            --substitutions=_FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},_FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},_JWT_SECRET=${{ secrets.JWT_SECRET }} \
             --suppress-logs \
             --no-user-output-enabled \
-            --verbosity=debug \
-            --format="value(id)" \
-            --async
-          
-          # Get the build ID
-          BUILD_ID=$(gcloud builds list --sort-by=create_time --limit=1 --format="value(ID)")
-          echo "Build started with ID: $BUILD_ID"
-          echo "View build logs at: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID"
-          
-          # Wait for build to complete with timeout (30 minutes)
-          echo "Waiting for build to complete (this may take a few minutes)..."
-          gcloud builds wait $BUILD_ID --timeout=1800 || \
-            echo "Warning: Build wait timed out, checking status..."
-          
-          # Check build status
-          BUILD_STATUS=$(gcloud builds describe $BUILD_ID --format='value(status)' || echo "UNKNOWN")
-          echo "Build status: $BUILD_STATUS"
-          
-          if [ "$BUILD_STATUS" != "SUCCESS" ]; then
-            echo "Build failed with status: $BUILD_STATUS"
-            echo "Check the build logs at: https://console.cloud.google.com/cloud-build/builds/$BUILD_ID?project=$PROJECT_ID"
-            exit 1
-          fi
+            --verbosity=debug
           
           echo "Build completed successfully"
 
