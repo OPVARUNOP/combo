@@ -1,0 +1,18 @@
+{
+  "name": "combo-backend-trigger",
+  "description": "Build and deploy combo-backend on push to main",
+  "github": {
+    "owner": "OPVARUNOP",
+    "name": "combo",
+    "push": {
+      "branch": "^main$"
+    }
+  },
+  "filename": "backend/cloudbuild.yaml",
+  "substitutions": {
+    "_SERVICE_NAME": "combo-backend",
+    "_REGION": "us-central1",
+    "_PLATFORM": "managed"
+  },
+  "serviceAccount": "projects/leafy-firmament-473506-j1/serviceAccounts/1093604404543-compute@developer.gserviceaccount.com"
+}
