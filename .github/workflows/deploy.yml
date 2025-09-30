@@ -87,40 +87,50 @@ jobs:
           pwd
           ls -la
           
+          # Verify cloudbuild.yaml exists
+          if [ ! -f "cloudbuild.yaml" ]; then
+            echo "Error: cloudbuild.yaml not found in $(pwd)"
+            ls -la
+            exit 1
+          fi
+          
+          # Set environment variables
+          export FIREBASE_DATABASE_URL="https://combo-624e1-default-rtdb.firebaseio.com"
+          export FIREBASE_DATABASE_SECRET="${{ secrets.FIREBASE_DATABASE_SECRET }}"
+          export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+          
           # Build and push with more detailed output
           echo "Starting build process in $(pwd)"
           
-          # Build and push the image with no log streaming
+          # Build and push the image
           echo "Starting build (logs will be available in Cloud Build console)..."
           gcloud builds submit \
             --config=cloudbuild.yaml \
-            --substitutions=_FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},_FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},_JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            --suppress-logs \
-            --no-user-output-enabled \
+            --project=${{ env.PROJECT_ID }} \
+            --substitutions=_FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL},_FIREBASE_DATABASE_SECRET=${FIREBASE_DATABASE_SECRET},_JWT_SECRET=${JWT_SECRET} \
             --verbosity=debug
           
           echo "Build completed successfully"
 
       - name: Deploy to Cloud Run
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          FIREBASE_DATABASE_SECRET: ${{ secrets.FIREBASE_DATABASE_SECRET }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          # First, update the service with --clear-env-vars to remove any existing environment variables
-          gcloud run services update ${{ env.SERVICE_NAME }} \
-            --region ${{ env.REGION }} \
-            --clear-env-vars || true
-            
-          # Then deploy the new revision
+          # Deploy the service with the latest image and environment variables
           gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/${{ env.SERVICE_NAME }} \
-            --platform managed \
+            --image us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/combo-repo/combo-backend:latest \
             --region ${{ env.REGION }} \
+            --platform managed \
             --allow-unauthenticated \
             --port 8080 \
             --memory 1Gi \
             --cpu 1 \
             --max-instances 10 \
             --timeout 300 \
-            --update-env-vars FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }},FIREBASE_DATABASE_SECRET=${{ secrets.FIREBASE_DATABASE_SECRET }},JWT_SECRET=${{ secrets.JWT_SECRET }},NODE_ENV=production \
-            --no-cpu-throttling
+            --update-env-vars "FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL},FIREBASE_DATABASE_SECRET=${FIREBASE_DATABASE_SECRET},JWT_SECRET=${JWT_SECRET},NODE_ENV=production" \
+            --quiet
 
       - name: Get service URL
         id: deploy
