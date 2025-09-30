@@ -12,6 +12,19 @@ steps:
         echo -e "\nContents of current directory:"
         find . -maxdepth 1 -type d | sort
 
+  # Show current directory structure
+  - name: 'ubuntu'
+    id: 'Show directory structure'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Current directory structure:"
+        pwd
+        ls -la
+        echo -e "\nContents of current directory:"
+        find . -maxdepth 1 -type d | sort
+
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
@@ -22,6 +35,7 @@ steps:
       '--build-arg', 'NODE_ENV=production',
       '.'
     ]
+    dir: 'backend'
 
   # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
