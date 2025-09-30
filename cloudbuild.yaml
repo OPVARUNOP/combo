@@ -21,11 +21,14 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Docker image'
     dir: 'backend'  # Run from the backend directory
+    secretEnv: ['JWT_SECRET', 'FIREBASE_DATABASE_SECRET']
     args: [
       'build',
       '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
       '--no-cache',
       '--build-arg', 'NODE_ENV=production',
+      '--build-arg', 'JWT_SECRET',
+      '--build-arg', 'FIREBASE_DATABASE_SECRET',
       '-f', 'Dockerfile',
       '.'
     ]
