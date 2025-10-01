@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy the .env file created during build
-COPY .env .
-
 # Copy source code
 COPY . .
 
