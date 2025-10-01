@@ -1,18 +1,18 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-t', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
-      '-f', 'backend/Dockerfile',
-      'backend'
-    ]
+    args:
+      [
+        'build',
+        '-t',
+        'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest',
+        '-f',
+        'backend/Dockerfile',
+        'backend',
+      ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'push',
-      'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest'
-    ]
-    
+    args: ['push', 'us-central1-docker.pkg.dev/combo-624e1/combo-repo/combo-backend:latest']
+
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
       - 'run'
@@ -27,6 +27,12 @@ steps:
       - '--cpu=1'
       - '--max-instances=10'
       - '--timeout=300'
-      - '--update-env-vars=NODE_ENV=production,FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com'
+      - '--update-env-vars=NODE_ENV=production,FIREBASE_DATABASE_URL=$_FIREBASE_URL'
       - '--set-secrets=FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest'
       - '--quiet'
+
+substitutions:
+  _FIREBASE_URL: 'https://combo-624e1-default-rtdb.firebaseio.com'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
