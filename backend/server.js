@@ -152,6 +152,7 @@ app.use((req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 8080;
+# Triggering a new build
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
   console.log('📡 Health check at: http://0.0.0.0:' + PORT + '/health');
