@@ -1,4 +1,4 @@
-name: Debug Checkout
+name: Deploy to Google Cloud Run
 
 on:
   push:
@@ -6,24 +6,51 @@ on:
       - master
       - main
 
+env:
+  PROJECT_ID: combo-624e1
+  SERVICE_NAME: combo-backend
+  REGION: us-central1
+
 jobs:
-  debug-checkout:
+  build-and-deploy:
+    name: Build and Deploy via Cloud Build
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch all history for all branches and tags
 
-      - name: List files and details
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Verify gcloud
         run: |
-          echo "--- Current Directory ---"
-          pwd
-          echo "--- Files in root ---"
-          ls -la
-          echo "--- Git Status ---"
-          git status
-          echo "--- Git Log (last 3 commits) ---"
-          git log -n 3 --oneline
-          echo "--- Content of Dockerfile ---"
-          cat backend/Dockerfile
+          gcloud --version
+          gcloud auth list
+          gcloud config set project ${{ env.PROJECT_ID }}
+
+      - name: Submit Cloud Build (builds and deploys)
+        run: |
+          gcloud builds submit \
+            --config=cloudbuild.yaml \
+            --project=${{ env.PROJECT_ID }} \
+            --substitutions=_SERVICE_NAME=${{ env.SERVICE_NAME }},_REGION=${{ env.REGION }} \
+            --verbosity=info
+
+      - name: Fetch service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "Service URL: $SERVICE_URL"
