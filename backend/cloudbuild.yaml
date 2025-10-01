@@ -37,7 +37,8 @@ steps:
       - '--cpu=1'
       - '--max-instances=10'
       - '--timeout=300'
-      - '--set-env-vars=FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com'
+      - '--set-env-vars'
+      - 'FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com'
       - '--set-secrets=FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest'
       - '--quiet'
 
