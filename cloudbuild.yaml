@@ -38,7 +38,7 @@ steps:
       - "--max-instances=10"
       - "--timeout=300"
       - "--update-env-vars"
-      - "NODE_ENV=production,FIREBASE_DATABASE_URL=${_FIREBASE_DATABASE_URL}"
+      - "NODE_ENV=production,FIREBASE_DATABASE_URL=https://combo-624e1-default-rtdb.firebaseio.com"
       - "--set-secrets=FIREBASE_DATABASE_SECRET=FIREBASE_DATABASE_SECRET:latest,JWT_SECRET=JWT_SECRET:latest"
       - "--quiet"
 
@@ -46,7 +46,6 @@ steps:
 substitutions:
   _SERVICE_NAME: "combo-backend"
   _REGION: "us-central1"
-  _FIREBASE_DATABASE_URL: "https://combo-624e1-default-rtdb.firebaseio.com"
 
 options:
   logging: CLOUD_LOGGING_ONLY
