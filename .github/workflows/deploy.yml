@@ -42,6 +42,15 @@ jobs:
           gcloud auth list
           gcloud config set project ${{ env.PROJECT_ID }}
 
+      - name: Debug CI Environment
+        run: |
+          echo "--- Environment Variables ---"
+          printenv | sort
+          echo "--- Root cloudbuild.yaml ---"
+          cat cloudbuild.yaml
+          echo "--- Backend cloudbuild.yaml ---"
+          cat backend/cloudbuild.yaml
+
       - name: Submit Cloud Build (builds and deploys)
         run: |
           gcloud builds submit \
