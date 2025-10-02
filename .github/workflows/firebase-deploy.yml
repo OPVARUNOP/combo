@@ -2,7 +2,7 @@ name: Deploy to Firebase
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -11,26 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
           cache: 'npm'
           
       - name: Install Dependencies
-        run: |
-          cd backend
-          npm ci
-          
+        working-directory: ./backend
+        run: npm ci
+        
       - name: Install Firebase Tools
         run: npm install -g firebase-tools
         
       - name: Run Tests
-        run: |
-          cd backend
-          npm test
-          
+        working-directory: ./backend
+        run: npm test
+        
       - name: Deploy to Firebase
+        working-directory: ./backend
         run: |
-          cd backend
+          echo "Deploying to Firebase..."
           firebase deploy --only hosting,firestore,storage --token "${{ secrets.FIREBASE_TOKEN }}"
