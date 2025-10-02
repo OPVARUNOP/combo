@@ -37,6 +37,8 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: List files for debugging
+        run: ls -R
+
       - name: Deploy to Firebase
         run: firebase deploy --only hosting,firestore,storage --config backend/firebase.json
-
