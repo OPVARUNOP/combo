@@ -3,11 +3,10 @@ name: Deploy to Firebase
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,16 +16,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: combo-624e1
           
       - name: Install Dependencies
         run: |
@@ -44,4 +33,4 @@ jobs:
       - name: Deploy to Firebase
         run: |
           cd backend
-          firebase deploy --only hosting,firestore,storage --project combo-624e1
+          firebase deploy --only hosting,firestore,storage --token "${{ secrets.FIREBASE_TOKEN }}"
