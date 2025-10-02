@@ -25,6 +25,7 @@ A Spotify alternative built with modern web technologies.
 - MongoDB for database
 - Redis for caching
 - JWT for authentication
+- Backblaze B2 for file storage
 - YouTube Data API v3
 - SoundCloud API
 - Audius API
