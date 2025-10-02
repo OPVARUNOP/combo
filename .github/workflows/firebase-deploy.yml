@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+
+      - name: Set up Firebase Service Account
+        run: |
+          mkdir -p ~/.config/gcloud/
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > ~/.config/gcloud/application_default_credentials.json
           
       - name: Install Dependencies
         run: |
@@ -34,6 +39,6 @@ jobs:
       - name: Deploy to Firebase
         run: |
           cd backend
-          firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
+          firebase deploy --only hosting,firestore,storage
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: ~/.config/gcloud/application_default_credentials.json
