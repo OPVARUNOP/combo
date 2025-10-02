@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "531640636721",
+    "firebase_url": "https://combo-624e1-default-rtdb.firebaseio.com",
+    "project_id": "combo-624e1",
+    "storage_bucket": "combo-624e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531640636721:android:a768865df6963ed59b4c10",
+        "android_client_info": {
+          "package_name": "com.combo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "531640636721-jppvheltsk62jt1vcf8nssbgbbv3qbl8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANg-oQENAVygMjY-TdNDAXeWfcHeUtZnQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "531640636721-jppvheltsk62jt1vcf8nssbgbbv3qbl8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
