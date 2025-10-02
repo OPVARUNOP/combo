@@ -18,10 +18,15 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Set up Firebase Service Account
-        run: |
-          mkdir -p ~/.config/gcloud/
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > ~/.config/gcloud/application_default_credentials.json
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: combo-624e1
           
       - name: Install Dependencies
         run: |
@@ -39,6 +44,4 @@ jobs:
       - name: Deploy to Firebase
         run: |
           cd backend
-          firebase deploy --only hosting,firestore,storage
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ~/.config/gcloud/application_default_credentials.json
+          firebase deploy --only hosting,firestore,storage --project combo-624e1
