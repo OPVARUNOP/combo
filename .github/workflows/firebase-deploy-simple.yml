@@ -2,12 +2,15 @@ name: Deploy to Firebase (Simple)
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - uses: actions/checkout@v3
       
@@ -28,8 +31,14 @@ jobs:
         working-directory: ./backend
         run: npm test
         
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
       - name: Deploy to Firebase
         working-directory: ./backend
-        run: |
-          echo "Deploying to Firebase..."
-          firebase deploy --only hosting,firestore,storage --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only hosting,firestore,storage
+
