@@ -1,241 +1,145 @@
-const Redis = require('ioredis');
+const { Timestamp } = require('@google-cloud/firestore');
+const firestore = require('./firestore.service');
+const logger = require('../config/logger');
 
 class CacheService {
   constructor() {
-    this.client = null;
-    this.isRedisAvailable = false;
+    this.collectionName = 'cache';
+    this.defaultTTL = 3600; // 1 hour in seconds
+    this.isAvailable = true;
 
-    try {
-      this.client = new Redis({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        password: process.env.REDIS_PASSWORD || undefined,
-        retryDelayOnFailover: 100,
-        enableReadyCheck: true,
-        maxRetriesPerRequest: null,
-        lazyConnect: true
-      });
-
-      this.client.on('error', (error) => {
-        console.error('Redis connection error:', error.message);
-        this.isRedisAvailable = false;
-      });
-
-      this.client.on('connect', () => {
-        console.log('✅ Redis connected successfully');
-        this.isRedisAvailable = true;
-      });
-
-      this.client.on('ready', () => {
-        this.isRedisAvailable = true;
-      });
-
-      // Test connection
-      this.client.connect().catch(() => {
-        console.log('⚠️ Redis not available, running without cache');
-        this.isRedisAvailable = false;
-      });
-
-    } catch (error) {
-      console.log('⚠️ Redis not available, running without cache');
-      this.isRedisAvailable = false;
-    }
-
-    // Default cache TTL (Time To Live)
-    this.DEFAULT_TTL = 3600; // 1 hour
-    this.SHORT_TTL = 300; // 5 minutes
-    this.LONG_TTL = 86400; // 24 hours
+    // Test connection
+    this.testConnection();
   }
 
-  async connect() {
-    if (!this.isRedisAvailable || !this.client) return;
-
+  async testConnection() {
     try {
-      await this.client.connect();
+      await firestore.getDocument(this.collectionName, 'connection-test');
+      logger.info('✅ Firestore cache service initialized');
+      this.isAvailable = true;
     } catch (error) {
-      console.error('Failed to connect to Redis:', error.message);
-      this.isRedisAvailable = false;
+      logger.error('Failed to initialize Firestore cache service:', error);
+      this.isAvailable = false;
     }
   }
 
-  /**
-   * Get cached data
-   * @param {string} key - Cache key
-   * @returns {Promise<any>} - Cached data or null
-   */
+  async set(key, value, ttl = this.defaultTTL) {
+    if (!this.isAvailable) return false;
+
+    try {
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + ttl);
+
+      await firestore.saveDocument(this.collectionName, key, {
+        value: JSON.stringify(value),
+        expiresAt: Timestamp.fromDate(expiresAt),
+        createdAt: Timestamp.now(),
+      });
+
+      return true;
+    } catch (error) {
+      logger.error('Cache set error:', error);
+      return false;
+    }
+  }
+
   async get(key) {
-    if (!this.isRedisAvailable || !this.client) return null;
+    if (!this.isAvailable) return null;
 
     try {
-      const data = await this.client.get(key);
-      return data ? JSON.parse(data) : null;
+      const doc = await firestore.getDocument(this.collectionName, key);
+
+      if (!doc || !doc.expiresAt || doc.expiresAt.toDate() < new Date()) {
+        if (doc) await this.del(key);
+        return null;
+      }
+
+      return JSON.parse(doc.value);
     } catch (error) {
-      console.error('Cache get error:', error.message);
+      logger.error('Cache get error:', error);
       return null;
     }
   }
 
-  /**
-   * Set cache data
-   * @param {string} key - Cache key
-   * @param {any} data - Data to cache
-   * @param {number} ttl - Time to live in seconds
-   * @returns {Promise<boolean>} - Success status
-   */
-  async set(key, data, ttl = this.DEFAULT_TTL) {
-    if (!this.isRedisAvailable || !this.client) return false;
+  async del(key) {
+    if (!this.isAvailable) return false;
 
     try {
-      const serializedData = JSON.stringify(data);
-      await this.client.setex(key, ttl, serializedData);
+      await firestore.deleteDocument(this.collectionName, key);
       return true;
     } catch (error) {
-      console.error('Cache set error:', error.message);
+      logger.error('Cache delete error:', error);
       return false;
     }
   }
 
-  /**
-   * Delete cached data
-   * @param {string} key - Cache key
-   * @returns {Promise<boolean>} - Success status
-   */
-  async delete(key) {
-    if (!this.isRedisAvailable || !this.client) return false;
+  async flush(pattern = '') {
+    if (!this.isAvailable) return false;
 
     try {
-      await this.client.del(key);
-      return true;
-    } catch (error) {
-      console.error('Cache delete error:', error.message);
-      return false;
-    }
-  }
+      const snapshot = await firestore.firestore
+        .collection(this.collectionName)
+        .where('__name__', '>=', pattern)
+        .get();
 
-  /**
-   * Clear all cache
-   * @returns {Promise<boolean>} - Success status
-   */
-  async clear() {
-    if (!this.isRedisAvailable || !this.client) return false;
+      const batch = firestore.firestore.batch();
+      const batchSize = 500;
+      let batchCount = 0;
 
-    try {
-      await this.client.flushall();
-      return true;
-    } catch (error) {
-      console.error('Cache clear error:', error.message);
-      return false;
-    }
-  }
+      for (const doc of snapshot.docs) {
+        batch.delete(doc.ref);
+        batchCount++;
 
-  /**
-   * Generate cache key
-   * @param {string} endpoint - API endpoint
-   * @param {object} params - Request parameters
-   * @returns {string} - Cache key
-   */
-  generateKey(endpoint, params = {}) {
-    const sortedParams = Object.keys(params)
-      .sort()
-      .reduce((result, key) => {
-        result[key] = params[key];
-        return result;
-      }, {});
-
-    const paramString = JSON.stringify(sortedParams);
-    return `combo:${endpoint}:${Buffer.from(paramString).toString('base64')}`;
-  }
-
-  /**
-   * Cache wrapper for API functions
-   * @param {Function} fn - Function to cache
-   * @param {string} endpoint - API endpoint
-   * @param {object} params - Request parameters
-   * @param {number} ttl - Cache TTL
-   * @returns {Promise<any>} - Cached or fresh data
-   */
-  async cached(fn, endpoint, params = {}, ttl = this.DEFAULT_TTL) {
-    if (this.isRedisAvailable && this.client) {
-      const key = this.generateKey(endpoint, params);
-
-      // Try to get from cache first
-      const cachedData = await this.get(key);
-      if (cachedData) {
-        console.log(`Cache hit for ${endpoint}`);
-        return cachedData;
-      }
-
-      // Cache miss - execute function and cache result
-      console.log(`Cache miss for ${endpoint} - fetching fresh data`);
-      try {
-        const freshData = await fn();
-
-        // Only cache successful responses
-        if (freshData && !freshData.error) {
-          await this.set(key, { ...freshData, cached: true, cachedAt: new Date().toISOString() }, ttl);
+        if (batchCount >= batchSize) {
+          await batch.commit();
+          batchCount = 0;
         }
-
-        return freshData;
-      } catch (error) {
-        console.error(`Error executing cached function for ${endpoint}:`, error.message);
-        throw error;
       }
-    } else {
-      // Redis not available, just execute the function
-      console.log(`Redis not available, executing ${endpoint} without cache`);
-      return await fn();
-    }
-  }
 
-  /**
-   * Invalidate cache by pattern
-   * @param {string} pattern - Cache key pattern
-   * @returns {Promise<number>} - Number of keys deleted
-   */
-  async invalidatePattern(pattern) {
-    if (!this.isRedisAvailable || !this.client) return 0;
-
-    try {
-      const keys = await this.client.keys(pattern);
-      if (keys.length > 0) {
-        await this.client.del(keys);
-        console.log(`Invalidated ${keys.length} cache entries for pattern: ${pattern}`);
-        return keys.length;
+      if (batchCount > 0) {
+        await batch.commit();
       }
-      return 0;
+
+      return true;
     } catch (error) {
-      console.error('Cache invalidation error:', error.message);
-      return 0;
+      logger.error('Cache flush error:', error);
+      return false;
     }
   }
 
-  /**
-   * Get cache statistics
-   * @returns {Promise<object>} - Cache stats
-   */
   async getStats() {
-    if (!this.isRedisAvailable || !this.client) {
-      return { connected: false, message: 'Redis not available' };
-    }
+    if (!this.isAvailable) return { total: 0, expired: 0, size: 0 };
 
     try {
-      const info = await this.client.info('memory');
-      const keyspace = await this.client.info('keyspace');
+      const now = new Date();
+      const snapshot = await firestore.firestore
+        .collection(this.collectionName)
+        .select('expiresAt')
+        .get();
+
+      let total = 0;
+      let expired = 0;
+
+      snapshot.forEach((doc) => {
+        total++;
+        const data = doc.data();
+        if (data.expiresAt && data.expiresAt.toDate() < now) {
+          expired++;
+        }
+      });
 
       return {
-        memory: info,
-        keyspace: keyspace,
-        connected: this.client.status === 'ready',
-        redisAvailable: this.isRedisAvailable
+        total,
+        expired,
+        size: total * 1000, // Approximate size in bytes
       };
     } catch (error) {
-      console.error('Cache stats error:', error.message);
-      return { error: error.message, connected: false };
+      logger.error('Cache stats error:', error);
+      return { total: 0, expired: 0, size: 0 };
     }
   }
 }
 
-// Create singleton instance
+// Create and export singleton instance
 const cacheService = new CacheService();
-
 module.exports = cacheService;

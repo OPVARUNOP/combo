@@ -40,16 +40,16 @@ import { colors, spacing, typography, radius, shadows } from '../../styles/theme
 const authAPI = {
   forgotPassword: async (email) => {
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Mock successful response
     return {
       data: {
         message: 'Password reset instructions sent to your email',
-        success: true
-      }
+        success: true,
+      },
     };
-  }
+  },
 };
 
 const { width, height } = Dimensions.get('window');
@@ -104,7 +104,7 @@ const ForgotPasswordScreen = () => {
             text: 'Try Again',
             style: 'default',
           },
-        ]
+        ],
       );
     } finally {
       setIsLoading(false);
@@ -126,10 +126,7 @@ const ForgotPasswordScreen = () => {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <LinearGradient
-          colors={colors.gradientBg}
-          style={styles.gradient}
-        >
+        <LinearGradient colors={colors.gradientBg} style={styles.gradient}>
           {/* Header Section */}
           <View style={styles.headerSection}>
             <View style={styles.logoContainer}>
@@ -141,7 +138,7 @@ const ForgotPasswordScreen = () => {
           {/* Success Section */}
           <View style={styles.successSection}>
             <View style={styles.successIconContainer}>
-              <Ionicons name="mail" size={64} color={colors.primary} />
+              <Ionicons name='mail' size={64} color={colors.primary} />
             </View>
 
             <Text style={styles.successTitle}>Reset Email Sent</Text>
@@ -151,23 +148,17 @@ const ForgotPasswordScreen = () => {
             </Text>
 
             <Text style={styles.instructionsText}>
-              Click the link in the email to reset your password. If you don't see the email,
-              check your spam folder.
+              Click the link in the email to reset your password. If you don't see the email, check
+              your spam folder.
             </Text>
 
             {/* Resend Button */}
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={handleResendEmail}
-            >
+            <TouchableOpacity style={styles.resendButton} onPress={handleResendEmail}>
               <Text style={styles.resendButtonText}>Send Another Email</Text>
             </TouchableOpacity>
 
             {/* Back to Login Button */}
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackToLogin}
-            >
+            <TouchableOpacity style={styles.backButton} onPress={handleBackToLogin}>
               <Text style={styles.backButtonText}>Back to Login</Text>
             </TouchableOpacity>
           </View>
@@ -181,10 +172,7 @@ const ForgotPasswordScreen = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradient}>
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.logoContainer}>
@@ -203,22 +191,24 @@ const ForgotPasswordScreen = () => {
           {/* Email Input */}
           <View style={styles.inputContainer}>
             <Ionicons
-              name="mail"
+              name='mail'
               size={20}
               color={emailError ? colors.error : colors.textSecondary}
               style={styles.inputIcon}
             />
             <TextInput
               style={[styles.input, emailError && styles.inputError]}
-              placeholder="Email"
+              placeholder='Email'
               placeholderTextColor={colors.textSecondary}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
-                if (emailError) setEmailError('');
+                if (emailError) {
+                  setEmailError('');
+                }
               }}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              keyboardType='email-address'
+              autoCapitalize='none'
               autoCorrect={false}
               editable={!isLoading}
             />
@@ -232,7 +222,7 @@ const ForgotPasswordScreen = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color={colors.white} size="small" />
+              <ActivityIndicator color={colors.white} size='small' />
             ) : (
               <Text style={styles.resetButtonText}>Send Reset Email</Text>
             )}
@@ -251,8 +241,7 @@ const ForgotPasswordScreen = () => {
         {/* Footer Section */}
         <View style={styles.footerSection}>
           <Text style={styles.footerText}>
-            Remember your password?{' '}
-            <Text style={styles.footerLink}>Sign In</Text>
+            Remember your password? <Text style={styles.footerLink}>Sign In</Text>
           </Text>
         </View>
       </LinearGradient>
@@ -261,95 +250,6 @@ const ForgotPasswordScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  headerSection: {
-    alignItems: 'center',
-    paddingTop: height * 0.12,
-    paddingHorizontal: spacing.xl,
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: typography.fontSize['5xl'],
-    fontWeight: 'bold',
-    color: colors.white,
-    letterSpacing: typography.letterSpacing.wider,
-  },
-  tagline: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  formSection: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: 'bold',
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing['3xl'],
-    lineHeight: 22,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.white10,
-  },
-  inputIcon: {
-    marginRight: spacing.md,
-  },
-  input: {
-    flex: 1,
-    color: colors.text,
-    fontSize: typography.fontSize.base,
-    paddingVertical: spacing.md,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: typography.fontSize.sm,
-    marginBottom: spacing.md,
-    marginLeft: spacing.sm,
-  },
-  resetButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-    ...shadows.md,
-  },
-  resetButtonDisabled: {
-    opacity: 0.7,
-  },
-  resetButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.lg,
-    fontWeight: '600',
-  },
   backButton: {
     alignItems: 'center',
     paddingVertical: spacing.md,
@@ -357,6 +257,23 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: colors.textSecondary,
     fontSize: typography.fontSize.base,
+    textDecorationLine: 'underline',
+  },
+  container: {
+    flex: 1,
+  },
+  emailText: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: typography.fontSize.sm,
+    marginBottom: spacing.md,
+    marginLeft: spacing.sm,
+  },
+  footerLink: {
+    color: colors.primary,
     textDecorationLine: 'underline',
   },
   footerSection: {
@@ -369,58 +286,130 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     textAlign: 'center',
   },
-  footerLink: {
-    color: colors.primary,
-    textDecorationLine: 'underline',
-  },
-  successSection: {
+  formSection: {
     flex: 1,
-    paddingHorizontal: spacing.xl,
     justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  gradient: {
+    flex: 1,
+  },
+  headerSection: {
     alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: height * 0.12,
   },
-  successIconContainer: {
-    marginBottom: spacing.xl,
-  },
-  successTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: 'bold',
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  successMessage: {
+  input: {
+    color: colors.text,
+    flex: 1,
     fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-    lineHeight: 24,
+    paddingVertical: spacing.md,
   },
-  emailText: {
-    color: colors.primary,
-    fontWeight: '600',
+  inputContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.white10,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  inputError: {
+    borderColor: colors.error,
+  },
+  inputIcon: {
+    marginRight: spacing.md,
   },
   instructionsText: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing['2xl'],
+    fontSize: typography.fontSize.sm,
     lineHeight: 20,
+    marginBottom: spacing['2xl'],
+    textAlign: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  logoText: {
+    color: colors.white,
+    fontSize: typography.fontSize['5xl'],
+    fontWeight: 'bold',
+    letterSpacing: typography.letterSpacing.wider,
   },
   resendButton: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
     alignItems: 'center',
-    marginBottom: spacing.lg,
-    borderWidth: 1,
+    backgroundColor: colors.surface,
     borderColor: colors.white10,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
   },
   resendButtonText: {
     color: colors.white,
     fontSize: typography.fontSize.base,
     fontWeight: '500',
+  },
+  resetButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    marginBottom: spacing.xl,
+    paddingVertical: spacing.md,
+    ...shadows.md,
+  },
+  resetButtonDisabled: {
+    opacity: 0.7,
+  },
+  resetButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.lg,
+    fontWeight: '600',
+  },
+  subtitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 22,
+    marginBottom: spacing['3xl'],
+    textAlign: 'center',
+  },
+  successIconContainer: {
+    marginBottom: spacing.xl,
+  },
+  successMessage: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 24,
+    marginBottom: spacing.xl,
+    textAlign: 'center',
+  },
+  successSection: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  successTitle: {
+    color: colors.white,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: 'bold',
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  tagline: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.lg,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  title: {
+    color: colors.white,
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: 'bold',
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
 });
 

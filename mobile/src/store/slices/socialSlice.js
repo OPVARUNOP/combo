@@ -15,7 +15,7 @@ export const loadSocialFeed = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load social feed');
     }
-  }
+  },
 );
 
 export const createPost = createAsyncThunk(
@@ -27,31 +27,76 @@ export const createPost = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create post');
     }
-  }
+  },
 );
 
-export const likePost = createAsyncThunk(
-  'social/likePost',
-  async (postId, { rejectWithValue }) => {
-    try {
-      await socialAPI.likePost(postId);
-      return postId;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to like post');
-    }
+export const likePost = createAsyncThunk('social/likePost', async (postId, { rejectWithValue }) => {
+  try {
+    await socialAPI.likePost(postId);
+    return postId;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to like post');
   }
+});
+
+export const followUser = createAsyncThunk(
+  'social/followUser',
+  async (userId, { rejectWithValue }) => {
+    try {
+      await socialAPI.followUser(userId);
+      return userId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to follow user');
+    }
+  },
+);
+
+export const unfollowUser = createAsyncThunk(
+  'social/unfollowUser',
+  async (userId, { rejectWithValue }) => {
+    try {
+      await socialAPI.unfollowUser(userId);
+      return userId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to unfollow user');
+    }
+  },
+);
+
+export const loadUserFollowers = createAsyncThunk(
+  'social/loadUserFollowers',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await socialAPI.getUserFollowers(userId);
+      return response.data.followers || [];
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to load followers');
+    }
+  },
+);
+
+export const loadUserFollowing = createAsyncThunk(
+  'social/loadUserFollowing',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await socialAPI.getUserFollowing(userId);
+      return response.data.following || [];
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to load following');
+    }
+  },
 );
 
 export const unlikePost = createAsyncThunk(
   'social/unlikePost',
   async (postId, { rejectWithValue }) => {
     try {
-      await socialAPI.unlikePost(postId);
-      return postId;
+      const response = await socialAPI.unlikePost(postId);
+      return response.data.post;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to unlike post');
     }
-  }
+  },
 );
 
 export const commentOnPost = createAsyncThunk(
@@ -63,7 +108,7 @@ export const commentOnPost = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to comment on post');
     }
-  }
+  },
 );
 
 // Async thunks for friends activity
@@ -76,7 +121,7 @@ export const loadFriendsActivity = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load friends activity');
     }
-  }
+  },
 );
 
 export const loadActivityFeed = createAsyncThunk(
@@ -88,7 +133,7 @@ export const loadActivityFeed = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load activity feed');
     }
-  }
+  },
 );
 
 // Async thunks for user connections
@@ -101,7 +146,7 @@ export const loadSuggestedUsers = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load suggested users');
     }
-  }
+  },
 );
 
 export const loadUserConnections = createAsyncThunk(
@@ -114,13 +159,15 @@ export const loadUserConnections = createAsyncThunk(
       ]);
 
       return {
-        followers: followersRes.status === 'fulfilled' ? followersRes.value.data.followers || [] : [],
-        following: followingRes.status === 'fulfilled' ? followingRes.value.data.following || [] : [],
+        followers:
+          followersRes.status === 'fulfilled' ? followersRes.value.data.followers || [] : [],
+        following:
+          followingRes.status === 'fulfilled' ? followingRes.value.data.following || [] : [],
       };
     } catch (error) {
       return rejectWithValue('Failed to load user connections');
     }
-  }
+  },
 );
 
 // Async thunks for sharing
@@ -128,36 +175,45 @@ export const shareTrack = createAsyncThunk(
   'social/shareTrack',
   async ({ trackId, message, visibility }, { rejectWithValue }) => {
     try {
-      const response = await socialAPI.shareTrack(trackId, { message, visibility });
+      const response = await socialAPI.shareTrack(trackId, {
+        message,
+        visibility,
+      });
       return response.data.share;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to share track');
     }
-  }
+  },
 );
 
 export const sharePlaylist = createAsyncThunk(
   'social/sharePlaylist',
   async ({ playlistId, message, visibility }, { rejectWithValue }) => {
     try {
-      const response = await socialAPI.sharePlaylist(playlistId, { message, visibility });
+      const response = await socialAPI.sharePlaylist(playlistId, {
+        message,
+        visibility,
+      });
       return response.data.share;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to share playlist');
     }
-  }
+  },
 );
 
 export const shareAlbum = createAsyncThunk(
   'social/shareAlbum',
   async ({ albumId, message, visibility }, { rejectWithValue }) => {
     try {
-      const response = await socialAPI.shareAlbum(albumId, { message, visibility });
+      const response = await socialAPI.shareAlbum(albumId, {
+        message,
+        visibility,
+      });
       return response.data.share;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to share album');
     }
-  }
+  },
 );
 
 // Async thunks for notifications
@@ -174,7 +230,7 @@ export const loadNotifications = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load notifications');
     }
-  }
+  },
 );
 
 export const markNotificationAsRead = createAsyncThunk(
@@ -184,9 +240,11 @@ export const markNotificationAsRead = createAsyncThunk(
       await socialAPI.markAsRead(notificationId);
       return notificationId;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to mark notification as read');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to mark notification as read',
+      );
     }
-  }
+  },
 );
 
 export const markAllNotificationsAsRead = createAsyncThunk(
@@ -196,9 +254,11 @@ export const markAllNotificationsAsRead = createAsyncThunk(
       await socialAPI.markAllAsRead();
       return true;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to mark all notifications as read');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to mark all notifications as read',
+      );
     }
-  }
+  },
 );
 
 const initialState = {
@@ -297,14 +357,17 @@ const socialSlice = createSlice({
     },
     updatePost: (state, action) => {
       const { postId, updates } = action.payload;
-      const postIndex = state.feed.posts.findIndex(p => p.id === postId);
+      const postIndex = state.feed.posts.findIndex((p) => p.id === postId);
       if (postIndex !== -1) {
-        state.feed.posts[postIndex] = { ...state.feed.posts[postIndex], ...updates };
+        state.feed.posts[postIndex] = {
+          ...state.feed.posts[postIndex],
+          ...updates,
+        };
       }
     },
     removePost: (state, action) => {
       const postId = action.payload;
-      state.feed.posts = state.feed.posts.filter(p => p.id !== postId);
+      state.feed.posts = state.feed.posts.filter((p) => p.id !== postId);
       state.feed.total = Math.max(0, state.feed.total - 1);
     },
     addActivity: (state, action) => {
@@ -312,24 +375,24 @@ const socialSlice = createSlice({
     },
     updateNotification: (state, action) => {
       const { notificationId, updates } = action.payload;
-      const notificationIndex = state.notifications.list.findIndex(n => n.id === notificationId);
+      const notificationIndex = state.notifications.list.findIndex((n) => n.id === notificationId);
       if (notificationIndex !== -1) {
         state.notifications.list[notificationIndex] = {
           ...state.notifications.list[notificationIndex],
-          ...updates
+          ...updates,
         };
       }
     },
     markNotificationRead: (state, action) => {
       const notificationId = action.payload;
-      const notification = state.notifications.list.find(n => n.id === notificationId);
+      const notification = state.notifications.list.find((n) => n.id === notificationId);
       if (notification && !notification.isRead) {
         notification.isRead = true;
         state.notifications.unreadCount = Math.max(0, state.notifications.unreadCount - 1);
       }
     },
     markAllNotificationsRead: (state) => {
-      state.notifications.list.forEach(notification => {
+      state.notifications.list.forEach((notification) => {
         notification.isRead = true;
       });
       state.notifications.unreadCount = 0;
@@ -344,11 +407,11 @@ const socialSlice = createSlice({
     },
     removeNotification: (state, action) => {
       const notificationId = action.payload;
-      const notification = state.notifications.list.find(n => n.id === notificationId);
+      const notification = state.notifications.list.find((n) => n.id === notificationId);
       if (notification && !notification.isRead) {
         state.notifications.unreadCount = Math.max(0, state.notifications.unreadCount - 1);
       }
-      state.notifications.list = state.notifications.list.filter(n => n.id !== notificationId);
+      state.notifications.list = state.notifications.list.filter((n) => n.id !== notificationId);
       state.notifications.total = Math.max(0, state.notifications.total - 1);
     },
     clearNotifications: (state) => {
@@ -362,8 +425,32 @@ const socialSlice = createSlice({
     setFriendsActivityLoading: (state, action) => {
       state.friendsActivity.isLoading = action.payload;
     },
-    setNotificationsLoading: (state, action) => {
-      state.notifications.isLoading = action.payload;
+    // Follow User
+    followUser: (state, action) => {
+      const userId = action.payload;
+      // Optimistically update UI state
+      state.userConnections.following.push({ id: userId });
+      state.userConnections.followingCount = (state.userConnections.followingCount || 0) + 1;
+    },
+
+    // Unfollow User
+    unfollowUser: (state, action) => {
+      const userId = action.payload;
+      // Optimistically update UI state
+      state.userConnections.following = state.userConnections.following.filter(
+        (user) => user.id !== userId,
+      );
+      state.userConnections.followingCount = Math.max(
+        0,
+        (state.userConnections.followingCount || 0) - 1,
+      );
+    },
+
+    // Update user connections
+    updateUserConnections: (state, action) => {
+      const { followers, following } = action.payload;
+      state.userConnections.followers = followers;
+      state.userConnections.following = following;
     },
   },
   extraReducers: (builder) => {
@@ -394,7 +481,7 @@ const socialSlice = createSlice({
       // Like/Unlike Post
       .addCase(likePost.fulfilled, (state, action) => {
         const postId = action.payload;
-        const post = state.feed.posts.find(p => p.id === postId);
+        const post = state.feed.posts.find((p) => p.id === postId);
         if (post) {
           post.isLiked = true;
           post.likeCount += 1;
@@ -402,7 +489,7 @@ const socialSlice = createSlice({
       })
       .addCase(unlikePost.fulfilled, (state, action) => {
         const postId = action.payload;
-        const post = state.feed.posts.find(p => p.id === postId);
+        const post = state.feed.posts.find((p) => p.id === postId);
         if (post) {
           post.isLiked = false;
           post.likeCount = Math.max(0, post.likeCount - 1);
@@ -412,7 +499,7 @@ const socialSlice = createSlice({
       // Comment on Post
       .addCase(commentOnPost.fulfilled, (state, action) => {
         const { postId, comment } = action.payload;
-        const post = state.feed.posts.find(p => p.id === postId);
+        const post = state.feed.posts.find((p) => p.id === postId);
         if (post) {
           post.comments.push(comment);
           post.commentCount += 1;
@@ -506,19 +593,53 @@ const socialSlice = createSlice({
       // Mark Notification as Read
       .addCase(markNotificationAsRead.fulfilled, (state, action) => {
         const notificationId = action.payload;
-        const notification = state.notifications.list.find(n => n.id === notificationId);
+        const notification = state.notifications.list.find((n) => n.id === notificationId);
         if (notification && !notification.isRead) {
           notification.isRead = true;
           state.notifications.unreadCount = Math.max(0, state.notifications.unreadCount - 1);
         }
       })
 
-      // Mark All Notifications as Read
-      .addCase(markAllNotificationsAsRead.fulfilled, (state) => {
-        state.notifications.list.forEach(notification => {
-          notification.isRead = true;
-        });
-        state.notifications.unreadCount = 0;
+      // Follow User
+      .addCase(followUser.fulfilled, (state, action) => {
+        const userId = action.payload;
+        // Update was already handled optimistically in reducer
+      })
+      .addCase(followUser.rejected, (state, action) => {
+        // Revert optimistic update on failure
+        state.userConnections.following = state.userConnections.following.filter(
+          (user) => user.id !== action.meta.arg,
+        );
+        state.userConnections.followingCount = Math.max(
+          0,
+          (state.userConnections.followingCount || 0) - 1,
+        );
+      })
+
+      // Unfollow User
+      .addCase(unfollowUser.fulfilled, (state, action) => {
+        const userId = action.payload;
+        // Update was already handled optimistically in reducer
+      })
+      .addCase(unfollowUser.rejected, (state, action) => {
+        // Revert optimistic update on failure
+        state.userConnections.following.push({ id: action.meta.arg });
+        state.userConnections.followingCount = (state.userConnections.followingCount || 0) + 1;
+      })
+
+      // Load User Followers
+      .addCase(loadUserFollowers.fulfilled, (state, action) => {
+        state.userConnections.followers = action.payload;
+      })
+
+      // Load User Following
+      .addCase(loadUserFollowing.fulfilled, (state, action) => {
+        state.userConnections.following = action.payload;
+      })
+
+      // Search Users
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        // Could store search results for caching
       });
   },
 });
@@ -542,6 +663,7 @@ export const {
   setFeedLoading,
   setFriendsActivityLoading,
   setNotificationsLoading,
+  updateUserConnections,
 } = socialSlice.actions;
 
 export default socialSlice.reducer;

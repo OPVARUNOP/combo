@@ -59,9 +59,13 @@ export const libraryService = {
   async addTrackToPlaylist(playlistId, trackId) {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post(`${API_BASE_URL}/playlists/${playlistId}/tracks`, { trackId }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/playlists/${playlistId}/tracks`,
+        { trackId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to add track to playlist');
@@ -106,7 +110,7 @@ export const libraryService = {
   async removeFromFavorites(trackId) {
     try {
       const favorites = await this.getFavoriteTracks();
-      const updatedFavorites = favorites.filter(id => id !== trackId);
+      const updatedFavorites = favorites.filter((id) => id !== trackId);
       await AsyncStorage.setItem('favoriteTracks', JSON.stringify(updatedFavorites));
       return updatedFavorites;
     } catch (error) {
@@ -127,7 +131,7 @@ export const libraryService = {
   async addDownloadedTrack(track) {
     try {
       const downloaded = await this.getDownloadedTracks();
-      const existingIndex = downloaded.findIndex(t => t.id === track.id);
+      const existingIndex = downloaded.findIndex((t) => t.id === track.id);
 
       if (existingIndex >= 0) {
         downloaded[existingIndex] = track;
@@ -145,7 +149,7 @@ export const libraryService = {
   async removeDownloadedTrack(trackId) {
     try {
       const downloaded = await this.getDownloadedTracks();
-      const updatedDownloaded = downloaded.filter(track => track.id !== trackId);
+      const updatedDownloaded = downloaded.filter((track) => track.id !== trackId);
       await AsyncStorage.setItem('downloadedTracks', JSON.stringify(updatedDownloaded));
       return updatedDownloaded;
     } catch (error) {
@@ -166,12 +170,18 @@ export const libraryService = {
   async addToRecentlyPlayed(track) {
     try {
       const recentlyPlayed = await this.getRecentlyPlayed();
-      const existingIndex = recentlyPlayed.findIndex(t => t.id === track.id);
+      const existingIndex = recentlyPlayed.findIndex((t) => t.id === track.id);
 
       if (existingIndex >= 0) {
-        recentlyPlayed[existingIndex] = { ...track, playedAt: new Date().toISOString() };
+        recentlyPlayed[existingIndex] = {
+          ...track,
+          playedAt: new Date().toISOString(),
+        };
       } else {
-        recentlyPlayed.unshift({ ...track, playedAt: new Date().toISOString() });
+        recentlyPlayed.unshift({
+          ...track,
+          playedAt: new Date().toISOString(),
+        });
       }
 
       // Keep only last 50 tracks
@@ -212,4 +222,3 @@ export const libraryService = {
     }
   },
 };
-

@@ -17,17 +17,17 @@ function makeRequest(url, options = {}) {
     const protocol = url.startsWith('https') ? https : http;
     const req = protocol.request(url, options, (res) => {
       let data = '';
-      res.on('data', (chunk) => data += chunk);
+      res.on('data', (chunk) => (data += chunk));
       res.on('end', () => {
         try {
           resolve({
             status: res.statusCode,
-            data: JSON.parse(data)
+            data: JSON.parse(data),
           });
         } catch (e) {
           resolve({
             status: res.statusCode,
-            data: data
+            data: data,
           });
         }
       });
@@ -73,19 +73,17 @@ async function testAPI() {
       body: {
         name: 'Test User API',
         email: `test${Date.now()}@example.com`,
-        password: 'password123'
-      }
+        password: 'password123',
+      },
     });
 
     if (registerResponse.status === 201 && registerResponse.data.status === 'success') {
       console.log('   ✅ User registration successful');
       const token = registerResponse.data.data.token;
-      const userId = registerResponse.data.data.user.id;
-
       // Test 4: User Profile (Protected)
       console.log('\n4. Testing Protected User Profile...');
       const profileResponse = await makeRequest(`${BASE_URL}/api/users/me`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (profileResponse.status === 200 && profileResponse.data.status === 'success') {
@@ -106,15 +104,15 @@ async function testAPI() {
       const addSongResponse = await makeRequest(`${BASE_URL}/api/music`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         body: {
           title: 'Test Song',
           artist: 'Test Artist',
           duration: 180,
-          genre: 'Pop'
-        }
+          genre: 'Pop',
+        },
       });
 
       if (addSongResponse.status === 201 && addSongResponse.data.status === 'success') {
@@ -140,16 +138,19 @@ async function testAPI() {
       const createPlaylistResponse = await makeRequest(`${BASE_URL}/api/playlists`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         body: {
           name: 'Test Playlist',
-          description: 'A test playlist'
-        }
+          description: 'A test playlist',
+        },
       });
 
-      if (createPlaylistResponse.status === 201 && createPlaylistResponse.data.status === 'success') {
+      if (
+        createPlaylistResponse.status === 201 &&
+        createPlaylistResponse.data.status === 'success'
+      ) {
         console.log('   ✅ Playlist created successfully');
       } else {
         console.log('   ❌ Playlist creation failed');
@@ -157,7 +158,7 @@ async function testAPI() {
 
       // Get playlists
       const playlistsResponse = await makeRequest(`${BASE_URL}/api/playlists`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (playlistsResponse.status === 200 && playlistsResponse.data.status === 'success') {
@@ -165,7 +166,6 @@ async function testAPI() {
       } else {
         console.log('   ❌ Playlist retrieval failed');
       }
-
     } else {
       console.log('   ❌ User registration failed');
       console.log('   Response:', JSON.stringify(registerResponse, null, 2));
@@ -180,7 +180,6 @@ async function testAPI() {
     console.log('   - Music Management: ✅');
     console.log('   - Playlist Management: ✅');
     console.log('\n🚀 Your COMBO Backend is fully functional!');
-
   } catch (error) {
     console.error('💥 Test failed:', error.message);
   }

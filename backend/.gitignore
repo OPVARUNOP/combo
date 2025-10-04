@@ -24,9 +24,6 @@ firebase-credentials.json
 firebase/
 .firebaserc
 
-# Google Cloud credentials
-gcp-credentials.json
-
 # Logs
 logs
 *.log

@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    
+    "files": {
+      ".indexOn": ["owner", "createdAt"],
+      "$fileId": {
+        ".validate": "newData.hasChildren(['url', 'key', 'owner', 'createdAt'])",
+        "url": {
+          ".validate": "newData.isString() && newData.val().matches('^https?://')"
+        },
+        "key": {
+          ".validate": "newData.isString()"
+        },
+        "owner": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": true
+        }
+      }
+    },
+    
+    "user_files": {
+      "$userId": {
+        ".validate": "$userId === auth.uid",
+        "$fileId": {
+          ".validate": "root.child('files').child($fileId).child('owner').val() === auth.uid"
+        }
+      }
+    }
+  }
+}

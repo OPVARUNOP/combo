@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  PanGestureHandler,
-  TouchableOpacity,
-} from 'react-native';
+import { View, StyleSheet, PanGestureHandler, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedGestureHandler,
   useAnimatedStyle,
@@ -73,15 +68,11 @@ const ProgressBar = ({
       {showTime && (
         <View style={styles.timeContainer}>
           <TouchableOpacity style={styles.timeButton}>
-            <Text style={styles.timeText}>
-              {formatTime(progress)}
-            </Text>
+            <Text style={styles.timeText}>{formatTime(progress)}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.timeButton}>
-            <Text style={styles.timeText}>
-              {formatTime(duration)}
-            </Text>
+            <Text style={styles.timeText}>{formatTime(duration)}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -105,52 +96,39 @@ const ProgressBar = ({
 };
 
 const styles = StyleSheet.create({
+  background: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    width: '100%',
+  },
+  buffered: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    left: 0,
+    position: 'absolute',
+    top: 0,
+  },
   container: {
     width: '100%',
   },
-  timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
-  timeButton: {
-    padding: spacing.xs,
-  },
-  timeText: {
-    color: colors.text.secondary,
-    fontSize: 12,
-    fontFamily: 'monospace',
+  progress: {
+    alignItems: 'flex-end',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    top: 0,
   },
   progressBar: {
     position: 'relative',
     width: '100%',
   },
-  background: {
-    width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
-  },
-  buffered: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 2,
-  },
-  progress: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    backgroundColor: colors.primary,
-    borderRadius: 2,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
   thumb: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
     backgroundColor: colors.primary,
+    borderRadius: 6,
+    elevation: 4,
+    height: 12,
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
@@ -158,7 +136,20 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 4,
+    width: 12,
+  },
+  timeButton: {
+    padding: spacing.xs,
+  },
+  timeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  timeText: {
+    color: colors.text.secondary,
+    fontFamily: 'monospace',
+    fontSize: 12,
   },
 });
 

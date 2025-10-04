@@ -117,7 +117,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
           return (
             <TouchableOpacity
               key={route.key}
-              accessibilityRole="button"
+              accessibilityRole='button'
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               testID={options.tabBarTestID}
@@ -134,11 +134,13 @@ const TabBar = ({ state, descriptors, navigation }) => {
                     color={isFocused ? colors.primary : colors.textSecondary}
                   />
                 </RNAnimated.View>
-                <Animated.Text 
+                <Animated.Text
                   style={[
                     styles.label,
                     labelAnimatedStyle,
-                    { color: isFocused ? colors.primary : colors.textSecondary }
+                    {
+                      color: isFocused ? colors.primary : colors.textSecondary,
+                    },
                   ]}
                   numberOfLines={1}
                 >
@@ -157,37 +159,34 @@ const TabBar = ({ state, descriptors, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray800,
-    ...shadows.sm,
-  },
   background: {
+    backgroundColor: colors.surface,
     flexDirection: 'row',
     height: 64,
-    backgroundColor: colors.surface,
     paddingBottom: 4,
   },
-  tab: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing[2],
-  },
-  tabContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    width: '100%',
+  container: {
+    backgroundColor: colors.surface,
+    borderTopColor: colors.gray800,
+    borderTopWidth: 1,
+    ...shadows.sm,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
     marginBottom: 2,
+    width: 40,
+  },
+  indicator: {
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+    bottom: 0,
+    height: 4,
+    left: 0,
+    position: 'absolute',
+    ...shadows.sm,
   },
   label: {
     fontSize: typography.fontSize.xs,
@@ -195,14 +194,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
     textAlign: 'center',
   },
-  indicator: {
-    position: 'absolute',
-    height: 4,
-    backgroundColor: colors.primary,
-    bottom: 0,
-    left: 0,
-    borderRadius: 2,
-    ...shadows.sm,
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: spacing[2],
+  },
+  tabContent: {
+    alignItems: 'center',
+    height: '100%',
+    justifyContent: 'center',
+    width: '100%',
   },
 });
 

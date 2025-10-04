@@ -174,8 +174,8 @@ const SocialScreen = () => {
     try {
       await socialAPI.followUser(userId);
       // Update local state
-      const updatedSuggestedUsers = suggestedUsers.map(user =>
-        user.id === userId ? { ...user, isFollowing: true } : user
+      const updatedSuggestedUsers = suggestedUsers.map((user) =>
+        user.id === userId ? { ...user, isFollowing: true } : user,
       );
       setSuggestedUsers(updatedSuggestedUsers);
     } catch (error) {
@@ -197,12 +197,7 @@ const SocialScreen = () => {
     const renderContent = () => {
       switch (item.type) {
         case 'track':
-          return (
-            <TrackCard
-              track={item.content}
-              onPress={() => handleTrackPress(item.content)}
-            />
-          );
+          return <TrackCard track={item.content} onPress={() => handleTrackPress(item.content)} />;
         case 'playlist':
           return (
             <PlaylistCard
@@ -211,18 +206,10 @@ const SocialScreen = () => {
             />
           );
         case 'album':
-          return (
-            <AlbumCard
-              album={item.content}
-              onPress={() => handleAlbumPress(item.content)}
-            />
-          );
+          return <AlbumCard album={item.content} onPress={() => handleAlbumPress(item.content)} />;
         case 'artist':
           return (
-            <ArtistCard
-              artist={item.content}
-              onPress={() => handleArtistPress(item.content)}
-            />
+            <ArtistCard artist={item.content} onPress={() => handleArtistPress(item.content)} />
           );
         default:
           return null;
@@ -232,17 +219,12 @@ const SocialScreen = () => {
     return (
       <View style={styles.feedItem}>
         <View style={styles.feedHeader}>
-          <TouchableOpacity
-            style={styles.userInfo}
-            onPress={() => handleUserPress(item.user)}
-          >
+          <TouchableOpacity style={styles.userInfo} onPress={() => handleUserPress(item.user)}>
             <FastImage source={{ uri: item.user.avatar }} style={styles.userAvatar} />
             <View>
               <Text style={styles.userName}>{item.user.name}</Text>
               <Text style={styles.activityText}>{item.activity}</Text>
-              <Text style={styles.timestamp}>
-                {new Date(item.timestamp).toLocaleDateString()}
-              </Text>
+              <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleDateString()}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -252,50 +234,34 @@ const SocialScreen = () => {
   };
 
   const renderFriendsActivityItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.activityItem}
-      onPress={() => handleUserPress(item.user)}
-    >
+    <TouchableOpacity style={styles.activityItem} onPress={() => handleUserPress(item.user)}>
       <FastImage source={{ uri: item.user.avatar }} style={styles.activityAvatar} />
       <View style={styles.activityContent}>
         <Text style={styles.activityUserName}>{item.user.name}</Text>
         <Text style={styles.activityText}>{item.activity}</Text>
-        <Text style={styles.activityTime}>
-          {new Date(item.timestamp).toLocaleTimeString()}
-        </Text>
+        <Text style={styles.activityTime}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
       </View>
     </TouchableOpacity>
   );
 
   const renderSuggestedUserItem = ({ item }) => (
     <View style={styles.suggestedUserItem}>
-      <TouchableOpacity
-        style={styles.suggestedUserInfo}
-        onPress={() => handleUserPress(item)}
-      >
+      <TouchableOpacity style={styles.suggestedUserInfo} onPress={() => handleUserPress(item)}>
         <FastImage source={{ uri: item.avatar }} style={styles.suggestedUserAvatar} />
         <View style={styles.suggestedUserDetails}>
           <Text style={styles.suggestedUserName}>{item.name}</Text>
           <Text style={styles.suggestedUserUsername}>@{item.username}</Text>
           {item.mutualFriends > 0 && (
-            <Text style={styles.mutualFriendsText}>
-              {item.mutualFriends} mutual friends
-            </Text>
+            <Text style={styles.mutualFriendsText}>{item.mutualFriends} mutual friends</Text>
           )}
         </View>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[
-          styles.followButton,
-          item.isFollowing && styles.followingButton
-        ]}
+        style={[styles.followButton, item.isFollowing && styles.followingButton]}
         onPress={() => handleFollowUser(item.id)}
         disabled={item.isFollowing}
       >
-        <Text style={[
-          styles.followButtonText,
-          item.isFollowing && styles.followingButtonText
-        ]}>
+        <Text style={[styles.followButtonText, item.isFollowing && styles.followingButtonText]}>
           {item.isFollowing ? 'Following' : 'Follow'}
         </Text>
       </TouchableOpacity>
@@ -305,11 +271,8 @@ const SocialScreen = () => {
   const SocialHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => navigation.openDrawer()}
-        >
-          <Ionicons name="menu" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+          <Ionicons name='menu' size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -318,17 +281,14 @@ const SocialScreen = () => {
       </View>
 
       <View style={styles.headerRight}>
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={() => navigation.navigate('Search')}
-        >
-          <Ionicons name="search" size={20} color={colors.text} />
+        <TouchableOpacity style={styles.searchButton} onPress={() => navigation.navigate('Search')}>
+          <Ionicons name='search' size={20} color={colors.text} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('InviteFriends')}
         >
-          <Ionicons name="person-add" size={20} color={colors.text} />
+          <Ionicons name='person-add' size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -361,7 +321,7 @@ const SocialScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size='large' />
       </View>
     );
   }
@@ -370,14 +330,9 @@ const SocialScreen = () => {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradientBackground}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradientBackground}>
         {/* Header */}
         <SocialHeader />
 
@@ -388,7 +343,7 @@ const SocialScreen = () => {
         {friendsActivity.length > 0 && (
           <View style={styles.section}>
             <SectionHeader
-              title="Friends Activity"
+              title='Friends Activity'
               onSeeAll={() => navigation.navigate('FriendsActivity')}
             />
             <FlatList
@@ -404,10 +359,7 @@ const SocialScreen = () => {
         {/* Social Feed */}
         {feed.length > 0 && (
           <View style={styles.section}>
-            <SectionHeader
-              title="Feed"
-              onSeeAll={() => navigation.navigate('FullFeed')}
-            />
+            <SectionHeader title='Feed' onSeeAll={() => navigation.navigate('FullFeed')} />
             <FlatList
               data={feed}
               renderItem={renderFeedItem}
@@ -422,7 +374,7 @@ const SocialScreen = () => {
         {suggestedUsers.length > 0 && (
           <View style={styles.section}>
             <SectionHeader
-              title="People You May Know"
+              title='People You May Know'
               onSeeAll={() => navigation.navigate('DiscoverPeople')}
             />
             <FlatList
@@ -440,16 +392,13 @@ const SocialScreen = () => {
         {sharedContent.length > 0 && (
           <View style={styles.section}>
             <SectionHeader
-              title="Shared with You"
+              title='Shared with You'
               onSeeAll={() => navigation.navigate('SharedContent')}
             />
             <FlatList
               data={sharedContent}
               renderItem={({ item }) => (
-                <TrackCard
-                  track={item}
-                  onPress={() => handleTrackPress(item)}
-                />
+                <TrackCard track={item} onPress={() => handleTrackPress(item)} />
               )}
               keyExtractor={(item) => item.id}
               horizontal
@@ -463,7 +412,7 @@ const SocialScreen = () => {
         {(followers.length > 0 || following.length > 0) && (
           <View style={styles.section}>
             <SectionHeader
-              title="Connections"
+              title='Connections'
               onSeeAll={() => navigation.navigate('Connections')}
             />
             <View style={styles.connectionsContainer}>
@@ -514,23 +463,23 @@ const SocialScreen = () => {
 
         {/* Empty State */}
         {feed.length === 0 &&
-         friendsActivity.length === 0 &&
-         suggestedUsers.length === 0 &&
-         sharedContent.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="people-outline" size={64} color={colors.textSecondary} />
-            <Text style={styles.emptyStateTitle}>Connect with friends</Text>
-            <Text style={styles.emptyStateSubtitle}>
-              Follow people to see their music activity and share your favorites
-            </Text>
-            <TouchableOpacity
-              style={styles.emptyStateButton}
-              onPress={() => navigation.navigate('InviteFriends')}
-            >
-              <Text style={styles.emptyStateButtonText}>Find Friends</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          friendsActivity.length === 0 &&
+          suggestedUsers.length === 0 &&
+          sharedContent.length === 0 && (
+            <View style={styles.emptyState}>
+              <Ionicons name='people-outline' size={64} color={colors.textSecondary} />
+              <Text style={styles.emptyStateTitle}>Connect with friends</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Follow people to see their music activity and share your favorites
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyStateButton}
+                onPress={() => navigation.navigate('InviteFriends')}
+              >
+                <Text style={styles.emptyStateButtonText}>Find Friends</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacing} />
@@ -540,33 +489,154 @@ const SocialScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  activityAvatar: {
+    borderRadius: radius.full,
+    height: 50,
+    marginRight: spacing.md,
+    width: 50,
+  },
+  activityContent: {
     flex: 1,
+  },
+  activityItem: {
+    alignItems: 'center',
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  activityText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginBottom: 2,
+  },
+  activityTime: {
+    color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
+  },
+  activityUserName: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  addButton: {
+    padding: spacing.sm,
+  },
+  bottomSpacing: {
+    height: 100,
+  },
+  connectionAvatar: {
+    borderRadius: radius.full,
+    height: 60,
+    marginBottom: spacing.sm,
+    width: 60,
+  },
+  connectionGroup: {
+    marginBottom: spacing.lg,
+  },
+  connectionItem: {
+    alignItems: 'center',
+    marginRight: spacing.lg,
+    minWidth: 80,
+  },
+  connectionName: {
+    color: colors.text,
+    fontSize: typography.fontSize.sm,
+    textAlign: 'center',
+  },
+  connectionTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+  },
+  connectionsContainer: {
+    paddingHorizontal: spacing.lg,
+  },
+  container: {
     backgroundColor: colors.background,
+    flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing['4xl'],
+    paddingTop: spacing['4xl'],
+  },
+  emptyStateButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  emptyStateButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+  },
+  emptyStateSubtitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 24,
+    marginBottom: spacing.xl,
+    textAlign: 'center',
+  },
+  emptyStateTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.xl,
+    textAlign: 'center',
+  },
+  feedHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+  },
+  feedItem: {
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  followButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  followButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.sm,
+    fontWeight: '600',
+  },
+  followingButton: {
+    backgroundColor: colors.white10,
+  },
+  followingButtonText: {
+    color: colors.text,
   },
   gradientBackground: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing['3xl'],
-    paddingBottom: spacing.lg,
+  },
+  headerCenter: {
+    alignItems: 'center',
+    flex: 2,
   },
   headerLeft: {
     flex: 1,
-  },
-  headerCenter: {
-    flex: 2,
-    alignItems: 'center',
   },
   headerRight: {
     flex: 1,
@@ -574,234 +644,113 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   headerTitle: {
+    color: colors.text,
     fontSize: typography.fontSize['2xl'],
     fontWeight: '700',
-    color: colors.text,
     letterSpacing: 2,
-  },
-  menuButton: {
-    padding: spacing.sm,
-  },
-  searchButton: {
-    padding: spacing.sm,
-    marginRight: spacing.sm,
-  },
-  addButton: {
-    padding: spacing.sm,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing['2xl'],
-  },
-  statItem: {
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white10,
-    minWidth: 80,
-  },
-  statNumber: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  section: {
-    marginBottom: spacing['2xl'],
   },
   horizontalList: {
     paddingHorizontal: spacing.lg,
   },
-  feedItem: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
-  },
-  feedHeader: {
-    flexDirection: 'row',
+  loadingContainer: {
     alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: colors.background,
     flex: 1,
+    justifyContent: 'center',
   },
-  userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    marginRight: spacing.md,
+  menuButton: {
+    padding: spacing.sm,
   },
-  userName: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  activityText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: 2,
-  },
-  timestamp: {
-    fontSize: typography.fontSize.xs,
+  mutualFriendsText: {
     color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
   },
-  activityItem: {
-    flexDirection: 'row',
+  searchButton: {
+    marginRight: spacing.sm,
+    padding: spacing.sm,
+  },
+  section: {
+    marginBottom: spacing['2xl'],
+  },
+  statItem: {
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
-  },
-  activityAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: radius.full,
-    marginRight: spacing.md,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityUserName: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  activityTime: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textDisabled,
-  },
-  suggestedUserItem: {
     backgroundColor: colors.white10,
     borderRadius: radius.lg,
+    minWidth: 80,
     padding: spacing.md,
-    marginHorizontal: spacing.lg,
-    marginRight: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  suggestedUserInfo: {
+  statLabel: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    fontWeight: '500',
+  },
+  statNumber: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    justifyContent: 'space-around',
+    marginBottom: spacing['2xl'],
+    paddingHorizontal: spacing.lg,
   },
   suggestedUserAvatar: {
-    width: 50,
-    height: 50,
     borderRadius: radius.full,
+    height: 50,
     marginRight: spacing.md,
+    width: 50,
   },
   suggestedUserDetails: {
     flex: 1,
   },
+  suggestedUserInfo: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  suggestedUserItem: {
+    alignItems: 'center',
+    backgroundColor: colors.white10,
+    borderRadius: radius.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: spacing.lg,
+    marginRight: spacing.md,
+    padding: spacing.md,
+  },
   suggestedUserName: {
+    color: colors.text,
     fontSize: typography.fontSize.base,
     fontWeight: '600',
-    color: colors.text,
     marginBottom: 2,
   },
   suggestedUserUsername: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
     marginBottom: 2,
   },
-  mutualFriendsText: {
-    fontSize: typography.fontSize.xs,
+  timestamp: {
     color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
   },
-  followButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.lg,
-  },
-  followingButton: {
-    backgroundColor: colors.white10,
-  },
-  followButtonText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  followingButtonText: {
-    color: colors.text,
-  },
-  connectionsContainer: {
-    paddingHorizontal: spacing.lg,
-  },
-  connectionGroup: {
-    marginBottom: spacing.lg,
-  },
-  connectionTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  connectionItem: {
-    alignItems: 'center',
-    marginRight: spacing.lg,
-    minWidth: 80,
-  },
-  connectionAvatar: {
-    width: 60,
-    height: 60,
+  userAvatar: {
     borderRadius: radius.full,
-    marginBottom: spacing.sm,
+    height: 40,
+    marginRight: spacing.md,
+    width: 40,
   },
-  connectionName: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
+  userInfo: {
     alignItems: 'center',
-    paddingHorizontal: spacing['4xl'],
-    paddingTop: spacing['4xl'],
+    flexDirection: 'row',
+    flex: 1,
   },
-  emptyStateTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: '600',
+  userName: {
     color: colors.text,
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  emptyStateSubtitle: {
     fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: spacing.xl,
-  },
-  emptyStateButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: radius.lg,
-  },
-  emptyStateButtonText: {
-    fontSize: typography.fontSize.base,
-    color: colors.white,
     fontWeight: '600',
-  },
-  bottomSpacing: {
-    height: 100,
+    marginBottom: 2,
   },
 });
 

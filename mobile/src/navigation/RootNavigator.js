@@ -39,7 +39,7 @@ const Tab = createBottomTabNavigator();
 
 // Main Tab Navigator
 const MainTabNavigator = () => {
-  const { isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
     <Tab.Navigator
@@ -73,11 +73,11 @@ const MainTabNavigator = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="Library" component={LibraryScreen} />
-      <Tab.Screen name="Social" component={SocialScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name='Home' component={HomeScreen} />
+      <Tab.Screen name='Search' component={SearchScreen} />
+      <Tab.Screen name='Library' component={LibraryScreen} />
+      <Tab.Screen name='Social' component={SocialScreen} />
+      <Tab.Screen name='Profile' component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
@@ -91,9 +91,9 @@ const AuthStackNavigator = () => {
         cardStyle: { backgroundColor: colors.background },
       }}
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name='Login' component={LoginScreen} />
+      <Stack.Screen name='Register' component={RegisterScreen} />
+      <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
 };
@@ -109,11 +109,11 @@ const MainStackNavigator = () => {
       }}
     >
       {/* Main Tab Navigator */}
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen name='MainTabs' component={MainTabNavigator} />
 
       {/* Player Screen (Full Screen Modal) */}
       <Stack.Screen
-        name="Player"
+        name='Player'
         component={PlayerScreen}
         options={{
           presentation: 'fullScreenModal',
@@ -122,27 +122,34 @@ const MainStackNavigator = () => {
       />
 
       {/* Secondary Screens */}
-      <Stack.Screen name="Playlist" component={PlaylistScreen} />
-      <Stack.Screen name="Album" component={AlbumScreen} />
-      <Stack.Screen name="Artist" component={ArtistScreen} />
-      <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-      <Stack.Screen name="Help" component={HelpScreen} />
+      <Stack.Screen name='Playlist' component={PlaylistScreen} />
+      <Stack.Screen name='Album' component={AlbumScreen} />
+      <Stack.Screen name='Artist' component={ArtistScreen} />
+      <Stack.Screen name='UserProfile' component={UserProfileScreen} />
+      <Stack.Screen name='Help' component={HelpScreen} />
 
       {/* Settings and other screens */}
-      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name='Settings' component={SettingsScreen} />
     </Stack.Navigator>
   );
 };
 
 // Root Navigator
 const RootNavigator = () => {
-  const { isAuthenticated, isInitialized } = useSelector(state => state.auth);
+  const { isAuthenticated, isInitialized } = useSelector((state) => state.auth);
 
   if (!isInitialized) {
     // Show loading screen while checking authentication
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F0F23' }}>
-        <LoadingSpinner size="large" color="#3B82F6" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#0F0F23',
+        }}
+      >
+        <LoadingSpinner size='large' color='#3B82F6' />
       </View>
     );
   }

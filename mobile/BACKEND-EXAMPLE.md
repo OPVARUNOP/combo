@@ -5,6 +5,7 @@
 This is a minimal Node.js/Express backend that integrates with Jamendo API.
 
 ### **backend/server.js**
+
 ```javascript
 const express = require('express');
 const axios = require('axios');
@@ -29,8 +30,8 @@ const jamendoRequest = async (endpoint, params = {}) => {
       params: {
         client_id: JAMENDO_API_KEY,
         format: 'json',
-        ...params
-      }
+        ...params,
+      },
     });
     return response.data;
   } catch (error) {
@@ -49,7 +50,7 @@ const formatJamendoTrack = (jamendoTrack) => ({
   genre: jamendoTrack.genre,
   artwork_url: jamendoTrack.album_image,
   audio_url_medium: jamendoTrack.audio,
-  release_date: jamendoTrack.releasedate
+  release_date: jamendoTrack.releasedate,
 });
 
 // Format Jamendo album for mobile app
@@ -59,7 +60,7 @@ const formatJamendoAlbum = (jamendoAlbum) => ({
   artist: jamendoAlbum.artist_name,
   artwork_url: jamendoAlbum.image,
   release_date: jamendoAlbum.releasedate,
-  total_tracks: jamendoAlbum.tracks_count
+  total_tracks: jamendoAlbum.tracks_count,
 });
 
 // Format Jamendo artist for mobile app
@@ -67,7 +68,7 @@ const formatJamendoArtist = (jamendoArtist) => ({
   id: jamendoArtist.id.toString(),
   name: jamendoArtist.name,
   profile_image_url: jamendoArtist.image,
-  verified: false // Jamendo doesn't provide verification status
+  verified: false, // Jamendo doesn't provide verification status
 });
 
 // API Routes
@@ -85,7 +86,7 @@ app.get('/search', async (req, res) => {
         jamendoData = await jamendoRequest('/tracks/', {
           search: q,
           limit,
-          offset
+          offset,
         });
         formattedResults = jamendoData.results.map(formatJamendoTrack);
         break;
@@ -94,7 +95,7 @@ app.get('/search', async (req, res) => {
         jamendoData = await jamendoRequest('/albums/', {
           search: q,
           limit,
-          offset
+          offset,
         });
         formattedResults = jamendoData.results.map(formatJamendoAlbum);
         break;
@@ -103,7 +104,7 @@ app.get('/search', async (req, res) => {
         jamendoData = await jamendoRequest('/artists/', {
           search: q,
           limit,
-          offset
+          offset,
         });
         formattedResults = jamendoData.results.map(formatJamendoArtist);
         break;
@@ -117,8 +118,8 @@ app.get('/search', async (req, res) => {
         [type === 'track' ? 'tracks' : type === 'album' ? 'albums' : 'artists']: formattedResults,
         total: jamendoData.headers?.results_count || formattedResults.length,
         query: q,
-        type
-      }
+        type,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: 'Search failed', error: error.message });
@@ -158,8 +159,8 @@ app.get('/tracks/:id/stream', async (req, res) => {
         stream_url: track.audio,
         title: track.name,
         artist: track.artist_name,
-        duration: track.duration
-      }
+        duration: track.duration,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get stream URL', error: error.message });
@@ -184,8 +185,8 @@ app.get('/albums/:id', async (req, res) => {
 
     res.json({
       data: {
-        album: { ...album, tracks }
-      }
+        album: { ...album, tracks },
+      },
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to get album', error: error.message });
@@ -215,7 +216,7 @@ app.get('/tracks/trending', async (req, res) => {
     const { limit = 20 } = req.query;
     const jamendoData = await jamendoRequest('/tracks/', {
       orderby: 'popularity_total',
-      limit
+      limit,
     });
 
     const tracks = jamendoData.results.map(formatJamendoTrack);
@@ -231,7 +232,7 @@ app.get('/albums/new-releases', async (req, res) => {
     const { limit = 20 } = req.query;
     const jamendoData = await jamendoRequest('/albums/', {
       orderby: 'releasedate DESC',
-      limit
+      limit,
     });
 
     const albums = jamendoData.results.map(formatJamendoAlbum);
@@ -246,7 +247,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'COMBO Backend is running',
-    jamendo_api_key: JAMENDO_API_KEY ? 'Configured' : 'Missing'
+    jamendo_api_key: JAMENDO_API_KEY ? 'Configured' : 'Missing',
   });
 });
 
@@ -255,7 +256,7 @@ app.use((error, req, res, next) => {
   console.error('Server Error:', error);
   res.status(500).json({
     message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined,
   });
 });
 
@@ -274,6 +275,7 @@ app.listen(PORT, () => {
 ```
 
 ### **backend/.env**
+
 ```env
 # Jamendo API Configuration
 JAMENDO_CLIENT_ID=your_jamendo_client_id_here
@@ -291,6 +293,7 @@ JWT_EXPIRES_IN=24h
 ```
 
 ### **backend/package.json**
+
 ```json
 {
   "name": "combo-backend",
@@ -321,12 +324,14 @@ JWT_EXPIRES_IN=24h
 ## 🚀 Quick Start
 
 ### **1. Setup:**
+
 ```bash
 cd backend
 npm install
 ```
 
 ### **2. Configure Environment:**
+
 ```bash
 # Copy .env.example to .env
 cp .env.example .env
@@ -336,11 +341,13 @@ nano .env
 ```
 
 ### **3. Start Server:**
+
 ```bash
 npm run dev
 ```
 
 ### **4. Test Endpoints:**
+
 ```bash
 # Health check
 curl http://localhost:3000/health
@@ -357,16 +364,16 @@ curl http://localhost:3000/tracks/12345/stream
 
 ## 📡 API Endpoints Summary
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Server health check |
-| `/search` | GET | Search tracks/albums/artists |
-| `/tracks/:id` | GET | Get track details |
-| `/tracks/:id/stream` | GET | Get streaming URL |
-| `/albums/:id` | GET | Get album details |
-| `/artists/:id` | GET | Get artist details |
-| `/tracks/trending` | GET | Get trending tracks |
-| `/albums/new-releases` | GET | Get new album releases |
+| Endpoint               | Method | Description                  |
+| ---------------------- | ------ | ---------------------------- |
+| `/health`              | GET    | Server health check          |
+| `/search`              | GET    | Search tracks/albums/artists |
+| `/tracks/:id`          | GET    | Get track details            |
+| `/tracks/:id/stream`   | GET    | Get streaming URL            |
+| `/albums/:id`          | GET    | Get album details            |
+| `/artists/:id`         | GET    | Get artist details           |
+| `/tracks/trending`     | GET    | Get trending tracks          |
+| `/albums/new-releases` | GET    | Get new album releases       |
 
 ## 🔄 Mobile App Integration
 

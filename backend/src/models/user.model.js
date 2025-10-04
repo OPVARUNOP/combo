@@ -1,117 +1,189 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const { toJSON, paginate } = require('./plugins');
-const { roles } = require('../config/roles');
+const { v4: uuidv4 } = require('uuid');
+const { db, isFirebaseInitialized } = require('../services/firebase');
+const logger = require('../config/logger');
 
-const userSchema = mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 8,
-      private: true, // used by the toJSON plugin
-    },
-    role: {
-      type: String,
-      enum: roles,
-      default: 'user',
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    profilePicture: {
-      type: String,
-      default: '',
-    },
-    preferences: {
-      theme: {
-        type: String,
-        enum: ['light', 'dark', 'system'],
-        default: 'system',
-      },
-      language: {
-        type: String,
-        default: 'en',
-      },
-      explicitContent: {
-        type: Boolean,
-        default: false,
-      },
-    },
-    likedSongs: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Music',
-      },
-    ],
-    followedArtists: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Artist',
-      },
-    ],
-    followedPlaylists: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'Playlist',
-      },
-    ],
-  },
-  {
-    timestamps: true,
+const COLLECTION_NAME = 'users';
+
+class User {
+  constructor(data = {}) {
+    this.id = data.id || uuidv4();
+    this.name = data.name || '';
+    this.email = data.email || '';
+    this.role = data.role || 'user';
+    this.isEmailVerified = data.isEmailVerified || false;
+    this.profilePicture = data.profilePicture || '';
+    this.preferences = {
+      theme: data.preferences?.theme || 'system',
+      language: data.preferences?.language || 'en',
+      explicitContent: data.preferences?.explicitContent || false,
+    };
+    this.likedSongs = data.likedSongs || [];
+    this.followedArtists = data.followedArtists || [];
+    this.followedPlaylists = data.followedPlaylists || [];
+    this.createdAt = data.createdAt || new Date().toISOString();
+    this.updatedAt = data.updatedAt || new Date().toISOString();
   }
-);
 
-// Add plugin that converts mongoose to JSON
-userSchema.plugin(toJSON);
-userSchema.plugin(paginate);
-
-/**
- * Check if email is taken
- * @param {string} email - The user's email
- * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
- * @returns {Promise<boolean>}
- */
-userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
-  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
-  return !!user;
-};
-
-/**
- * Check if password matches the user's password
- * @param {string} password
- * @returns {Promise<boolean>}
- */
-userSchema.methods.isPasswordMatch = async function (password) {
-  const user = this;
-  return bcrypt.compare(password, user.password);
-};
-
-userSchema.pre('save', async function (next) {
-  const user = this;
-  if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8);
+  static get collection() {
+    if (!isFirebaseInitialized) {
+      throw new Error('Firebase is not initialized');
+    }
+    return db.collection(COLLECTION_NAME);
   }
-  next();
-});
 
-/**
- * @typedef User
- */
-const User = mongoose.model('User', userSchema);
+  /**
+   * Find a user by ID
+   * @param {string} id - User ID
+   * @returns {Promise<User|null>}
+   */
+  static async findById(id) {
+    try {
+      const doc = await this.collection.doc(id).get();
+      if (!doc.exists) return null;
+      return new User({ id: doc.id, ...doc.data() });
+    } catch (error) {
+      logger.error(`Error finding user by ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find a user by email
+   * @param {string} email - User email
+   * @returns {Promise<User|null>}
+   */
+  static async findOne(query) {
+    try {
+      const snapshot = await this.collection.where('email', '==', query.email).limit(1).get();
+
+      if (snapshot.empty) return null;
+
+      const doc = snapshot.docs[0];
+      return new User({ id: doc.id, ...doc.data() });
+    } catch (error) {
+      logger.error('Error finding user by email:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new user
+   * @param {Object} userData - User data
+   * @returns {Promise<User>}
+   */
+  static async create(userData) {
+    try {
+      const now = new Date().toISOString();
+      const user = new User({
+        ...userData,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      await this.collection.doc(user.id).set({
+        ...user.toJSON(),
+        id: undefined, // Don't store the id in the document
+      });
+
+      return user;
+    } catch (error) {
+      logger.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save user data
+   * @returns {Promise<User>}
+   */
+  async save() {
+    try {
+      this.updatedAt = new Date().toISOString();
+      await User.collection.doc(this.id).update({
+        ...this.toJSON(),
+        id: undefined, // Don't update the id
+      });
+      return this;
+    } catch (error) {
+      logger.error(`Error saving user ${this.id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if email is already in use
+   * @param {string} email - Email to check
+   * @param {string} [excludeUserId] - User ID to exclude from the check
+   * @returns {Promise<boolean>}
+   */
+  static async isEmailTaken(email, excludeUserId) {
+    try {
+      const snapshot = await this.collection.where('email', '==', email).get();
+
+      return (
+        !snapshot.empty &&
+        (excludeUserId ? snapshot.docs.some((doc) => doc.id !== excludeUserId) : true)
+      );
+    } catch (error) {
+      logger.error('Error checking if email is taken:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Convert user to JSON
+   * @returns {Object}
+   */
+  toJSON() {
+    const user = { ...this };
+    // Remove any sensitive data before sending to client
+    delete user.password;
+    return user;
+  }
+
+  /**
+   * Add a song to liked songs
+   * @param {string} songId - Song ID to add
+   * @returns {Promise<void>}
+   */
+  async addLikedSong(songId) {
+    if (!this.likedSongs.includes(songId)) {
+      this.likedSongs = [...this.likedSongs, songId];
+      await this.save();
+    }
+  }
+
+  /**
+   * Remove a song from liked songs
+   * @param {string} songId - Song ID to remove
+   * @returns {Promise<void>}
+   */
+  async removeLikedSong(songId) {
+    this.likedSongs = this.likedSongs.filter((id) => id !== songId);
+    await this.save();
+  }
+
+  /**
+   * Follow an artist
+   * @param {string} artistId - Artist ID to follow
+   * @returns {Promise<void>}
+   */
+  async followArtist(artistId) {
+    if (!this.followedArtists.includes(artistId)) {
+      this.followedArtists = [...this.followedArtists, artistId];
+      await this.save();
+    }
+  }
+
+  /**
+   * Unfollow an artist
+   * @param {string} artistId - Artist ID to unfollow
+   * @returns {Promise<void>}
+   */
+  async unfollowArtist(artistId) {
+    this.followedArtists = this.followedArtists.filter((id) => id !== artistId);
+    await this.save();
+  }
+}
 
 module.exports = User;

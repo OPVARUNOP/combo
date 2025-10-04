@@ -5,6 +5,7 @@
 Your PostgreSQL database should include these core tables:
 
 ### **tracks** table:
+
 ```sql
 CREATE TABLE tracks (
   id UUID PRIMARY KEY,
@@ -26,6 +27,7 @@ CREATE TABLE tracks (
 ```
 
 ### **albums** table:
+
 ```sql
 CREATE TABLE albums (
   id UUID PRIMARY KEY,
@@ -39,6 +41,7 @@ CREATE TABLE albums (
 ```
 
 ### **artists** table:
+
 ```sql
 CREATE TABLE artists (
   id UUID PRIMARY KEY,
@@ -87,16 +90,19 @@ combo-music/
 ## 🔄 Data Flow Implementation
 
 ### **1. Content Ingestion Process:**
+
 ```
 Music Files → License Verification → S3 Upload → Database Metadata → CDN Distribution
 ```
 
 ### **2. Streaming Process:**
+
 ```
 User Request → API → Database Lookup → S3 Pre-signed URL → Direct Stream → Analytics
 ```
 
 ### **3. Quality Selection Logic:**
+
 ```javascript
 // In your backend API
 const getStreamUrl = (trackId, quality = 'medium') => {
@@ -117,26 +123,33 @@ const getStreamUrl = (trackId, quality = 'medium') => {
 The mobile app expects these endpoints:
 
 ### **Track Streaming:**
+
 ```
 GET /tracks/{id}/stream
 ```
+
 **Response:** Pre-signed S3 URL for streaming
 
 ### **Track Details:**
+
 ```
 GET /tracks/{id}
 ```
+
 **Response:** Track metadata including S3 URLs
 
 ### **Search:**
+
 ```
 GET /search?q={query}&type=track
 ```
+
 **Response:** Tracks with metadata and streaming URLs
 
 ## 🔐 Security Implementation
 
 ### **S3 Pre-signed URLs:**
+
 ```javascript
 // Backend generates time-limited URLs
 const AWS = require('aws-sdk');
@@ -146,12 +159,13 @@ const getSignedUrl = (key, expires = 3600) => {
   return s3.getSignedUrl('getObject', {
     Bucket: 'combo-music',
     Key: key,
-    Expires: expires
+    Expires: expires,
   });
 };
 ```
 
 ### **CDN Configuration:**
+
 - Use CloudFront with S3 origin
 - Enable HTTPS and security headers
 - Set appropriate cache policies for audio files
@@ -159,16 +173,19 @@ const getSignedUrl = (key, expires = 3600) => {
 ## 📈 Scaling Considerations
 
 ### **Database Optimization:**
+
 - Index on frequently queried fields
 - Partition large tables by date
 - Use read replicas for heavy read loads
 
 ### **S3 Performance:**
+
 - Use CloudFront CDN for global distribution
 - Enable S3 Transfer Acceleration
 - Use appropriate storage classes (Standard, IA, Glacier)
 
 ### **Monitoring:**
+
 - Track S3 access patterns
 - Monitor database query performance
 - Set up alerts for storage costs
@@ -176,6 +193,7 @@ const getSignedUrl = (key, expires = 3600) => {
 ## 🚀 Deployment Steps
 
 ### **1. Infrastructure Setup:**
+
 ```bash
 # AWS CLI commands
 aws s3 mb s3://combo-music --region us-east-1
@@ -183,6 +201,7 @@ aws cloudfront create-distribution --distribution-config file://cf-config.json
 ```
 
 ### **2. Content Pipeline:**
+
 ```bash
 # Example upload script
 aws s3 cp /local/music/audio/ s3://combo-music/audio/ --recursive
@@ -190,6 +209,7 @@ aws s3 cp /local/music/artwork/ s3://combo-music/artwork/ --recursive
 ```
 
 ### **3. Database Population:**
+
 ```sql
 -- Bulk insert tracks
 COPY tracks FROM '/path/to/tracks.csv' WITH CSV HEADER;
@@ -203,15 +223,18 @@ UPDATE tracks SET
 ## 💰 Cost Estimation
 
 ### **S3 Storage Costs:**
+
 - Audio files: ~$0.023/GB/month
 - Artwork: ~$0.023/GB/month
 - Requests: $0.0004 per 1,000 requests
 
 ### **CloudFront CDN:**
+
 - Data transfer: $0.085/GB (first 10TB)
 - HTTPS requests: $0.01 per 10,000 requests
 
 ### **Database (RDS):**
+
 - PostgreSQL t3.micro: ~$15/month
 - Storage: $0.10/GB/month
 
@@ -223,7 +246,7 @@ The current mobile app implementation is ready for this architecture:
 ✅ **Audio Player** - Supports multiple quality streams  
 ✅ **Offline Support** - Downloads from S3 URLs  
 ✅ **CDN Integration** - Optimized for global delivery  
-✅ **Quality Selection** - UI for different audio qualities  
+✅ **Quality Selection** - UI for different audio qualities
 
 ## 🎯 Next Steps
 

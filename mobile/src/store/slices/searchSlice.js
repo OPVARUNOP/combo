@@ -6,80 +6,100 @@ export const searchTracks = createAsyncThunk(
   'search/searchTracks',
   async ({ query, filters = {}, limit = 20, offset = 0 }, { rejectWithValue }) => {
     try {
-      const response = await trackAPI.search(query, { ...filters, limit, offset });
+      const response = await trackAPI.search(query, {
+        ...filters,
+        limit,
+        offset,
+      });
       return {
         tracks: response.data.tracks || [],
         total: response.data.total || 0,
-        hasMore: (offset + limit) < (response.data.total || 0),
+        hasMore: offset + limit < (response.data.total || 0),
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search tracks');
     }
-  }
+  },
 );
 
 export const searchPlaylists = createAsyncThunk(
   'search/searchPlaylists',
   async ({ query, filters = {}, limit = 20, offset = 0 }, { rejectWithValue }) => {
     try {
-      const response = await playlistAPI.search(query, { ...filters, limit, offset });
+      const response = await playlistAPI.search(query, {
+        ...filters,
+        limit,
+        offset,
+      });
       return {
         playlists: response.data.playlists || [],
         total: response.data.total || 0,
-        hasMore: (offset + limit) < (response.data.total || 0),
+        hasMore: offset + limit < (response.data.total || 0),
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search playlists');
     }
-  }
+  },
 );
 
 export const searchAlbums = createAsyncThunk(
   'search/searchAlbums',
   async ({ query, filters = {}, limit = 20, offset = 0 }, { rejectWithValue }) => {
     try {
-      const response = await albumAPI.search(query, { ...filters, limit, offset });
+      const response = await albumAPI.search(query, {
+        ...filters,
+        limit,
+        offset,
+      });
       return {
         albums: response.data.albums || [],
         total: response.data.total || 0,
-        hasMore: (offset + limit) < (response.data.total || 0),
+        hasMore: offset + limit < (response.data.total || 0),
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search albums');
     }
-  }
+  },
 );
 
 export const searchArtists = createAsyncThunk(
   'search/searchArtists',
   async ({ query, filters = {}, limit = 20, offset = 0 }, { rejectWithValue }) => {
     try {
-      const response = await artistAPI.search(query, { ...filters, limit, offset });
+      const response = await artistAPI.search(query, {
+        ...filters,
+        limit,
+        offset,
+      });
       return {
         artists: response.data.artists || [],
         total: response.data.total || 0,
-        hasMore: (offset + limit) < (response.data.total || 0),
+        hasMore: offset + limit < (response.data.total || 0),
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search artists');
     }
-  }
+  },
 );
 
 export const searchUsers = createAsyncThunk(
   'search/searchUsers',
   async ({ query, filters = {}, limit = 20, offset = 0 }, { rejectWithValue }) => {
     try {
-      const response = await userAPI.search(query, { ...filters, limit, offset });
+      const response = await userAPI.search(query, {
+        ...filters,
+        limit,
+        offset,
+      });
       return {
         users: response.data.users || [],
         total: response.data.total || 0,
-        hasMore: (offset + limit) < (response.data.total || 0),
+        hasMore: offset + limit < (response.data.total || 0),
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search users');
     }
-  }
+  },
 );
 
 export const searchAll = createAsyncThunk(
@@ -95,7 +115,8 @@ export const searchAll = createAsyncThunk(
 
       return {
         tracks: tracksRes.status === 'fulfilled' ? tracksRes.value.data.tracks || [] : [],
-        playlists: playlistsRes.status === 'fulfilled' ? playlistsRes.value.data.playlists || [] : [],
+        playlists:
+          playlistsRes.status === 'fulfilled' ? playlistsRes.value.data.playlists || [] : [],
         albums: albumsRes.status === 'fulfilled' ? albumsRes.value.data.albums || [] : [],
         artists: artistsRes.status === 'fulfilled' ? artistsRes.value.data.artists || [] : [],
         error: tracksRes.status === 'rejected' ? tracksRes.reason : null,
@@ -103,7 +124,7 @@ export const searchAll = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Search failed');
     }
-  }
+  },
 );
 
 // Async thunks for search history and suggestions
@@ -112,12 +133,12 @@ export const addToSearchHistory = createAsyncThunk(
   async (query, { rejectWithValue, getState }) => {
     try {
       const state = getState().search;
-      const newHistory = [query, ...state.searchHistory.filter(h => h !== query)].slice(0, 50);
+      const newHistory = [query, ...state.searchHistory.filter((h) => h !== query)].slice(0, 50);
       return newHistory;
     } catch (error) {
       return rejectWithValue('Failed to add to search history');
     }
-  }
+  },
 );
 
 export const clearSearchHistory = createAsyncThunk(
@@ -128,7 +149,7 @@ export const clearSearchHistory = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to clear search history');
     }
-  }
+  },
 );
 
 export const getSearchSuggestions = createAsyncThunk(
@@ -138,7 +159,7 @@ export const getSearchSuggestions = createAsyncThunk(
       const response = await trackAPI.search(query, { limit: 5 });
       const tracks = response.data.tracks || [];
 
-      const suggestions = tracks.map(track => ({
+      const suggestions = tracks.map((track) => ({
         id: track.id,
         type: 'track',
         title: track.title,
@@ -150,7 +171,7 @@ export const getSearchSuggestions = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to get search suggestions');
     }
-  }
+  },
 );
 
 // Async thunks for trending searches
@@ -163,7 +184,7 @@ export const fetchTrendingSearches = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to fetch trending searches');
     }
-  }
+  },
 );
 
 const initialState = {
@@ -297,12 +318,12 @@ const searchSlice = createSlice({
       if (state.searchSettings.saveHistory) {
         state.searchHistory = [
           action.payload,
-          ...state.searchHistory.filter(h => h !== action.payload)
+          ...state.searchHistory.filter((h) => h !== action.payload),
         ].slice(0, 50);
       }
     },
     removeFromSearchHistory: (state, action) => {
-      state.searchHistory = state.searchHistory.filter(h => h !== action.payload);
+      state.searchHistory = state.searchHistory.filter((h) => h !== action.payload);
     },
     setSearchHistory: (state, action) => {
       state.searchHistory = action.payload;

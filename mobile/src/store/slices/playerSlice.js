@@ -12,23 +12,23 @@ const trackAPI = {
         album: `Album ${id}`,
         duration: 180,
         artwork: null,
-        url: `https://example.com/track-${id}.mp3`
-      }
-    }
+        url: `https://example.com/track-${id}.mp3`,
+      },
+    },
   }),
   getTracks: async (ids) => ({
     data: {
-      tracks: ids.map(id => ({
+      tracks: ids.map((id) => ({
         id,
         title: `Track ${id}`,
         artist: `Artist ${id}`,
         album: `Album ${id}`,
         duration: 180,
         artwork: null,
-        url: `https://example.com/track-${id}.mp3`
-      }))
-    }
-  })
+        url: `https://example.com/track-${id}.mp3`,
+      })),
+    },
+  }),
 };
 
 const analyticsAPI = {
@@ -40,27 +40,24 @@ const analyticsAPI = {
   },
   trackSkip: async (trackId) => {
     console.log(`Analytics: Track skipped - ${trackId}`);
-  }
+  },
 };
 
-export const setupPlayer = createAsyncThunk(
-  'player/setup',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Setup player using the playerService
-      const { setupPlayer: setupPlayerService } = await import('../services/playerService');
-      const success = await setupPlayerService();
+export const setupPlayer = createAsyncThunk('player/setup', async (_, { rejectWithValue }) => {
+  try {
+    // Setup player using the playerService
+    const { setupPlayer: setupPlayerService } = await import('../services/playerService');
+    const success = await setupPlayerService();
 
-      if (success) {
-        return true;
-      } else {
-        throw new Error('Failed to setup player');
-      }
-    } catch (error) {
-      return rejectWithValue(error.message);
+    if (success) {
+      return true;
+    } else {
+      throw new Error('Failed to setup player');
     }
+  } catch (error) {
+    return rejectWithValue(error.message);
   }
-);
+});
 
 export const addTracksToQueue = createAsyncThunk(
   'player/addTracks',
@@ -78,7 +75,7 @@ export const addTracksToQueue = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const playTrack = createAsyncThunk(
@@ -89,13 +86,13 @@ export const playTrack = createAsyncThunk(
       const currentQueue = state.player.queue;
 
       // If it's a new track, add it to the queue first
-      if (!currentQueue.some(t => t.id === track.id)) {
+      if (!currentQueue.some((t) => t.id === track.id)) {
         const newQueue = [...currentQueue, track];
         await dispatch(addTracksToQueue(newQueue));
       }
 
       // Find the track index and play it
-      const trackIndex = currentQueue.findIndex(t => t.id === track.id);
+      const trackIndex = currentQueue.findIndex((t) => t.id === track.id);
       if (trackIndex !== -1) {
         await TrackPlayer.skip(trackIndex);
         await TrackPlayer.play();
@@ -113,7 +110,7 @@ export const playTrack = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const togglePlayback = createAsyncThunk(
@@ -133,7 +130,7 @@ export const togglePlayback = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const skipToNext = createAsyncThunk(
@@ -148,7 +145,7 @@ export const skipToNext = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const skipToPrevious = createAsyncThunk(
@@ -170,20 +167,17 @@ export const skipToPrevious = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
-export const seekTo = createAsyncThunk(
-  'player/seekTo',
-  async (position, { rejectWithValue }) => {
-    try {
-      await TrackPlayer.seekTo(position);
-      return position;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+export const seekTo = createAsyncThunk('player/seekTo', async (position, { rejectWithValue }) => {
+  try {
+    await TrackPlayer.seekTo(position);
+    return position;
+  } catch (error) {
+    return rejectWithValue(error.message);
   }
-);
+});
 
 const initialState = {
   // Current playback state
@@ -253,10 +247,7 @@ const playerSlice = createSlice({
         const remainingTracks = state.queue.slice(state.currentIndex + 1);
         const shuffled = [...remainingTracks].sort(() => Math.random() - 0.5);
 
-        state.queue = [
-          ...state.queue.slice(0, state.currentIndex + 1),
-          ...shuffled,
-        ];
+        state.queue = [...state.queue.slice(0, state.currentIndex + 1), ...shuffled];
       } else if (!action.payload) {
         // Restore original queue order
         state.queue = [...state.originalQueue];

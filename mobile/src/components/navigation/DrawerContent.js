@@ -34,14 +34,11 @@ const DrawerContent = (props) => {
   };
 
   return (
-    <LinearGradient
-      colors={[colors.surface, colors.background]}
-      style={styles.container}
-    >
+    <LinearGradient colors={[colors.surface, colors.background]} style={styles.container}>
       {/* User Profile Section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          <Ionicons name="person" size={40} color={colors.primary} />
+          <Ionicons name='person' size={40} color={colors.primary} />
         </View>
         <Text style={styles.userName}>{user.name}</Text>
         <Text style={styles.userEmail}>{user.email}</Text>
@@ -69,7 +66,7 @@ const DrawerContent = (props) => {
       {/* Bottom Section */}
       <View style={styles.bottomSection}>
         <TouchableOpacity style={styles.bottomItem}>
-          <Ionicons name="log-out" size={24} color={colors.textSecondary} />
+          <Ionicons name='log-out' size={24} color={colors.textSecondary} />
           <Text style={styles.bottomText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
@@ -78,84 +75,84 @@ const DrawerContent = (props) => {
 };
 
 const styles = StyleSheet.create({
+  avatarContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.elevated,
+    borderRadius: 40,
+    height: 80,
+    justifyContent: 'center',
+    marginBottom: 15,
+    width: 80,
+  },
+  bottomItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 10,
+  },
+  bottomSection: {
+    borderTopColor: colors.white10,
+    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  bottomText: {
+    color: colors.textSecondary,
+    fontSize: 16,
+    marginLeft: 15,
+  },
   container: {
     flex: 1,
     paddingTop: 50,
   },
-  profileSection: {
+  menuItem: {
     alignItems: 'center',
-    paddingVertical: 30,
+    borderRadius: 10,
+    flexDirection: 'row',
+    marginHorizontal: 10,
+    marginVertical: 2,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
+    paddingVertical: 15,
   },
-  avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.elevated,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
+  menuSection: {
+    flex: 1,
+    paddingVertical: 20,
   },
-  userName: {
-    fontSize: 20,
-    fontWeight: '600',
+  menuText: {
     color: colors.text,
-    marginBottom: 5,
-    textAlign: 'center',
-  },
-  userEmail: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 15,
   },
   premiumBadge: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
     borderRadius: 12,
     marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   premiumText: {
     color: colors.white,
     fontSize: 12,
     fontWeight: '600',
   },
-  menuSection: {
-    flex: 1,
-    paddingVertical: 20,
-  },
-  menuItem: {
-    flexDirection: 'row',
+  profileSection: {
     alignItems: 'center',
-    paddingVertical: 15,
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
     paddingHorizontal: 20,
-    marginHorizontal: 10,
-    marginVertical: 2,
-    borderRadius: 10,
+    paddingVertical: 30,
   },
-  menuText: {
-    fontSize: 16,
-    color: colors.text,
-    marginLeft: 15,
-    fontWeight: '500',
-  },
-  bottomSection: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.white10,
-  },
-  bottomItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  bottomText: {
-    fontSize: 16,
+  userEmail: {
     color: colors.textSecondary,
-    marginLeft: 15,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  userName: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 5,
+    textAlign: 'center',
   },
 });
 

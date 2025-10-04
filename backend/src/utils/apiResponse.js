@@ -7,7 +7,7 @@ class ApiResponse {
     return this.res.status(statusCode).json({
       status: 'success',
       message,
-      data
+      data,
     });
   }
 
@@ -18,7 +18,7 @@ class ApiResponse {
   error(message = 'An error occurred', statusCode = 400, errors = null) {
     const response = {
       status: 'error',
-      message
+      message,
     };
 
     if (errors) {

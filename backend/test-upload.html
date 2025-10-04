@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Upload to Backblaze B2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-section, .files-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .file-input {
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .file-input:hover {
+            border-color: #666;
+        }
+        .upload-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .upload-btn:hover {
+            background-color: #45a049;
+        }
+        .upload-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            transition: width 0.3s;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        .file-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .file-list th, .file-list td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .file-list th {
+            background-color: #f2f2f2;
+        }
+        .file-list tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .file-list tr:hover {
+            background-color: #f1f1f1;
+        }
+        .file-link {
+            color: #337ab7;
+            text-decoration: none;
+        }
+        .file-link:hover {
+            text-decoration: underline;
+        }
+        .refresh-btn {
+            background-color: #337ab7;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .refresh-btn:hover {
+            background-color: #286090;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Backblaze B2 File Upload Test</h1>
+        
+        <div class="upload-section">
+            <h2>Upload a File</h2>
+            <form id="uploadForm" class="upload-form">
+                <input type="file" id="fileInput" class="file-input" required>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar">0%</div>
+                </div>
+                <button type="submit" class="upload-btn" id="uploadBtn">Upload File</button>
+                <div class="status" id="status"></div>
+            </form>
+        </div>
+        
+        <div class="files-section">
+            <h2>Uploaded Files</h2>
+            <button class="refresh-btn" id="refreshBtn">Refresh List</button>
+            <div id="fileListContainer">
+                <p>Loading files...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.querySelector('.progress-container');
+        const statusDiv = document.getElementById('status');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const fileListContainer = document.getElementById('fileListContainer');
+
+        // API Base URL - Update this to match your server URL
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // Upload file
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                // Reset UI
+                uploadBtn.disabled = true;
+                progressContainer.style.display = 'block';
+                statusDiv.style.display = 'none';
+                
+                const xhr = new XMLHttpRequest();
+                
+                // Progress tracking
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = percentComplete + '%';
+                        progressBar.textContent = percentComplete + '%';
+                    }
+                });
+                
+                xhr.onload = function() {
+                    if (xhr.status === 201) {
+                        const response = JSON.parse(xhr.responseText);
+                        showStatus('File uploaded successfully!', 'success');
+                        loadFiles(); // Refresh file list
+                    } else {
+                        const error = JSON.parse(xhr.responseText);
+                        showStatus(`Error: ${error.message || 'Upload failed'}`, 'error');
+                    }
+                    uploadBtn.disabled = false;
+                };
+                
+                xhr.onerror = function() {
+                    showStatus('Error: Connection failed', 'error');
+                    uploadBtn.disabled = false;
+                };
+                
+                xhr.open('POST', `${API_BASE_URL}/test-upload`, true);
+                xhr.send(formData);
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showStatus('Error: ' + (error.message || 'Upload failed'), 'error');
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        // Load files
+        async function loadFiles() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/test-upload`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayFiles(result.data.files);
+                } else {
+                    fileListContainer.innerHTML = `<p class="error">Error loading files: ${result.message || 'Unknown error'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+                fileListContainer.innerHTML = `<p class="error">Error loading files: ${error.message || 'Connection failed'}</p>`;
+            }
+        }
+        
+        // Display files in a table
+        function displayFiles(files) {
+            if (!files || files.length === 0) {
+                fileListContainer.innerHTML = '<p>No files uploaded yet.</p>';
+                return;
+            }
+            
+            const table = `
+                <table class="file-list">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${files.map(file => `
+                            <tr>
+                                <td>${file.fileName.split('/').pop()}</td>
+                                <td>${formatFileSize(file.size)}</td>
+                                <td>${new Date(file.uploadTimestamp).toLocaleString()}</td>
+                                <td>
+                                    <a href="${file.fileUrl}" class="file-link" target="_blank">View</a>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            fileListContainer.innerHTML = table;
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+        }
+        
+        // Refresh button click
+        refreshBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadFiles();
+        });
+        
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiles();
+        });
+    </script>
+</body>
+</html>

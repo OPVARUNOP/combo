@@ -31,23 +31,24 @@ router.post('/register', validate(registerRules()), async (req, res) => {
       name,
       password: hashedPassword,
       role: 'user',
-      isActive: true
+      isActive: true,
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     // Don't send password in response
     const { password: _, ...userWithoutPassword } = user;
 
-    apiResponse.created({
-      user: userWithoutPassword,
-      token
-    }, 'User registered successfully');
+    apiResponse.created(
+      {
+        user: userWithoutPassword,
+        token,
+      },
+      'User registered successfully'
+    );
   } catch (error) {
     console.error('Registration error:', error);
     apiResponse.serverError('Registration failed');
@@ -80,19 +81,20 @@ router.post('/login', validate(loginRules()), async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
     // Don't send password in response
     const { password: _, ...userWithoutPassword } = user;
 
-    apiResponse.success({
-      user: userWithoutPassword,
-      token
-    }, 'Login successful');
+    apiResponse.success(
+      {
+        user: userWithoutPassword,
+        token,
+      },
+      'Login successful'
+    );
   } catch (error) {
     console.error('Login error:', error);
     apiResponse.serverError('Login failed');
@@ -141,7 +143,7 @@ router.get('/', authenticate, authorize(['admin']), async (req, res) => {
 
   try {
     const users = await database.list('users');
-    const usersWithoutPasswords = users.map(user => {
+    const usersWithoutPasswords = users.map((user) => {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
     });

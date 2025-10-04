@@ -36,17 +36,20 @@ In Firebase Console (https://console.firebase.google.com):
 ### 3. Configure Authentication Providers
 
 **Email/Password Authentication:**
+
 - Enable in Authentication > Sign-in method
 - Configure password policy
 - Enable email verification
 
 **Google Sign-In:**
+
 - Enable Google provider
 - Add OAuth client ID from Google Cloud Console
 
 ### 4. Set Up Firestore Database
 
 **Database Rules:**
+
 ```bash
 # Deploy security rules
 firebase deploy --only firestore:rules
@@ -54,6 +57,7 @@ firebase deploy --only firestore:rules
 
 **Initial Data Structure:**
 The app will automatically create:
+
 - `users/{userId}` - User profiles and preferences
 - `playlists/{playlistId}` - User playlists
 - `users/{userId}/likedTracks/{trackId}` - Favorite songs
@@ -62,12 +66,14 @@ The app will automatically create:
 ### 5. Configure Firebase Storage
 
 **Storage Rules:**
+
 ```bash
 # Deploy storage rules
 firebase deploy --only storage
 ```
 
 **Storage Buckets:**
+
 - Default bucket: `combo-624e1.firebasestorage.app`
 - Used for: Profile images, playlist covers, track artwork
 
@@ -79,14 +85,14 @@ Update `/mobile/src/services/firebase.js` with production settings:
 
 ```javascript
 const firebaseConfig = {
-  apiKey: "AIzaSyB6z2oJLGZtz9Rk9HqHhmR2kk-h5r4VVSM",
-  authDomain: "combo-624e1.firebaseapp.com",
-  databaseURL: "https://combo-624e1-default-rtdb.firebaseio.com",
-  projectId: "combo-624e1",
-  storageBucket: "combo-624e1.firebasestorage.app",
-  messagingSenderId: "531640636721",
-  appId: "1:531640636721:web:3431d1a031e5ce6a9b4c10",
-  measurementId: "G-SVP5FX20GH"
+  apiKey: 'AIzaSyB6z2oJLGZtz9Rk9HqHhmR2kk-h5r4VVSM',
+  authDomain: 'combo-624e1.firebaseapp.com',
+  databaseURL: 'https://combo-624e1-default-rtdb.firebaseio.com',
+  projectId: 'combo-624e1',
+  storageBucket: 'combo-624e1.firebasestorage.app',
+  messagingSenderId: '531640636721',
+  appId: '1:531640636721:web:3431d1a031e5ce6a9b4c10',
+  measurementId: 'G-SVP5FX20GH',
 };
 ```
 
@@ -150,6 +156,7 @@ npm install
 ## Security Configuration
 
 ### Firestore Security Rules Features:
+
 - ✅ Users can only access their own data
 - ✅ Public playlists are readable by all
 - ✅ Private playlists only accessible by owner
@@ -157,6 +164,7 @@ npm install
 - ✅ Analytics data is read-only for users
 
 ### Authentication Security:
+
 - ✅ Email verification required
 - ✅ Strong password policies
 - ✅ Rate limiting on auth attempts
@@ -165,6 +173,7 @@ npm install
 ## Testing Firebase Integration
 
 ### 1. Test Authentication
+
 ```javascript
 import { auth } from './src/services/firebase';
 
@@ -180,6 +189,7 @@ const testAuth = async () => {
 ```
 
 ### 2. Test Firestore Operations
+
 ```javascript
 import { db } from './src/services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -197,6 +207,7 @@ const testFirestore = async () => {
 ```
 
 ### 3. Test Real-time Features
+
 ```javascript
 import { onSnapshot, doc } from 'firebase/firestore';
 
@@ -212,22 +223,26 @@ const testRealtime = () => {
 ## Production Checklist
 
 ### ✅ Security
+
 - [ ] Firestore rules deployed and tested
 - [ ] Storage rules configured
 - [ ] Authentication providers set up
 - [ ] Service account permissions minimal
 
 ### ✅ Performance
+
 - [ ] Firestore indexes configured for queries
 - [ ] Storage CDN enabled
 - [ ] Analytics configured
 
 ### ✅ Monitoring
+
 - [ ] Firebase Performance Monitoring enabled
 - [ ] Crash Reporting configured
 - [ ] Analytics events implemented
 
 ### ✅ Backup & Recovery
+
 - [ ] Firestore backup settings configured
 - [ ] Export data location set
 - [ ] Recovery procedures documented
@@ -257,16 +272,19 @@ firebase emulators:start --only=firestore
 ## Cost Optimization
 
 ### Firestore:
+
 - Free tier: 1GB storage, 50K reads/day
 - Optimize queries to reduce read operations
 - Use compound queries efficiently
 
 ### Authentication:
+
 - Free tier: 3K active users/month
 - Implement user session management
 - Clean up unused accounts
 
 ### Storage:
+
 - Free tier: 5GB storage, 1GB/day download
 - Implement image compression
 - Use Firebase CDN

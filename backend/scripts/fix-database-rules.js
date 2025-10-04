@@ -8,59 +8,59 @@
  */
 
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-
 const FIREBASE_CONFIG = {
   databaseURL: 'https://combo-624e1-default-rtdb.firebaseio.com',
-  databaseSecret: process.env.FIREBASE_DATABASE_SECRET || 'mqucsRC7MHfDLdYSbNTU1srwlK4l6RsOtKKgqB4m'
+  databaseSecret:
+    process.env.FIREBASE_DATABASE_SECRET || 'mqucsRC7MHfDLdYSbNTU1srwlK4l6RsOtKKgqB4m',
 };
 
 // Firebase Realtime Database Rules with proper indexes
 const DATABASE_RULES = {
-  "rules": {
-    "users": {
-      ".indexOn": ["email", "name", "createdAt"],
-      "$user_id": {
-        ".read": "auth != null && (auth.uid == $user_id || auth.token.admin == true)",
-        ".write": "auth != null && (auth.uid == $user_id || auth.token.admin == true)"
-      }
+  rules: {
+    users: {
+      '.indexOn': ['email', 'name', 'createdAt'],
+      $user_id: {
+        '.read': 'auth != null && (auth.uid == $user_id || auth.token.admin == true)',
+        '.write': 'auth != null && (auth.uid == $user_id || auth.token.admin == true)',
+      },
     },
-    "songs": {
-      ".indexOn": ["title", "artist", "genre", "createdBy", "createdAt"],
-      "$song_id": {
-        ".read": "true",
-        ".write": "auth != null && (auth.token.admin == true || data.child('createdBy').val() == auth.uid)"
-      }
+    songs: {
+      '.indexOn': ['title', 'artist', 'genre', 'createdBy', 'createdAt'],
+      $song_id: {
+        '.read': 'true',
+        '.write':
+          "auth != null && (auth.token.admin == true || data.child('createdBy').val() == auth.uid)",
+      },
     },
-    "playlists": {
-      ".indexOn": ["name", "createdBy", "isPublic", "createdAt"],
-      "$playlist_id": {
-        ".read": "auth != null",
-        ".write": "auth != null && (auth.token.admin == true || data.child('createdBy').val() == auth.uid)"
-      }
+    playlists: {
+      '.indexOn': ['name', 'createdBy', 'isPublic', 'createdAt'],
+      $playlist_id: {
+        '.read': 'auth != null',
+        '.write':
+          "auth != null && (auth.token.admin == true || data.child('createdBy').val() == auth.uid)",
+      },
     },
-    "tokens": {
-      ".indexOn": ["expiresAt"],
-      "$token_id": {
-        ".read": "false",
-        ".write": "true"
-      }
+    tokens: {
+      '.indexOn': ['expiresAt'],
+      $token_id: {
+        '.read': 'false',
+        '.write': 'true',
+      },
     },
-    "tokenBlacklist": {
-      ".indexOn": ["expiresAt"],
-      "$token_id": {
-        ".read": "false",
-        ".write": "true"
-      }
+    tokenBlacklist: {
+      '.indexOn': ['expiresAt'],
+      $token_id: {
+        '.read': 'false',
+        '.write': 'true',
+      },
     },
-    "health": {
-      ".read": "true",
-      ".write": "true"
+    health: {
+      '.read': 'true',
+      '.write': 'true',
     },
-    ".read": "false",
-    ".write": "false"
-  }
+    '.read': 'false',
+    '.write': 'false',
+  },
 };
 
 async function updateDatabaseRules() {
@@ -72,8 +72,8 @@ async function updateDatabaseRules() {
       DATABASE_RULES,
       {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     );
 
@@ -145,7 +145,7 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('💥 Unhandled error:', error);
     process.exit(1);
   });

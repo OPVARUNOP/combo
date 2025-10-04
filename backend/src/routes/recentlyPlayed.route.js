@@ -29,7 +29,7 @@ router.get('/', authenticate, async (req, res) => {
         songsWithData.push({
           ...song,
           playedAt: item.playedAt,
-          playCount: item.playCount || 1
+          playCount: item.playCount || 1,
         });
       }
     }
@@ -56,15 +56,17 @@ router.post('/:songId', authenticate, async (req, res) => {
     }
 
     // Get current recently played
-    const recentlyPlayed = await database.get(`users/${req.user.id}/recentlyPlayed`) || { songs: [] };
+    const recentlyPlayed = (await database.get(`users/${req.user.id}/recentlyPlayed`)) || {
+      songs: [],
+    };
 
     // Find existing entry or create new one
-    const existingIndex = recentlyPlayed.songs.findIndex(item => item.songId === songId);
+    const existingIndex = recentlyPlayed.songs.findIndex((item) => item.songId === songId);
 
     const playData = {
       songId,
       playedAt: new Date().toISOString(),
-      playCount: 1
+      playCount: 1,
     };
 
     if (existingIndex >= 0) {

@@ -44,7 +44,7 @@ router.post('/', authenticate, validate(playlistRules()), async (req, res) => {
       description,
       isPublic: isPublic || false,
       createdBy: req.user.id,
-      songs: []
+      songs: [],
     });
 
     apiResponse.created(playlist, 'Playlist created successfully');
@@ -71,7 +71,9 @@ router.post('/:id/songs', authenticate, async (req, res) => {
 
     // Check if user owns the playlist or it's public
     if (playlist.createdBy !== req.user.id && !playlist.isPublic) {
-      return apiResponse.forbidden('You can only add songs to your own playlists or public playlists');
+      return apiResponse.forbidden(
+        'You can only add songs to your own playlists or public playlists'
+      );
     }
 
     // Check if song exists

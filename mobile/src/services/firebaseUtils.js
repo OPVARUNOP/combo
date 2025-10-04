@@ -5,7 +5,9 @@ import { app, db, auth, rtdb } from './firebase';
 export const firebaseUtils = {
   // Convert Firestore timestamp to Date
   timestampToDate: (timestamp) => {
-    if (!timestamp) return null;
+    if (!timestamp) {
+      return null;
+    }
     return timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   },
 
@@ -33,8 +35,12 @@ export const firebaseUtils = {
 
   // Format user display name
   getUserDisplayName: (user) => {
-    if (user?.displayName) return user.displayName;
-    if (user?.email) return user.email.split('@')[0];
+    if (user?.displayName) {
+      return user.displayName;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
     return 'User';
   },
 

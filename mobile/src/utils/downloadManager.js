@@ -17,7 +17,7 @@ export const downloadTrack = async (track) => {
 
     const status = await check(permission);
     let permissionGranted = status === RESULTS.GRANTED;
-    
+
     if (status === RESULTS.DENIED) {
       const result = await request(permission);
       permissionGranted = result === RESULTS.GRANTED;
@@ -30,7 +30,7 @@ export const downloadTrack = async (track) => {
     // Create downloads directory if it doesn't exist
     const downloadDir = `${fs.dirs.DownloadDir}/COMBO`;
     const dirExists = await fs.exists(downloadDir);
-    
+
     if (!dirExists) {
       await fs.mkdir(downloadDir);
     }
@@ -72,7 +72,7 @@ export const downloadTrack = async (track) => {
     });
 
     const response = await downloadTask;
-    
+
     if (response.info().status === 200) {
       // Add the downloaded track to the track player
       const downloadedTrack = {
@@ -83,7 +83,7 @@ export const downloadTrack = async (track) => {
 
       // Save download info to track in the database
       await trackAPI.download(track.id);
-      
+
       // Save download info to local storage
       const downloads = await getDownloads();
       downloads.push({
@@ -91,12 +91,12 @@ export const downloadTrack = async (track) => {
         path: response.path(),
         downloadedAt: new Date().toISOString(),
       });
-      
+
       await AsyncStorage.setItem('@downloads', JSON.stringify(downloads));
-      
+
       return { success: true, track: downloadedTrack };
     }
-    
+
     throw new Error('Download failed');
   } catch (error) {
     console.error('Download error:', error);
@@ -117,19 +117,18 @@ export const getDownloads = async () => {
 export const removeDownload = async (trackId) => {
   try {
     const downloads = await getDownloads();
-    const download = downloads.find(d => d.id === trackId);
-    
+    const download = downloads.find((d) => d.id === trackId);
+
     if (download) {
       // Delete the file
       await fs.unlink(download.path);
-      
+
       // Remove from downloads list
-      const updatedDownloads = downloads.filter(d => d.id !== trackId);
+      const updatedDownloads = downloads.filter((d) => d.id !== trackId);
       await AsyncStorage.setItem('@downloads', JSON.stringify(updatedDownloads));
-      
       return { success: true };
     }
-    
+
     return { success: false, error: 'Download not found' };
   } catch (error) {
     console.error('Error removing download:', error);
@@ -140,7 +139,7 @@ export const removeDownload = async (trackId) => {
 export const isTrackDownloaded = async (trackId) => {
   try {
     const downloads = await getDownloads();
-    return downloads.some(d => d.id === trackId);
+    return downloads.some((d) => d.id === trackId);
   } catch (error) {
     console.error('Error checking if track is downloaded:', error);
     return false;
@@ -149,11 +148,13 @@ export const isTrackDownloaded = async (trackId) => {
 
 // Helper function to get file extension from URL
 const getFileExtension = (url) => {
-  if (!url) return null;
-  
+  if (!url) {
+    return null;
+  }
+
   // Remove query parameters
   const cleanUrl = url.split('?')[0];
-  
+
   // Get the last part after the last dot
   const match = cleanUrl.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
   return match ? match[1].toLowerCase() : null;

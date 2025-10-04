@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download COMBO Music App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0F0F23;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            padding: 2rem;
+            background-color: #1A1A2E;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #3B82F6;
+            margin-bottom: 1.5rem;
+        }
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            border-radius: 20px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3B82F6;
+            color: white;
+            padding: 12px 30px;
+            margin: 1rem 0.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background-color: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #3B82F6;
+            color: #3B82F6;
+        }
+        .btn-outline:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .features {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        .feature {
+            flex: 1;
+            min-width: 200px;
+            margin: 1rem;
+            padding: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+        .feature h3 {
+            color: #3B82F6;
+            margin-top: 0;
+        }
+        @media (max-width: 768px) {
+            .features {
+                flex-direction: column;
+            }
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://via.placeholder.com/120" alt="COMBO Logo" class="logo">
+        <h1>COMBO Music Streaming</h1>
+        <p>Experience music like never before with our high-quality streaming service. Available now for Android.</p>
+        
+        <div style="margin: 2rem 0;">
+            <a href="combo-app-release.apk" class="btn" download>Download APK (v1.0.0)</a>
+            <a href="#features" class="btn btn-outline">Learn More</a>
+        </div>
+        
+        <div id="features" class="features">
+            <div class="feature">
+                <h3>🎵 Unlimited Music</h3>
+                <p>Access millions of songs from your favorite artists.</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Offline Playback</h3>
+                <p>Download your favorite tracks and listen offline.</p>
+            </div>
+            <div class="feature">
+                <h3>🎧 High Quality</h3>
+                <p>Experience crystal clear sound quality.</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; color: #94A3B8; font-size: 0.9rem;">
+            <p>© 2023 COMBO Music. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

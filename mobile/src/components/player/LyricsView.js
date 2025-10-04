@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { colors, spacing, typography } from '../../styles/theme';
 
 const { height } = Dimensions.get('window');
@@ -33,7 +27,7 @@ const LyricsView = ({ lyrics, currentTime }) => {
             // Highlight current line based on time
             currentTime && line.startTime <= currentTime && line.endTime > currentTime
               ? styles.activeLyricLine
-              : null
+              : null,
           ]}
         >
           {line.text}
@@ -44,34 +38,34 @@ const LyricsView = ({ lyrics, currentTime }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  contentContainer: {
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-  lyricLine: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 28,
-  },
   activeLyricLine: {
     color: colors.primary,
     fontSize: typography.fontSize.xl,
     fontWeight: '600',
   },
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+  },
   emptyContainer: {
+    alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   emptyText: {
-    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    textAlign: 'center',
+  },
+  lyricLine: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.lg,
+    lineHeight: 28,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
 });

@@ -27,21 +27,41 @@ const searchAPI = {
     return {
       data: {
         tracks: [
-          { id: '1', title: `Search Result 1 for "${query}"`, artist: 'Artist 1', album: 'Album 1', duration: 180 },
-          { id: '2', title: `Search Result 2 for "${query}"`, artist: 'Artist 2', album: 'Album 2', duration: 240 },
+          {
+            id: '1',
+            title: `Search Result 1 for "${query}"`,
+            artist: 'Artist 1',
+            album: 'Album 1',
+            duration: 180,
+          },
+          {
+            id: '2',
+            title: `Search Result 2 for "${query}"`,
+            artist: 'Artist 2',
+            album: 'Album 2',
+            duration: 240,
+          },
         ],
         albums: [
-          { id: '1', title: `Album Result 1 for "${query}"`, artist: 'Artist 1', trackCount: 12 },
+          {
+            id: '1',
+            title: `Album Result 1 for "${query}"`,
+            artist: 'Artist 1',
+            trackCount: 12,
+          },
         ],
-        artists: [
-          { id: '1', name: `Artist Result 1 for "${query}"`, trackCount: 25 },
-        ],
+        artists: [{ id: '1', name: `Artist Result 1 for "${query}"`, trackCount: 25 }],
         playlists: [
-          { id: '1', title: `Playlist Result 1 for "${query}"`, description: '25 tracks', trackCount: 25 },
-        ]
-      }
+          {
+            id: '1',
+            title: `Playlist Result 1 for "${query}"`,
+            description: '25 tracks',
+            trackCount: 25,
+          },
+        ],
+      },
     };
-  }
+  },
 };
 
 const trackAPI = { getByIds: async (ids) => ({ data: { tracks: [] } }) };
@@ -110,7 +130,9 @@ const SearchScreen = () => {
   };
 
   const performSearch = async () => {
-    if (searchQuery.trim().length < 2) return;
+    if (searchQuery.trim().length < 2) {
+      return;
+    }
 
     setIsSearching(true);
     try {
@@ -146,10 +168,10 @@ const SearchScreen = () => {
 
   const saveRecentSearch = async (query) => {
     try {
-      const updatedSearches = [
-        query,
-        ...recentSearches.filter(item => item !== query)
-      ].slice(0, 10);
+      const updatedSearches = [query, ...recentSearches.filter((item) => item !== query)].slice(
+        0,
+        10,
+      );
 
       setRecentSearches(updatedSearches);
       // Save to local storage or API
@@ -200,54 +222,31 @@ const SearchScreen = () => {
   const renderSearchResult = ({ item }) => {
     switch (item.type) {
       case 'track':
-        return (
-          <TrackCard
-            track={item.data}
-            onPress={() => handleTrackPress(item.data)}
-          />
-        );
+        return <TrackCard track={item.data} onPress={() => handleTrackPress(item.data)} />;
       case 'album':
-        return (
-          <AlbumCard
-            album={item.data}
-            onPress={() => handleAlbumPress(item.data)}
-          />
-        );
+        return <AlbumCard album={item.data} onPress={() => handleAlbumPress(item.data)} />;
       case 'artist':
-        return (
-          <ArtistCard
-            artist={item.data}
-            onPress={() => handleArtistPress(item.data)}
-          />
-        );
+        return <ArtistCard artist={item.data} onPress={() => handleArtistPress(item.data)} />;
       case 'playlist':
-        return (
-          <PlaylistCard
-            playlist={item.data}
-            onPress={() => handlePlaylistPress(item.data)}
-          />
-        );
+        return <PlaylistCard playlist={item.data} onPress={() => handlePlaylistPress(item.data)} />;
       default:
         return null;
     }
   };
 
   const renderRecentSearch = ({ item }) => (
-    <TouchableOpacity
-      style={styles.recentSearchItem}
-      onPress={() => handleRecentSearchPress(item)}
-    >
-      <Ionicons name="time-outline" size={20} color={colors.textSecondary} />
+    <TouchableOpacity style={styles.recentSearchItem} onPress={() => handleRecentSearchPress(item)}>
+      <Ionicons name='time-outline' size={20} color={colors.textSecondary} />
       <Text style={styles.recentSearchText} numberOfLines={1}>
         {item}
       </Text>
       <TouchableOpacity
         onPress={() => {
-          const filtered = recentSearches.filter(search => search !== item);
+          const filtered = recentSearches.filter((search) => search !== item);
           setRecentSearches(filtered);
         }}
       >
-        <Ionicons name="close" size={16} color={colors.textSecondary} />
+        <Ionicons name='close' size={16} color={colors.textSecondary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -260,33 +259,43 @@ const SearchScreen = () => {
       <Text style={styles.trendingSearchText} numberOfLines={1}>
         {item.query}
       </Text>
-      {item.count && (
-        <Text style={styles.trendingSearchCount}>
-          {item.count}
-        </Text>
-      )}
+      {item.count && <Text style={styles.trendingSearchCount}>{item.count}</Text>}
     </TouchableOpacity>
   );
 
   const getAllResults = () => {
     const results = [];
-    searchResults.tracks.forEach(track => results.push({ type: 'track', data: track }));
-    searchResults.albums.forEach(album => results.push({ type: 'album', data: album }));
-    searchResults.artists.forEach(artist => results.push({ type: 'artist', data: artist }));
-    searchResults.playlists.forEach(playlist => results.push({ type: 'playlist', data: playlist }));
+    searchResults.tracks.forEach((track) => results.push({ type: 'track', data: track }));
+    searchResults.albums.forEach((album) => results.push({ type: 'album', data: album }));
+    searchResults.artists.forEach((artist) => results.push({ type: 'artist', data: artist }));
+    searchResults.playlists.forEach((playlist) =>
+      results.push({ type: 'playlist', data: playlist }),
+    );
     return results;
   };
 
   const getFilteredResults = () => {
     switch (activeTab) {
       case 'tracks':
-        return searchResults.tracks.map(track => ({ type: 'track', data: track }));
+        return searchResults.tracks.map((track) => ({
+          type: 'track',
+          data: track,
+        }));
       case 'albums':
-        return searchResults.albums.map(album => ({ type: 'album', data: album }));
+        return searchResults.albums.map((album) => ({
+          type: 'album',
+          data: album,
+        }));
       case 'artists':
-        return searchResults.artists.map(artist => ({ type: 'artist', data: artist }));
+        return searchResults.artists.map((artist) => ({
+          type: 'artist',
+          data: artist,
+        }));
       case 'playlists':
-        return searchResults.playlists.map(playlist => ({ type: 'playlist', data: playlist }));
+        return searchResults.playlists.map((playlist) => ({
+          type: 'playlist',
+          data: playlist,
+        }));
       default:
         return getAllResults();
     }
@@ -298,32 +307,30 @@ const SearchScreen = () => {
         { key: 'all', label: 'All', count: getAllResults().length },
         { key: 'tracks', label: 'Tracks', count: searchResults.tracks.length },
         { key: 'albums', label: 'Albums', count: searchResults.albums.length },
-        { key: 'artists', label: 'Artists', count: searchResults.artists.length },
-        { key: 'playlists', label: 'Playlists', count: searchResults.playlists.length },
+        {
+          key: 'artists',
+          label: 'Artists',
+          count: searchResults.artists.length,
+        },
+        {
+          key: 'playlists',
+          label: 'Playlists',
+          count: searchResults.playlists.length,
+        },
       ].map((tab) => (
         <TouchableOpacity
           key={tab.key}
-          style={[
-            styles.tab,
-            activeTab === tab.key && styles.activeTab
-          ]}
+          style={[styles.tab, activeTab === tab.key && styles.activeTab]}
           onPress={() => setActiveTab(tab.key)}
         >
-          <Text style={[
-            styles.tabText,
-            activeTab === tab.key && styles.activeTabText
-          ]}>
+          <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
             {tab.label}
           </Text>
           {tab.count > 0 && (
-            <View style={[
-              styles.tabCount,
-              activeTab === tab.key && styles.activeTabCount
-            ]}>
-              <Text style={[
-                styles.tabCountText,
-                activeTab === tab.key && styles.activeTabCountText
-              ]}>
+            <View style={[styles.tabCount, activeTab === tab.key && styles.activeTabCount]}>
+              <Text
+                style={[styles.tabCountText, activeTab === tab.key && styles.activeTabCountText]}
+              >
                 {tab.count}
               </Text>
             </View>
@@ -335,75 +342,65 @@ const SearchScreen = () => {
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="search" size={64} color={colors.textSecondary} />
+      <Ionicons name='search' size={64} color={colors.textSecondary} />
       <Text style={styles.emptyStateTitle}>Search for music</Text>
-      <Text style={styles.emptyStateSubtitle}>
-        Find tracks, albums, artists, and playlists
-      </Text>
+      <Text style={styles.emptyStateSubtitle}>Find tracks, albums, artists, and playlists</Text>
     </View>
   );
 
   const LoadingState = () => (
     <View style={styles.loadingState}>
-      <LoadingSpinner size="large" />
+      <LoadingSpinner size='large' />
       <Text style={styles.loadingText}>Searching...</Text>
     </View>
   );
 
   const NoResultsState = () => (
     <View style={styles.noResultsState}>
-      <Ionicons name="search-off" size={64} color={colors.textSecondary} />
+      <Ionicons name='search-off' size={64} color={colors.textSecondary} />
       <Text style={styles.noResultsTitle}>No results found</Text>
-      <Text style={styles.noResultsSubtitle}>
-        Try searching for something else
-      </Text>
+      <Text style={styles.noResultsSubtitle}>Try searching for something else</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradientBackground}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradientBackground}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name='arrow-back' size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <Ionicons
+              name='search'
+              size={20}
+              color={colors.textSecondary}
+              style={styles.searchIcon}
+            />
             <TextInput
               ref={searchInputRef}
               style={styles.searchInput}
-              placeholder="Search for music, artists, albums..."
+              placeholder='Search for music, artists, albums...'
               placeholderTextColor={colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              autoCapitalize="none"
+              autoCapitalize='none'
               autoCorrect={false}
-              returnKeyType="search"
+              returnKeyType='search'
               onSubmitEditing={Keyboard.dismiss}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => setSearchQuery('')}
-              >
-                <Ionicons name="close" size={20} color={colors.textSecondary} />
+              <TouchableOpacity style={styles.clearButton} onPress={() => setSearchQuery('')}>
+                <Ionicons name='close' size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
         {/* Search Tabs */}
-        {searchQuery.length > 0 && (
-          <SearchTabs />
-        )}
+        {searchQuery.length > 0 && <SearchTabs />}
 
         {/* Content */}
         {searchQuery.length === 0 ? (
@@ -446,9 +443,7 @@ const SearchScreen = () => {
             )}
 
             {/* Empty State */}
-            {recentSearches.length === 0 && trendingSearches.length === 0 && (
-              <EmptyState />
-            )}
+            {recentSearches.length === 0 && trendingSearches.length === 0 && <EmptyState />}
           </ScrollView>
         ) : (
           // Search results
@@ -476,210 +471,210 @@ const SearchScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  activeTab: {
+    backgroundColor: colors.primary,
+  },
+  activeTabCount: {
+    backgroundColor: colors.white20,
+  },
+  activeTabCountText: {
+    color: colors.white,
+  },
+  activeTabText: {
+    color: colors.white,
+  },
+  backButton: {
+    marginRight: spacing.md,
+    padding: spacing.sm,
+  },
+  clearButton: {
+    marginLeft: spacing.sm,
+    padding: spacing.xs,
+  },
+  clearText: {
+    color: colors.primary,
+    fontSize: typography.fontSize.sm,
+    fontWeight: '500',
+  },
   container: {
-    flex: 1,
     backgroundColor: colors.background,
+    flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing['4xl'],
+  },
+  emptyStateSubtitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  emptyStateTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.xl,
+    textAlign: 'center',
   },
   gradientBackground: {
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingTop: Platform.OS === 'ios' ? spacing['3xl'] : spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  backButton: {
-    padding: spacing.sm,
-    marginRight: spacing.md,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white10,
-    borderRadius: radius.xl,
-    paddingHorizontal: spacing.md,
-    height: 44,
-  },
-  searchIcon: {
-    marginRight: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: typography.fontSize.base,
-    color: colors.text,
-    paddingVertical: 0,
-  },
-  clearButton: {
-    padding: spacing.xs,
-    marginLeft: spacing.sm,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginRight: spacing.sm,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white10,
-  },
-  activeTab: {
-    backgroundColor: colors.primary,
-  },
-  tabText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginRight: spacing.xs,
-  },
-  activeTabText: {
-    color: colors.white,
-  },
-  tabCount: {
-    backgroundColor: colors.white20,
-    borderRadius: radius.full,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-  },
-  activeTabCount: {
-    backgroundColor: colors.white20,
-  },
-  tabCountText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  activeTabCountText: {
-    color: colors.white,
   },
   initialContent: {
     flex: 1,
     paddingTop: spacing.lg,
   },
+  loadingState: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  loadingText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    marginTop: spacing.md,
+  },
+  noResultsState: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing['4xl'],
+  },
+  noResultsSubtitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  noResultsTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.xl,
+    textAlign: 'center',
+  },
+  recentSearchItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  recentSearchText: {
+    color: colors.text,
+    flex: 1,
+    fontSize: typography.fontSize.base,
+    marginLeft: spacing.md,
+    marginRight: spacing.sm,
+  },
   resultsContainer: {
     flex: 1,
     paddingTop: spacing.md,
+  },
+  resultsList: {
+    paddingBottom: spacing['4xl'],
+    paddingHorizontal: spacing.lg,
+  },
+  resultsRow: {
+    justifyContent: 'space-between',
+  },
+  searchContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.white10,
+    borderRadius: radius.xl,
+    flex: 1,
+    flexDirection: 'row',
+    height: 44,
+    paddingHorizontal: spacing.md,
+  },
+  searchIcon: {
+    marginRight: spacing.sm,
+  },
+  searchInput: {
+    color: colors.text,
+    flex: 1,
+    fontSize: typography.fontSize.base,
+    paddingVertical: 0,
   },
   section: {
     marginBottom: spacing['2xl'],
   },
   sectionHeader: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
+    color: colors.text,
     fontSize: typography.fontSize.lg,
     fontWeight: '600',
-    color: colors.text,
   },
-  clearText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  recentSearchItem: {
-    flexDirection: 'row',
+  tab: {
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-  },
-  recentSearchText: {
-    flex: 1,
-    fontSize: typography.fontSize.base,
-    color: colors.text,
-    marginLeft: spacing.md,
+    backgroundColor: colors.white10,
+    borderRadius: radius.lg,
+    flexDirection: 'row',
     marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  tabCount: {
+    alignItems: 'center',
+    backgroundColor: colors.white20,
+    borderRadius: radius.full,
+    height: 20,
+    justifyContent: 'center',
+    minWidth: 20,
+    paddingHorizontal: 6,
+  },
+  tabCountText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.xs,
+    fontWeight: '600',
+  },
+  tabText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginRight: spacing.xs,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   trendingList: {
     paddingHorizontal: spacing.lg,
   },
+  trendingSearchCount: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.xs,
+    marginTop: 2,
+  },
   trendingSearchItem: {
+    alignItems: 'center',
     backgroundColor: colors.white10,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
     borderRadius: radius.lg,
     marginRight: spacing.md,
     minWidth: 120,
-    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   trendingSearchText: {
+    color: colors.text,
     fontSize: typography.fontSize.sm,
-    color: colors.text,
     fontWeight: '500',
-  },
-  trendingSearchCount: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing['4xl'],
-  },
-  emptyStateTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  emptyStateSubtitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  loadingState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
-  noResultsState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing['4xl'],
-  },
-  noResultsTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  noResultsSubtitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  resultsList: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing['4xl'],
-  },
-  resultsRow: {
-    justifyContent: 'space-between',
   },
 });
 

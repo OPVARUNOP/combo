@@ -4,20 +4,20 @@ const request = require('supertest');
 jest.mock('./server', () => {
   const express = require('express');
   const app = express();
-  
+
   // Add basic routes for testing
   app.get('/health', (req, res) => {
     res.json({ status: 'success', message: 'Health check completed', data: { status: 'OK' } });
   });
-  
+
   app.get('/api', (req, res) => {
-    res.json({ 
-      status: 'success', 
+    res.json({
+      status: 'success',
       message: 'API information retrieved successfully',
-      data: { name: 'COMBO Music Streaming API', version: '1.0.0' }
+      data: { name: 'COMBO Music Streaming API', version: '1.0.0' },
     });
   });
-  
+
   return { default: app };
 });
 

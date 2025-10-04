@@ -17,18 +17,18 @@ describe('Firebase Integration', () => {
   it('should have database access', async () => {
     const db = admin.firestore();
     expect(db).toBeDefined();
-    
+
     // Test basic database operation
     const testDoc = db.collection('test').doc('connection-test');
     const testData = {
       testId: 'test_123',
       timestamp: new Date().toISOString(),
       message: 'Firebase connection test',
-      status: 'success'
+      status: 'success',
     };
-    
+
     await testDoc.set(testData);
-    
+
     const doc = await testDoc.get();
     expect(doc.exists).toBe(true);
     expect(doc.data().status).toBe('success');

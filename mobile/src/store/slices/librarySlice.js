@@ -11,19 +11,22 @@ export const fetchLikedTracks = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch liked tracks');
     }
-  }
+  },
 );
 
 export const fetchRecentlyPlayed = createAsyncThunk(
   'library/fetchRecentlyPlayed',
   async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await trackAPI.getAll({ recentlyPlayed: true, ...params });
+      const response = await trackAPI.getAll({
+        recentlyPlayed: true,
+        ...params,
+      });
       return response.data.tracks || [];
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch recently played');
     }
-  }
+  },
 );
 
 export const fetchDownloadedTracks = createAsyncThunk(
@@ -35,7 +38,7 @@ export const fetchDownloadedTracks = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch downloaded tracks');
     }
-  }
+  },
 );
 
 export const likeTrack = createAsyncThunk(
@@ -47,7 +50,7 @@ export const likeTrack = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to like track');
     }
-  }
+  },
 );
 
 export const unlikeTrack = createAsyncThunk(
@@ -59,7 +62,7 @@ export const unlikeTrack = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to unlike track');
     }
-  }
+  },
 );
 
 // Async thunks for playlists
@@ -72,7 +75,7 @@ export const fetchMyPlaylists = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch playlists');
     }
-  }
+  },
 );
 
 export const fetchLikedPlaylists = createAsyncThunk(
@@ -84,7 +87,7 @@ export const fetchLikedPlaylists = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch liked playlists');
     }
-  }
+  },
 );
 
 export const createPlaylist = createAsyncThunk(
@@ -96,7 +99,7 @@ export const createPlaylist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create playlist');
     }
-  }
+  },
 );
 
 export const likePlaylist = createAsyncThunk(
@@ -108,7 +111,7 @@ export const likePlaylist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to like playlist');
     }
-  }
+  },
 );
 
 export const unlikePlaylist = createAsyncThunk(
@@ -120,7 +123,7 @@ export const unlikePlaylist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to unlike playlist');
     }
-  }
+  },
 );
 
 // Async thunks for albums
@@ -133,7 +136,7 @@ export const fetchMyAlbums = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch albums');
     }
-  }
+  },
 );
 
 // Async thunks for artists
@@ -146,7 +149,7 @@ export const fetchFollowedArtists = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch followed artists');
     }
-  }
+  },
 );
 
 export const followArtist = createAsyncThunk(
@@ -158,7 +161,7 @@ export const followArtist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to follow artist');
     }
-  }
+  },
 );
 
 export const unfollowArtist = createAsyncThunk(
@@ -170,7 +173,7 @@ export const unfollowArtist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to unfollow artist');
     }
-  }
+  },
 );
 
 // Async thunks for downloads
@@ -183,7 +186,7 @@ export const downloadTrack = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to download track');
     }
-  }
+  },
 );
 
 export const removeDownload = createAsyncThunk(
@@ -195,7 +198,7 @@ export const removeDownload = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to remove download');
     }
-  }
+  },
 );
 
 const initialState = {
@@ -279,48 +282,48 @@ const librarySlice = createSlice({
     },
     addToLikedTracks: (state, action) => {
       const track = action.payload;
-      if (!state.likedTracks.some(t => t.id === track.id)) {
+      if (!state.likedTracks.some((t) => t.id === track.id)) {
         state.likedTracks.unshift(track);
         state.libraryStats.totalTracks += 1;
       }
     },
     removeFromLikedTracks: (state, action) => {
       const trackId = action.payload;
-      state.likedTracks = state.likedTracks.filter(t => t.id !== trackId);
+      state.likedTracks = state.likedTracks.filter((t) => t.id !== trackId);
       state.libraryStats.totalTracks = Math.max(0, state.libraryStats.totalTracks - 1);
     },
     addToDownloadedTracks: (state, action) => {
       const track = action.payload;
-      if (!state.downloadedTracks.some(t => t.id === track.id)) {
+      if (!state.downloadedTracks.some((t) => t.id === track.id)) {
         state.downloadedTracks.push(track);
       }
     },
     removeFromDownloadedTracks: (state, action) => {
       const trackId = action.payload;
-      state.downloadedTracks = state.downloadedTracks.filter(t => t.id !== trackId);
+      state.downloadedTracks = state.downloadedTracks.filter((t) => t.id !== trackId);
     },
     addToMyPlaylists: (state, action) => {
       const playlist = action.payload;
-      if (!state.myPlaylists.some(p => p.id === playlist.id)) {
+      if (!state.myPlaylists.some((p) => p.id === playlist.id)) {
         state.myPlaylists.unshift(playlist);
         state.libraryStats.totalPlaylists += 1;
       }
     },
     removeFromMyPlaylists: (state, action) => {
       const playlistId = action.payload;
-      state.myPlaylists = state.myPlaylists.filter(p => p.id !== playlistId);
+      state.myPlaylists = state.myPlaylists.filter((p) => p.id !== playlistId);
       state.libraryStats.totalPlaylists = Math.max(0, state.libraryStats.totalPlaylists - 1);
     },
     addToFollowedArtists: (state, action) => {
       const artist = action.payload;
-      if (!state.followedArtists.some(a => a.id === artist.id)) {
+      if (!state.followedArtists.some((a) => a.id === artist.id)) {
         state.followedArtists.push(artist);
         state.libraryStats.totalArtists += 1;
       }
     },
     removeFromFollowedArtists: (state, action) => {
       const artistId = action.payload;
-      state.followedArtists = state.followedArtists.filter(a => a.id !== artistId);
+      state.followedArtists = state.followedArtists.filter((a) => a.id !== artistId);
       state.libraryStats.totalArtists = Math.max(0, state.libraryStats.totalArtists - 1);
     },
   },

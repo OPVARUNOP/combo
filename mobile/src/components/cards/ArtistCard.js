@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -14,7 +8,13 @@ import { colors, spacing, typography, radius } from '../../styles/theme';
 
 const { width } = Dimensions.get('window');
 
-const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, showGenre = false }) => {
+const ArtistCard = ({
+  artist,
+  onPress,
+  size = 'medium',
+  showFollowers = true,
+  showGenre = false,
+}) => {
   const getCardSize = () => {
     switch (size) {
       case 'small':
@@ -47,7 +47,9 @@ const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, sh
   };
 
   const formatFollowers = (count) => {
-    if (!count) return '';
+    if (!count) {
+      return '';
+    }
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     }
@@ -57,7 +59,9 @@ const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, sh
     return count.toString();
   };
 
-  if (!artist) return null;
+  if (!artist) {
+    return null;
+  }
 
   return (
     <TouchableOpacity
@@ -70,17 +74,22 @@ const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, sh
           <FastImage
             source={{ uri: artist.artwork }}
             style={[styles.image, { width: cardSize.imageSize, height: cardSize.imageSize }]}
-            resizeMode="cover"
+            resizeMode='cover'
           />
         ) : (
-          <View style={[styles.imagePlaceholder, { width: cardSize.imageSize, height: cardSize.imageSize }]}>
-            <Ionicons name="person" size={24} color={colors.textSecondary} />
+          <View
+            style={[
+              styles.imagePlaceholder,
+              { width: cardSize.imageSize, height: cardSize.imageSize },
+            ]}
+          >
+            <Ionicons name='person' size={24} color={colors.textSecondary} />
           </View>
         )}
 
         {size === 'large' && (
           <TouchableOpacity style={styles.playButton}>
-            <Ionicons name="play" size={20} color={colors.white} />
+            <Ionicons name='play' size={20} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -99,11 +108,7 @@ const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, sh
           </Text>
         )}
 
-        {showGenre && artist.genre && (
-          <Text style={styles.genre}>
-            {artist.genre}
-          </Text>
-        )}
+        {showGenre && artist.genre && <Text style={styles.genre}>{artist.genre}</Text>}
 
         {size === 'large' && artist.trackCount && (
           <Text style={styles.trackCount}>
@@ -122,45 +127,39 @@ const ArtistCard = ({ artist, onPress, size = 'medium', showFollowers = true, sh
 };
 
 const styles = StyleSheet.create({
+  albumCount: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginTop: 2,
+    textAlign: 'left',
+  },
   container: {
+    alignItems: 'center',
     marginRight: spacing.md,
-    alignItems: 'center',
-  },
-  imageContainer: {
-    position: 'relative',
-    marginBottom: spacing.sm,
-  },
-  image: {
-    borderRadius: size === 'large' ? radius.lg : radius.full,
-    backgroundColor: colors.gray800,
-  },
-  imagePlaceholder: {
-    borderRadius: size === 'large' ? radius.lg : radius.full,
-    backgroundColor: colors.gray800,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   content: {
-    width: '100%',
     alignItems: 'center',
+    width: '100%',
   },
-  name: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
+  genre: {
+    color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
+    marginTop: 2,
     textAlign: 'center',
+  },
+  image: {
+    backgroundColor: colors.gray800,
+    borderRadius: size === 'large' ? radius.lg : radius.full,
+  },
+  imageContainer: {
+    marginBottom: spacing.sm,
+    position: 'relative',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: size === 'large' ? radius.lg : radius.full,
+    justifyContent: 'center',
   },
   largeName: {
     fontSize: typography.fontSize.xl,
@@ -169,25 +168,31 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   listeners: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
     textAlign: 'center',
   },
-  genre: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textDisabled,
+  name: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: 2,
     textAlign: 'center',
-    marginTop: 2,
+  },
+  playButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    bottom: 8,
+    height: 32,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 8,
+    width: 32,
   },
   trackCount: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
-    marginTop: 2,
-    textAlign: 'left',
-  },
-  albumCount: {
     fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
     marginTop: 2,
     textAlign: 'left',
   },

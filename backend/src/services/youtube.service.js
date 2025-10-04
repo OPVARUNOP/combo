@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const config = require('../config/config');
 const { redisClient } = require('./redis');
 
-const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
+const YOUTUBE_API_URL = process.env.YOUTUBE_API_BASE_URL || 'https://www.googleapis.com/youtube/v3';
 
 /**
  * Search for videos on YouTube
@@ -14,13 +14,13 @@ const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
 const searchVideos = async (query, options = {}) => {
   const { maxResults = 10, pageToken = '' } = options;
   const cacheKey = `youtube:search:${query}:${maxResults}:${pageToken}`;
-  
+
   // Try to get from cache first
   const cachedResults = await redisClient.get(cacheKey);
   if (cachedResults) {
     return JSON.parse(cachedResults);
   }
-  
+
   try {
     const params = {
       part: 'snippet',
@@ -28,21 +28,25 @@ const searchVideos = async (query, options = {}) => {
       type: 'video',
       videoCategoryId: '10', // Music category
       maxResults,
-      key: config.apis.youtube.key,
+      key: process.env.YOUTUBE_API_KEY || config.apis?.youtube?.key,
       pageToken,
     };
-    
+
+    if (!params.key) {
+      throw new Error('YouTube API key is required');
+    }
+
     const response = await axios.get(`${YOUTUBE_API_URL}/search`, { params });
-    
+
     // Extract video IDs for getting more details
-    const videoIds = response.data.items.map(item => item.id.videoId);
-    
+    const videoIds = response.data.items.map((item) => item.id.videoId);
+
     // Get video details
     const videos = await getVideosDetails(videoIds);
-    
+
     // Cache the results for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(videos), 3600);
-    
+
     return videos;
   } catch (error) {
     console.error('YouTube API Error:', error.response?.data || error.message);
@@ -62,10 +66,10 @@ const getVideosDetails = async (videoIds) => {
       id: videoIds.join(','),
       key: config.apis.youtube.key,
     };
-    
+
     const response = await axios.get(`${YOUTUBE_API_URL}/videos`, { params });
-    
-    return response.data.items.map(item => ({
+
+    return response.data.items.map((item) => ({
       id: item.id,
       title: item.snippet.title,
       description: item.snippet.description,
@@ -92,22 +96,22 @@ const getVideosDetails = async (videoIds) => {
  */
 const getVideoDetails = async (videoId) => {
   const cacheKey = `youtube:video:${videoId}`;
-  
+
   // Try to get from cache first
   const cachedVideo = await redisClient.get(cacheKey);
   if (cachedVideo) {
     return JSON.parse(cachedVideo);
   }
-  
+
   try {
     const videos = await getVideosDetails([videoId]);
     const video = videos[0];
-    
+
     if (video) {
       // Cache the video details for 24 hours
       await redisClient.set(cacheKey, JSON.stringify(video), 86400);
     }
-    
+
     return video || null;
   } catch (error) {
     console.error('YouTube API Error:', error.response?.data || error.message);
@@ -132,20 +136,20 @@ const getStreamUrl = async (videoId) => {
  * @returns {Promise<Array>} - List of trending videos
  */
 const getTrendingVideos = async (options = {}) => {
-  const { 
+  const {
     regionCode = 'US',
     maxResults = 10,
     category = '10', // Music category
   } = options;
-  
+
   const cacheKey = `youtube:trending:${regionCode}:${category}:${maxResults}`;
-  
+
   // Try to get from cache first
   const cachedResults = await redisClient.get(cacheKey);
   if (cachedResults) {
     return JSON.parse(cachedResults);
   }
-  
+
   try {
     const params = {
       part: 'snippet,contentDetails,statistics',
@@ -155,10 +159,10 @@ const getTrendingVideos = async (options = {}) => {
       maxResults,
       key: config.apis.youtube.key,
     };
-    
+
     const response = await axios.get(`${YOUTUBE_API_URL}/videos`, { params });
-    
-    const videos = response.data.items.map(item => ({
+
+    const videos = response.data.items.map((item) => ({
       id: item.id,
       title: item.snippet.title,
       description: item.snippet.description,
@@ -172,10 +176,10 @@ const getTrendingVideos = async (options = {}) => {
       category: item.snippet.categoryId,
       tags: item.snippet.tags || [],
     }));
-    
+
     // Cache the results for 1 hour
     await redisClient.set(cacheKey, JSON.stringify(videos), 3600);
-    
+
     return videos;
   } catch (error) {
     console.error('YouTube API Error:', error.response?.data || error.message);
@@ -190,13 +194,13 @@ const getTrendingVideos = async (options = {}) => {
  */
 const parseDuration = (duration) => {
   const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-  
+
   if (!match) return 0;
-  
-  const hours = (parseInt(match[1]) || 0);
-  const minutes = (parseInt(match[2]) || 0);
-  const seconds = (parseInt(match[3]) || 0);
-  
+
+  const hours = parseInt(match[1]) || 0;
+  const minutes = parseInt(match[2]) || 0;
+  const seconds = parseInt(match[3]) || 0;
+
   return hours * 3600 + minutes * 60 + seconds;
 };
 

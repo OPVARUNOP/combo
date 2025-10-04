@@ -1,72 +1,216 @@
 #!/usr/bin/env node
 
+// Load environment variables first
+require('dotenv').config();
+const logger = require('./src/config/logger');
+
+// Initialize Firebase Admin
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin SDK
+try {
+  // Log the environment variables for debugging
+  logger.info('Environment variables loaded:', {
+    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Not set',
+    FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL ? 'Set' : 'Not set',
+    FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY ? 'Set' : 'Not set',
+    FIREBASE_DATABASE_URL: process.env.FIREBASE_DATABASE_URL || 'Not set',
+  });
+
+  // Create service account object from environment variables
+  if (!process.env.FIREBASE_PRIVATE_KEY) {
+    throw new Error('FIREBASE_PRIVATE_KEY is not set in environment variables');
+  }
+
+  // Handle both single and double escaped newlines
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') // Replace escaped newlines
+    .replace(/^['"](.*)['"]$/, '$1'); // Remove surrounding quotes if present
+
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: privateKey,
+  };
+
+  // Log the service account info (without the private key)
+  logger.info('Service account info:', {
+    projectId: serviceAccount.projectId,
+    clientEmail: serviceAccount.clientEmail,
+    privateKey: serviceAccount.privateKey ? '***' : 'Not set',
+  });
+
+  try {
+    // Initialize Firebase with the service account
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+
+    logger.info('Firebase Admin SDK initialized successfully with config:', {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      databaseURL: process.env.FIREBASE_DATABASE_URL,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+  } catch (error) {
+    logger.error('Error initializing Firebase Admin SDK:', error);
+    throw error;
+  }
+
+  // Initialize Firestore
+  const db = admin.firestore();
+
+  // Test Firestore connection
+  db.collection('test')
+    .doc('connection')
+    .get()
+    .then(() => {
+      logger.info('Successfully connected to Firestore');
+    })
+    .catch((error) => {
+      logger.error('Failed to connect to Firestore:', error);
+      process.exit(1);
+    });
+
+  logger.info('Firebase Admin SDK initialized successfully');
+} catch (error) {
+  logger.error('Failed to initialize Firebase Admin SDK:', error);
+  process.exit(1);
+}
+
 /**
  * COMBO Backend Server with Firebase Integration
- * Features: Rate limiting, CORS protection, Firebase Authentication
+ * Features: Rate limiting, CORS protection, Firebase Authentication & Firestore
  */
 
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { v4: uuidv4 } = require('uuid');
-
-// Import our database service
-const database = require('./src/services/database.service');
-const ApiResponse = require('./src/utils/apiResponse');
-
-// Health check for Firebase services
-const checkFirebaseHealth = async () => {
-  try {
-    // Test database connection
-    await database.get('health');
-    return { status: 'healthy', timestamp: new Date().toISOString() };
-  } catch (error) {
-    console.error('Database health check failed:', error);
-    return {
-      status: 'unhealthy',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    };
-  }
-};
+const config = require('./src/config/config');
+const ApiResponse = require('./src/utils/ApiResponse');
 
 // Initialize Express
 const app = express();
+// Initialize Firebase Service
+const firebaseService = require('./src/services/firebase.service');
+app.locals.firebaseService = firebaseService;
+logger.info('Firebase service initialized');
 
-// Trust proxy for Cloud Run
-app.set('trust proxy', 1);
+// Initialize Backblaze B2 Service (optional)
+let b2Service = null;
+
+try {
+  const B2Service = require('./src/services/b2-service');
+  b2Service = new B2Service();
+
+  // Initialize B2 service and make it available in app locals
+  b2Service
+    .initialize()
+    .then(() => {
+      app.locals.b2Service = b2Service;
+      logger.info('B2 service initialized and attached to app.locals');
+    })
+    .catch((error) => {
+      logger.warn('B2 service initialization failed (continuing without B2):', error.message);
+      app.locals.b2Service = null;
+    });
+} catch (error) {
+  logger.warn('B2 service is not available (continuing without B2):', error.message);
+  app.locals.b2Service = null;
+}
+
+const database = admin.database();
+
+// Health check for services
+const checkServicesHealth = async () => {
+  const results = {
+    b2: { status: 'unknown' },
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    // Test database connection
+    await database.get('health');
+    results.database = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    logger.error('Database health check failed:', error);
+    results.database = {
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Test B2 connection if available
+  if (b2Service) {
+    try {
+      await b2Service.initialize();
+      results.b2 = {
+        status: 'healthy',
+        bucket: b2Service.bucketName,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      results.b2 = {
+        status: 'unhealthy',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  } else {
+    results.b2 = {
+      status: 'not_configured',
+      message: 'B2 service is not configured',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Determine overall status
+  const allHealthy = Object.values(results)
+    .filter((service) => typeof service === 'object' && 'status' in service)
+    .every((service) => service.status === 'healthy');
+
+  return {
+    ...results,
+    status: allHealthy ? 'healthy' : 'degraded',
+  };
+};
 
 // Security middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
+  })
+);
 
 // CORS configuration
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      // Add your production domains here
-    ];
-
-    if (allowedOrigins.indexOf(origin) !== -1 ||
-        origin.endsWith('.web.app') ||
-        origin.endsWith('.firebaseapp.com')) {
+    // Check if the origin is in the allowed origins list or is a Firebase domain
+    if (
+      config.allowedOrigins.includes(origin) ||
+      origin.endsWith('.web.app') ||
+      origin.endsWith('.firebaseapp.com')
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Total-Count'],
+};
+
+app.use(cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -79,7 +223,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => req.path === '/health' || req.path === '/api',
-  keyGenerator: (req) => req.headers['x-forwarded-for'] || req.ip
+  keyGenerator: (req) => req.ip,
 });
 
 app.use(limiter);
@@ -89,16 +233,16 @@ app.get('/health', async (req, res) => {
   const apiResponse = new ApiResponse(res);
 
   try {
-    const databaseHealth = await checkFirebaseHealth();
+    const servicesHealth = await checkServicesHealth();
     const healthStatus = {
-      status: databaseHealth.status === 'healthy' ? 'OK' : 'WARNING',
+      status: servicesHealth.status === 'healthy' ? 'OK' : 'WARNING',
       timestamp: new Date().toISOString(),
       service: 'COMBO Backend',
       environment: process.env.NODE_ENV || 'development',
-      database: databaseHealth,
+      services: servicesHealth,
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      node: process.version
+      node: process.version,
     };
 
     const statusCode = healthStatus.status === 'OK' ? 200 : 503;
@@ -109,36 +253,45 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// Audio routes
+const audioRoutes = require('./routes/audioRoutes');
+app.use('/api/audio', audioRoutes);
+
 // API info endpoint
 app.get('/api', (req, res) => {
   const apiResponse = new ApiResponse(res);
-  apiResponse.success({
-    name: 'COMBO Music Streaming API',
-    version: '1.0.0',
-    description: 'A music streaming platform API with Firebase integration',
-    endpoints: {
-      users: '/api/users',
-      music: '/api/music',
-      playlists: '/api/playlists',
-      favorites: '/api/favorites',
-      'recently-played': '/api/recently-played',
-      stats: '/api/stats',
-      health: '/health'
+  apiResponse.success(
+    {
+      name: 'COMBO Music Streaming API',
+      version: '1.0.0',
+      description: 'A music streaming platform API with Firebase integration',
+      endpoints: {
+        users: '/api/users',
+        music: '/api/music',
+        playlists: '/api/playlists',
+        favorites: '/api/favorites',
+        'recently-played': '/api/recently-played',
+        stats: '/api/stats',
+        health: '/health',
+      },
+      authentication: 'JWT Bearer token required for protected endpoints',
     },
-    authentication: 'JWT Bearer token required for protected endpoints'
-  }, 'API information retrieved successfully');
+    'API information retrieved successfully'
+  );
 });
 
 // Routes
+app.use('/api/auth', require('./src/routes/auth.route'));
 app.use('/api/users', require('./src/routes/user.route'));
 app.use('/api/music', require('./src/routes/music.route'));
 app.use('/api/playlists', require('./src/routes/playlist.route'));
 app.use('/api/favorites', require('./src/routes/favorites.route'));
 app.use('/api/recently-played', require('./src/routes/recentlyPlayed.route'));
 app.use('/api/stats', require('./src/routes/stats.route'));
+app.use('/api/files', require('./src/routes/file.routes'));
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Unhandled error:', err);
   const apiResponse = new ApiResponse(res);
   apiResponse.serverError('An unexpected error occurred');
@@ -152,7 +305,6 @@ app.use((req, res) => {
 
 // Start the server
 const PORT = process.env.PORT || 8080;
-# Triggering a new build
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
   console.log('📡 Health check at: http://0.0.0.0:' + PORT + '/health');

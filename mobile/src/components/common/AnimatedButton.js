@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   TouchableOpacity,
   Text,
   View,
-  Animated,
   ActivityIndicator,
   StyleSheet,
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'react-native-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withSequence,
+  interpolateColor,
+} from 'react-native-reanimated';
 import { colors, spacing, radius, typography, animation } from '../styles/theme';
+
+import { useTheme } from '../../styles/theme';
 
 export const AnimatedButton = ({
   title,
@@ -24,65 +33,62 @@ export const AnimatedButton = ({
   animationPreset = 'button',
   ...props
 }) => {
-  const [scaleValue] = useState(new Animated.Value(1));
+  const { theme } = useTheme();
+  const scaleValue = useSharedValue(1);
 
   const handlePressIn = () => {
-    Animated.spring(scaleValue, {
-      toValue: 0.95,
-      useNativeDriver: true,
-      ...animation.presets[animationPreset],
-    }).start();
+    scaleValue.value = withSpring(0.95, animation.presets[animationPreset]);
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleValue, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-      ...animation.presets[animationPreset],
-    }).start();
+    scaleValue.value = withSpring(1, animation.presets[animationPreset]);
   };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scaleValue.value }],
+    };
+  });
 
   const getButtonColors = () => {
     if (disabled) {
       return {
-        background: colors.gray600,
-        text: colors.textDisabled,
+        background: theme.colors.gray600,
+        text: theme.colors.textDisabled,
       };
     }
 
     switch (variant) {
       case 'primary':
         return {
-          background: [colors.buttonPrimary, colors.buttonPrimaryPressed],
-          text: colors.white,
+          background: [theme.colors.buttonPrimary, theme.colors.buttonPrimaryPressed],
+          text: theme.colors.white,
         };
       case 'secondary':
         return {
-          background: [colors.buttonSecondary, colors.buttonSecondaryPressed],
-          text: colors.white,
+          background: [theme.colors.buttonSecondary, theme.colors.buttonSecondaryPressed],
+          text: theme.colors.white,
         };
       case 'success':
         return {
-          background: [colors.buttonSuccess, colors.buttonSuccessPressed],
-          text: colors.white,
+          background: [theme.colors.buttonSuccess, theme.colors.buttonSuccessPressed],
+          text: theme.colors.white,
         };
       case 'danger':
         return {
-          background: [colors.buttonDanger, colors.buttonDangerPressed],
-          text: colors.white,
+          background: [theme.colors.buttonDanger, theme.colors.buttonDangerPressed],
+          text: theme.colors.white,
         };
       case 'outline':
         return {
           background: 'transparent',
-          border: colors.primary,
-          text: colors.primary,
+          border: theme.colors.primary,
+          text: theme.colors.primary,
         };
       default:
         return {
-          background: [colors.buttonPrimary, colors.buttonPrimaryPressed],
-          text: colors.white,
+          background: [theme.colors.buttonPrimary, theme.colors.buttonPrimaryPressed],
+          text: theme.colors.white,
         };
     }
   };
@@ -93,14 +99,7 @@ export const AnimatedButton = ({
   const iconSize = size === 'small' ? 16 : size === 'large' ? 24 : 20;
 
   return (
-    <Animated.View
-      style={[
-        {
-          transform: [{ scale: scaleValue }],
-        },
-        style,
-      ]}
-    >
+    <Animated.View style={[animatedStyle, style]}>
       <TouchableOpacity
         onPress={disabled || loading ? undefined : onPress}
         onPressIn={handlePressIn}
@@ -120,14 +119,18 @@ export const AnimatedButton = ({
       >
         {variant !== 'outline' ? (
           <LinearGradient
-            colors={Array.isArray(buttonColors.background) ? buttonColors.background : [buttonColors.background]}
+            colors={
+              Array.isArray(buttonColors.background)
+                ? buttonColors.background
+                : [buttonColors.background]
+            }
             style={styles.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
             <View style={styles.buttonContent}>
               {loading ? (
-                <ActivityIndicator color={buttonColors.text} size="small" />
+                <ActivityIndicator color={buttonColors.text} size='small' />
               ) : (
                 <>
                   {icon && (
@@ -148,7 +151,7 @@ export const AnimatedButton = ({
         ) : (
           <View style={styles.buttonContent}>
             {loading ? (
-              <ActivityIndicator color={buttonColors.text} size="small" />
+              <ActivityIndicator color={buttonColors.text} size='small' />
             ) : (
               <>
                 {icon && (
@@ -179,36 +182,25 @@ export const FloatingActionButton = ({
   animationPreset = 'bounce',
   ...props
 }) => {
-  const [scaleValue] = useState(new Animated.Value(1));
+  const { theme } = useTheme();
+  const scaleValue = useSharedValue(1);
 
   const handlePressIn = () => {
-    Animated.spring(scaleValue, {
-      toValue: 0.9,
-      useNativeDriver: true,
-      ...animation.presets[animationPreset],
-    }).start();
+    scaleValue.value = withSpring(0.9, animation.presets[animationPreset]);
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleValue, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-      ...animation.presets[animationPreset],
-    }).start();
+    scaleValue.value = withSpring(1, animation.presets[animationPreset]);
   };
 
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scaleValue.value }],
+    };
+  });
+
   return (
-    <Animated.View
-      style={[
-        {
-          transform: [{ scale: scaleValue }],
-        },
-        styles.fabContainer,
-        style,
-      ]}
-    >
+    <Animated.View style={[animatedStyle, styles.fabContainer, style]}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
@@ -217,12 +209,12 @@ export const FloatingActionButton = ({
         {...props}
       >
         <LinearGradient
-          colors={colors.gradientPrimary}
+          colors={theme.colors.gradientPrimary}
           style={styles.fabGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <Ionicons name={icon} size={size * 0.4} color={colors.white} />
+          <Ionicons name={icon} size={size * 0.4} color={theme.colors.white} />
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
@@ -236,36 +228,57 @@ export const IconButton = ({
   variant = 'default',
   style,
   animationPreset = 'button',
+  liked = false,
   ...props
 }) => {
-  const [scaleValue] = useState(new Animated.Value(1));
+  const { theme } = useTheme();
+  const scaleValue = useSharedValue(1);
+  const colorValue = useSharedValue(liked ? 1 : 0);
 
   const handlePressIn = () => {
-    Animated.spring(scaleValue, {
-      toValue: 0.9,
-      useNativeDriver: true,
-      ...animation.presets[animationPreset],
-    }).start();
+    scaleValue.value = withSpring(0.9, animation.presets[animationPreset]);
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleValue, {
-      toValue: 1,
-      friction: 3,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
+    scaleValue.value = withSpring(1, animation.presets[animationPreset]);
   };
+
+  useEffect(() => {
+    if (liked) {
+      colorValue.value = withTiming(1, { duration: 200 });
+      scaleValue.value = withSequence(
+        withSpring(1.3, { damping: 10, stiffness: 200 }),
+        withSpring(1, { damping: 10, stiffness: 200 }),
+      );
+    } else {
+      colorValue.value = withTiming(0, { duration: 200 });
+    }
+  }, [liked, colorValue, scaleValue]);
+
+  const animatedIconStyle = useAnimatedStyle(() => {
+    const iconColor = interpolateColor(
+      colorValue.value,
+      [0, 1],
+      [theme.colors.text, theme.colors.error],
+    );
+    return { color: iconColor };
+  });
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scaleValue.value }],
+    };
+  });
 
   const getButtonStyle = () => {
     switch (variant) {
       case 'primary':
         return {
-          backgroundColor: colors.buttonPrimary,
+          backgroundColor: theme.colors.buttonPrimary,
         };
       case 'secondary':
         return {
-          backgroundColor: colors.buttonSecondary,
+          backgroundColor: theme.colors.buttonSecondary,
         };
       default:
         return {
@@ -275,14 +288,7 @@ export const IconButton = ({
   };
 
   return (
-    <Animated.View
-      style={[
-        {
-          transform: [{ scale: scaleValue }],
-        },
-        style,
-      ]}
-    >
+    <Animated.View style={animatedContainerStyle}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
@@ -295,88 +301,14 @@ export const IconButton = ({
             borderRadius: size / 2,
             ...getButtonStyle(),
           },
+          style,
         ]}
         {...props}
       >
-        <Ionicons name={icon} size={size * 0.4} color={colors.white} />
+        <Animated.Text style={animatedIconStyle}>
+          <Ionicons name={liked ? 'heart' : 'heart-outline'} size={size * 0.5} />
+        </Animated.Text>
       </TouchableOpacity>
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    borderRadius: radius.lg,
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
-  },
-  gradient: {
-    flex: 1,
-    borderRadius: radius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontWeight: '600',
-  },
-  icon: {
-    marginRight: spacing.sm,
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    zIndex: 1000,
-  },
-  fab: {
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 12,
-      },
-    }),
-  },
-  fabGradient: {
-    flex: 1,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-});
-
-export default AnimatedButton;

@@ -22,7 +22,7 @@ import Animated, {
   Extrapolate,
   useAnimatedProps,
 } from 'react-native-reanimated';
-import TrackPlayer, { 
+import TrackPlayer, {
   usePlaybackState,
   State as TrackPlayerState,
   useTrackPlayerProgress,
@@ -52,16 +52,14 @@ const MiniPlayer = ({ onPress }) => {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   const progressAnim = React.useRef(new RNAnimated.Value(0)).current;
-  
+
   // Get current track and player state
-  const { currentTrack, queue, currentIndex } = useSelector(
-    (state) => state.player
-  );
-  
+  const { currentTrack, queue, currentIndex } = useSelector((state) => state.player);
+
   // Get playback state and progress
   const playbackState = usePlaybackState();
   const { position, duration, buffered } = useTrackPlayerProgress();
-  
+
   // Update progress bar
   useEffect(() => {
     if (duration > 0) {
@@ -74,7 +72,7 @@ const MiniPlayer = ({ onPress }) => {
       }).start();
     }
   }, [position, duration]);
-  
+
   // Handle track changes
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async (event) => {
     if (event.nextTrack !== null) {
@@ -85,17 +83,19 @@ const MiniPlayer = ({ onPress }) => {
       }
     }
   });
-  
+
   // Handle player state changes
   useEffect(() => {
-    dispatch(setPlaybackState({
-      isPlaying: playbackState === TrackPlayerState.Playing,
-      isPaused: playbackState === TrackPlayerState.Paused,
-      isStopped: playbackState === TrackPlayerState.Stopped,
-      isBuffering: playbackState === TrackPlayerState.Buffering,
-    }));
+    dispatch(
+      setPlaybackState({
+        isPlaying: playbackState === TrackPlayerState.Playing,
+        isPaused: playbackState === TrackPlayerState.Paused,
+        isStopped: playbackState === TrackPlayerState.Stopped,
+        isBuffering: playbackState === TrackPlayerState.Buffering,
+      }),
+    );
   }, [playbackState]);
-  
+
   // Gesture handler for swipe up/down
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, ctx) => {
@@ -105,7 +105,7 @@ const MiniPlayer = ({ onPress }) => {
       // Only allow swiping up
       if (event.translationY < 0) {
         translateY.value = ctx.startY + event.translationY;
-        
+
         // Scale down slightly when swiping up
         const scaleValue = 1 - Math.min(Math.abs(event.translationY) / 500, 0.1);
         scale.value = withTiming(scaleValue, { duration: 100 });
@@ -115,12 +115,16 @@ const MiniPlayer = ({ onPress }) => {
       // Snap back to original position or open full player
       if (event.translationY < -THRESHOLD || event.velocityY < -1000) {
         // Open full player
-        translateY.value = withSpring(-height * 0.7, {
-          damping: 15,
-          stiffness: 100,
-        }, () => {
-          runOnJS(handleOpenPlayer)();
-        });
+        translateY.value = withSpring(
+          -height * 0.7,
+          {
+            damping: 15,
+            stiffness: 100,
+          },
+          () => {
+            runOnJS(handleOpenPlayer)();
+          },
+        );
       } else {
         // Return to mini player
         translateY.value = withSpring(0, { damping: 15 });
@@ -128,20 +132,17 @@ const MiniPlayer = ({ onPress }) => {
       }
     },
   });
-  
+
   // Animated styles
   const containerStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
+    transform: [{ translateY: translateY.value }, { scale: scale.value }],
     opacity: opacity.value,
   }));
-  
+
   const progressBarStyle = useAnimatedStyle(() => ({
     width: `${progressAnim}%`,
   }));
-  
+
   // Player controls
   const handlePlayPause = async () => {
     if (playbackState === TrackPlayerState.Playing) {
@@ -150,7 +151,7 @@ const MiniPlayer = ({ onPress }) => {
       await TrackPlayer.play();
     }
   };
-  
+
   const handleNext = async () => {
     try {
       await TrackPlayer.skipToNext();
@@ -158,7 +159,7 @@ const MiniPlayer = ({ onPress }) => {
       console.error('Error skipping to next track:', error);
     }
   };
-  
+
   const handlePrevious = async () => {
     try {
       // If we're more than 3 seconds into the song, restart it
@@ -171,18 +172,22 @@ const MiniPlayer = ({ onPress }) => {
       console.error('Error skipping to previous track:', error);
     }
   };
-  
+
   const handleOpenPlayer = () => {
     if (onPress) {
       onPress();
     }
   };
 
-  if (!currentTrack) return null;
-  
+  if (!currentTrack) {
+    return null;
+  }
+
   // Get formatted time
   const formatTime = (seconds) => {
-    if (isNaN(seconds)) return '0:00';
+    if (isNaN(seconds)) {
+      return '0:00';
+    }
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -195,25 +200,25 @@ const MiniPlayer = ({ onPress }) => {
         <View style={styles.progressBarContainer}>
           <Animated.View style={[styles.progressBar, progressBarStyle]} />
         </View>
-        
+
         {/* Mini player content */}
         <TouchableWithoutFeedback onPress={handleOpenPlayer}>
           <View style={styles.content}>
             {/* Album art with fallback */}
             <View style={styles.artworkContainer}>
               {currentTrack.artwork ? (
-                <FastImage 
+                <FastImage
                   source={{ uri: currentTrack.artwork }}
                   style={styles.artwork}
-                  resizeMode="cover"
+                  resizeMode='cover'
                 />
               ) : (
                 <View style={[styles.artwork, styles.artworkPlaceholder]}>
-                  <Ionicons name="musical-notes" size={24} color={colors.textSecondary} />
+                  <Ionicons name='musical-notes' size={24} color={colors.textSecondary} />
                 </View>
               )}
             </View>
-            
+
             {/* Track info */}
             <View style={styles.trackInfo}>
               <Text style={styles.title} numberOfLines={1}>
@@ -223,39 +228,31 @@ const MiniPlayer = ({ onPress }) => {
                 {currentTrack.artist || 'Unknown Artist'}
               </Text>
             </View>
-            
+
             {/* Controls */}
             <View style={styles.controls}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.controlButton}
                 onPress={handlePlayPause}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons
-                  name={
-                    playbackState === TrackPlayerState.Playing 
-                      ? 'pause' 
-                      : 'play'
-                  }
+                  name={playbackState === TrackPlayerState.Playing ? 'pause' : 'play'}
                   size={24}
                   color={colors.primary}
                 />
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.controlButton}
                 onPress={handleNext}
                 disabled={currentIndex >= queue.length - 1}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons 
-                  name="play-skip-forward" 
-                  size={22} 
-                  color={
-                    currentIndex < queue.length - 1 
-                      ? colors.text 
-                      : colors.textDisabled
-                  } 
+                <Ionicons
+                  name='play-skip-forward'
+                  size={22}
+                  color={currentIndex < queue.length - 1 ? colors.text : colors.textDisabled}
                 />
               </TouchableOpacity>
             </View>
@@ -267,82 +264,82 @@ const MiniPlayer = ({ onPress }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: MINI_PLAYER_HEIGHT,
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    zIndex: 100,
-    ...shadows.lg,
+  artist: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
   },
-  progressBarContainer: {
-    height: 2,
-    width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: colors.primary,
-  },
-  content: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing[4],
+  artwork: {
+    borderRadius: 4,
+    height: 50,
+    width: 50,
   },
   artworkContainer: {
-    marginRight: spacing[3],
     elevation: 2,
+    marginRight: spacing[3],
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
   },
-  artwork: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-  },
   artworkPlaceholder: {
+    alignItems: 'center',
     backgroundColor: colors.gray800,
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  trackInfo: {
+  container: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    bottom: 0,
+    height: MINI_PLAYER_HEIGHT,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    zIndex: 100,
+    ...shadows.lg,
+  },
+  content: {
+    alignItems: 'center',
     flex: 1,
-    marginRight: spacing[3],
-  },
-  title: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  artist: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  controls: {
     flexDirection: 'row',
-    alignItems: 'center',
+    paddingHorizontal: spacing[4],
   },
   controlButton: {
     marginLeft: spacing[4],
     padding: spacing[1],
   },
+  controls: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  progressBar: {
+    backgroundColor: colors.primary,
+    height: '100%',
+  },
+  progressBarContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    height: 2,
+    width: '100%',
+  },
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing[4],
     marginTop: 2,
+    paddingHorizontal: spacing[4],
   },
   timeText: {
-    fontSize: typography.fontSize.xs,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.xs,
+  },
+  title: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  trackInfo: {
+    flex: 1,
+    marginRight: spacing[3],
   },
 });
 

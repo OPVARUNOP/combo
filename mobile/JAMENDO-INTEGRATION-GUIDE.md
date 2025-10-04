@@ -13,11 +13,13 @@ Your COMBO app now uses a **backend middleman** that communicates with Jamendo A
 ## 📡 API Flow
 
 ### **Before (Direct API):**
+
 ```
 Mobile App → Jamendo API (API key exposed)
 ```
 
 ### **After (Backend Middleman):**
+
 ```
 Mobile App → Your Backend API → Jamendo API (API key secure)
 ```
@@ -27,6 +29,7 @@ Mobile App → Your Backend API → Jamendo API (API key secure)
 Your backend needs to implement these endpoints:
 
 ### **1. Search Endpoint**
+
 ```javascript
 // GET /search?q={query}&type=track
 app.get('/search', async (req, res) => {
@@ -39,12 +42,12 @@ app.get('/search', async (req, res) => {
       search: q,
       limit,
       offset,
-      format: 'json'
-    }
+      format: 'json',
+    },
   });
 
   // Format response for mobile app
-  const formattedTracks = response.data.results.map(track => ({
+  const formattedTracks = response.data.results.map((track) => ({
     id: track.id,
     title: track.name,
     artist: track.artist_name,
@@ -53,19 +56,20 @@ app.get('/search', async (req, res) => {
     artwork_url: track.album_image,
     audio_url_low: track.audio, // Jamendo provides streaming URL
     genre: track.genre,
-    release_date: track.releasedate
+    release_date: track.releasedate,
   }));
 
   res.json({
     data: {
       tracks: formattedTracks,
-      total: response.data.headers.results_count
-    }
+      total: response.data.headers.results_count,
+    },
   });
 });
 ```
 
 ### **2. Track Streaming Endpoint**
+
 ```javascript
 // GET /tracks/{id}/stream
 app.get('/tracks/:id/stream', async (req, res) => {
@@ -76,8 +80,8 @@ app.get('/tracks/:id/stream', async (req, res) => {
     params: {
       client_id: 'YOUR_JAMENDO_API_KEY',
       id,
-      format: 'json'
-    }
+      format: 'json',
+    },
   });
 
   if (response.data.results.length === 0) {
@@ -92,13 +96,14 @@ app.get('/tracks/:id/stream', async (req, res) => {
       stream_url: track.audio, // Jamendo's streaming URL
       duration: track.duration,
       title: track.name,
-      artist: track.artist_name
-    }
+      artist: track.artist_name,
+    },
   });
 });
 ```
 
 ### **3. Authentication Endpoints**
+
 ```javascript
 // POST /auth/login
 app.post('/auth/login', async (req, res) => {
@@ -112,8 +117,8 @@ app.post('/auth/login', async (req, res) => {
     data: {
       user: userData,
       accessToken: 'jwt_token_here',
-      refreshToken: 'refresh_token_here'
-    }
+      refreshToken: 'refresh_token_here',
+    },
   });
 });
 ```
@@ -121,29 +126,34 @@ app.post('/auth/login', async (req, res) => {
 ## 🎵 Jamendo API Endpoints You'll Use
 
 ### **Tracks:**
+
 ```
 GET https://api.jamendo.com/v3.0/tracks/?client_id=YOUR_KEY&search=rock
 GET https://api.jamendo.com/v3.0/tracks/?client_id=YOUR_KEY&id=12345
 ```
 
 ### **Albums:**
+
 ```
 GET https://api.jamendo.com/v3.0/albums/?client_id=YOUR_KEY
 GET https://api.jamendo.com/v3.0/albums/tracks/?client_id=YOUR_KEY&id=67890
 ```
 
 ### **Artists:**
+
 ```
 GET https://api.jamendo.com/v3.0/artists/?client_id=YOUR_KEY
 GET https://api.jamendo.com/v3.0/artists/tracks/?client_id=YOUR_KEY&id=11111
 ```
 
 ### **Playlists:**
+
 ```
 GET https://api.jamendo.com/v3.0/playlists/?client_id=YOUR_KEY
 ```
 
 ### **Genres:**
+
 ```
 GET https://api.jamendo.com/v3.0/genres/?client_id=YOUR_KEY
 ```
@@ -153,12 +163,16 @@ GET https://api.jamendo.com/v3.0/genres/?client_id=YOUR_KEY
 The mobile app now calls your backend instead of external APIs:
 
 ### **Before:**
+
 ```javascript
 // Direct Jamendo call (insecure)
-const response = await fetch('https://api.jamendo.com/v3.0/tracks/?client_id=EXPOSED_KEY&search=rock');
+const response = await fetch(
+  'https://api.jamendo.com/v3.0/tracks/?client_id=EXPOSED_KEY&search=rock',
+);
 ```
 
 ### **After:**
+
 ```javascript
 // Call your secure backend
 const response = await trackAPI.search('rock', { limit: 20 });
@@ -167,6 +181,7 @@ const response = await trackAPI.search('rock', { limit: 20 });
 ## 🔧 Backend Setup Steps
 
 ### **1. Get Jamendo API Key:**
+
 1. Go to https://developer.jamendo.com/
 2. Sign up for a free account
 3. Get your `client_id` (API key)
@@ -175,22 +190,26 @@ const response = await trackAPI.search('rock', { limit: 20 });
 ### **2. Backend Routes to Implement:**
 
 #### **Search Route:**
+
 ```javascript
 app.get('/search', jamendoSearchHandler);
 ```
 
 #### **Track Details:**
+
 ```javascript
 app.get('/tracks/:id', jamendoTrackHandler);
 app.get('/tracks/:id/stream', jamendoStreamHandler);
 ```
 
 #### **Albums:**
+
 ```javascript
 app.get('/albums/:id', jamendoAlbumHandler);
 ```
 
 #### **Artists:**
+
 ```javascript
 app.get('/artists/:id', jamendoArtistHandler);
 app.get('/artists/:id/top-tracks', jamendoArtistTopTracksHandler);
@@ -238,17 +257,20 @@ Your backend should format Jamendo responses to match the mobile app's expected 
 ## 🎯 Jamendo API Features
 
 ### **Free Tier Limits:**
+
 - 30 requests per minute
 - Search results limited to 200 per query
 - Perfect for development and small-scale apps
 
 ### **Music Quality:**
+
 - MP3 format (128kbps - 320kbps)
 - Direct streaming URLs
 - Album artwork in multiple sizes
 - Rich metadata (genre, mood, instruments)
 
 ### **Content Types:**
+
 - **Tracks**: 600,000+ songs
 - **Albums**: 40,000+ albums
 - **Artists**: 40,000+ artists
@@ -258,6 +280,7 @@ Your backend should format Jamendo responses to match the mobile app's expected 
 ## 🚀 Quick Start Backend
 
 ### **Node.js/Express Example:**
+
 ```javascript
 const express = require('express');
 const axios = require('axios');
@@ -276,18 +299,18 @@ app.get('/search', async (req, res) => {
         client_id: JAMENDO_API_KEY,
         search: q,
         limit,
-        format: 'json'
-      }
+        format: 'json',
+      },
     });
 
     // Format for mobile app
-    const tracks = response.data.results.map(track => ({
+    const tracks = response.data.results.map((track) => ({
       id: track.id,
       title: track.name,
       artist: track.artist_name,
       duration: track.duration,
       artwork_url: track.album_image,
-      audio_url_medium: track.audio
+      audio_url_medium: track.audio,
     }));
 
     res.json({ data: { tracks } });
@@ -304,16 +327,19 @@ app.listen(3000, () => {
 ## 📈 Scaling Considerations
 
 ### **Caching:**
+
 - Cache Jamendo responses (Redis/Memory)
 - Cache popular searches
 - Cache frequently accessed tracks
 
 ### **Rate Limiting:**
+
 - Implement rate limiting on your backend
 - Monitor Jamendo API usage
 - Handle API failures gracefully
 
 ### **Error Handling:**
+
 - Fallback for Jamendo API failures
 - Retry logic for failed requests
 - User-friendly error messages
@@ -330,6 +356,7 @@ app.listen(3000, () => {
 ---
 
 **Next Steps:**
+
 1. Get your Jamendo API key
 2. Implement the backend routes above
 3. Test the search functionality

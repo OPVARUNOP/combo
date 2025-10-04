@@ -134,14 +134,16 @@ export const getRecentSearches = async () => {
 
 export const addRecentSearch = async (query) => {
   try {
-    if (!query || typeof query !== 'string') return false;
-    
+    if (!query || typeof query !== 'string') {
+      return false;
+    }
+
     const searches = await getRecentSearches();
     const updatedSearches = [
       query,
-      ...searches.filter((item) => item.toLowerCase() !== query.toLowerCase())
+      ...searches.filter((item) => item.toLowerCase() !== query.toLowerCase()),
     ].slice(0, 10); // Keep only the 10 most recent searches
-    
+
     await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updatedSearches));
     return true;
   } catch (error) {

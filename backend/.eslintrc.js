@@ -5,15 +5,12 @@ module.exports = {
     es2021: true,
     jest: true,
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:prettier/recommended',
-    'plugin:jest/recommended',
-  ],
+  extends: ['eslint:recommended', 'plugin:prettier/recommended', 'plugin:jest/recommended'],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
   },
+  ignorePatterns: ['functions/', 'combo/'],
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',

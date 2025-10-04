@@ -290,6 +290,10 @@ export const animation = {
       duration: 600,
       easing: 'elastic',
     },
+    like: {
+      duration: 400,
+      easing: 'bounce',
+    },
   },
 };
 
@@ -309,6 +313,8 @@ export const zIndex = {
   toast: 1700,
   tooltip: 1800,
 };
+
+export { useTheme } from '../context/ThemeContext';
 
 // Export the theme
 export const theme = {

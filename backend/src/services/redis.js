@@ -41,7 +41,7 @@ class RedisClient {
     try {
       const value = await this.client.get(key);
       if (!value) return null;
-      
+
       try {
         return JSON.parse(value);
       } catch (e) {

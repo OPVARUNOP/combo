@@ -15,16 +15,16 @@ router.get('/', authenticate, async (req, res) => {
     // Get user's songs
     const userSongs = await database.getUserPlaylists(userId);
     const songs = await database.getAllSongs();
-    const userCreatedSongs = songs.filter(song => song.createdBy === userId);
+    const userCreatedSongs = songs.filter((song) => song.createdBy === userId);
 
     // Get user's playlists
     const playlists = await database.getUserPlaylists(userId);
 
     // Get user's recently played
-    const recentlyPlayed = await database.get(`users/${userId}/recentlyPlayed`) || { songs: [] };
+    const recentlyPlayed = (await database.get(`users/${userId}/recentlyPlayed`)) || { songs: [] };
 
     // Get user's favorites
-    const favorites = await database.get(`users/${userId}/favorites`) || { songIds: [] };
+    const favorites = (await database.get(`users/${userId}/favorites`)) || { songIds: [] };
 
     // Calculate statistics
     const stats = {
@@ -32,26 +32,26 @@ router.get('/', authenticate, async (req, res) => {
         totalPlaylists: playlists.length,
         totalSongsCreated: userCreatedSongs.length,
         totalFavoriteSongs: favorites.songIds.length,
-        memberSince: req.user.createdAt
+        memberSince: req.user.createdAt,
       },
       listening: {
         totalSongsPlayed: recentlyPlayed.songs.length,
-        uniqueSongsPlayed: new Set(recentlyPlayed.songs.map(item => item.songId)).size,
+        uniqueSongsPlayed: new Set(recentlyPlayed.songs.map((item) => item.songId)).size,
         totalPlayTime: recentlyPlayed.songs.reduce((total, item) => {
           return total + (item.lastPlayDuration || 0);
-        }, 0)
+        }, 0),
       },
       activity: {
         lastActive: recentlyPlayed.updatedAt || req.user.updatedAt,
         mostPlayedSong: null,
-        favoriteGenres: []
-      }
+        favoriteGenres: [],
+      },
     };
 
     // Find most played song
     if (recentlyPlayed.songs.length > 0) {
       const songPlayCounts = {};
-      recentlyPlayed.songs.forEach(item => {
+      recentlyPlayed.songs.forEach((item) => {
         songPlayCounts[item.songId] = (songPlayCounts[item.songId] || 0) + 1;
       });
 
@@ -63,7 +63,7 @@ router.get('/', authenticate, async (req, res) => {
       if (mostPlayedSong) {
         stats.activity.mostPlayedSong = {
           ...mostPlayedSong,
-          playCount: songPlayCounts[mostPlayedSongId]
+          playCount: songPlayCounts[mostPlayedSongId],
         };
       }
     }
@@ -78,7 +78,7 @@ router.get('/', authenticate, async (req, res) => {
     }
 
     stats.activity.favoriteGenres = Object.entries(genreCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([genre, count]) => ({ genre, count }));
 
@@ -96,17 +96,19 @@ router.get('/top-songs', authenticate, async (req, res) => {
   try {
     const { limit = 10 } = req.query;
 
-    const recentlyPlayed = await database.get(`users/${req.user.id}/recentlyPlayed`) || { songs: [] };
+    const recentlyPlayed = (await database.get(`users/${req.user.id}/recentlyPlayed`)) || {
+      songs: [],
+    };
 
     // Count plays per song
     const songPlayCounts = {};
-    recentlyPlayed.songs.forEach(item => {
+    recentlyPlayed.songs.forEach((item) => {
       songPlayCounts[item.songId] = (songPlayCounts[item.songId] || 0) + 1;
     });
 
     // Get top songs
     const topSongIds = Object.entries(songPlayCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, parseInt(limit))
       .map(([songId]) => songId);
 
@@ -116,7 +118,7 @@ router.get('/top-songs', authenticate, async (req, res) => {
       if (song) {
         topSongs.push({
           ...song,
-          playCount: songPlayCounts[songId]
+          playCount: songPlayCounts[songId],
         });
       }
     }
@@ -133,11 +135,13 @@ router.get('/trends', authenticate, async (req, res) => {
   const apiResponse = new ApiResponse(res);
 
   try {
-    const recentlyPlayed = await database.get(`users/${req.user.id}/recentlyPlayed`) || { songs: [] };
+    const recentlyPlayed = (await database.get(`users/${req.user.id}/recentlyPlayed`)) || {
+      songs: [],
+    };
 
     // Group by day
     const dailyPlays = {};
-    recentlyPlayed.songs.forEach(item => {
+    recentlyPlayed.songs.forEach((item) => {
       const date = new Date(item.playedAt).toDateString();
       dailyPlays[date] = (dailyPlays[date] || 0) + 1;
     });
@@ -150,7 +154,7 @@ router.get('/trends', authenticate, async (req, res) => {
       const dateString = date.toDateString();
       trends.push({
         date: dateString,
-        plays: dailyPlays[dateString] || 0
+        plays: dailyPlays[dateString] || 0,
       });
     }
 

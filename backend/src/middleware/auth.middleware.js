@@ -1,8 +1,9 @@
-const database = require('../services/database.service');
-const jwt = require('jsonwebtoken');
+const admin = require('firebase-admin');
+const logger = require('../config/logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'combo_backend_secret_key_production';
-
+/**
+ * Middleware to authenticate Firebase ID token
+ */
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -10,73 +11,100 @@ const authenticate = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         status: 'error',
-        message: 'Authentication required. Please provide a valid token.'
+        message: 'Authentication required. Please provide a valid token.',
       });
     }
 
-    const token = authHeader.split(' ')[1];
+    const idToken = authHeader.split('Bearer ')[1];
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      // Verify the ID token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
 
-      // Get user from database
-      const user = await database.get(`users/${decoded.userId}`);
+      // Get the user's record from Firestore
+      const userDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
 
-      if (!user) {
+      if (!userDoc.exists) {
         return res.status(401).json({
           status: 'error',
-          message: 'Invalid or expired token. Please log in again.'
+          message: 'User not found. Please register first.',
         });
       }
 
+      const userData = userDoc.data();
+
       // Check if user is active
-      if (!user.isActive) {
-        return res.status(401).json({
+      if (userData.status !== 'active') {
+        return res.status(403).json({
           status: 'error',
-          message: 'Account is deactivated. Please contact support.'
+          message: 'Account is deactivated. Please contact support.',
         });
       }
 
       // Attach user to request object
-      req.user = user;
+      req.user = {
+        id: userDoc.id,
+        ...userData,
+        uid: decodedToken.uid,
+      };
+
       next();
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
+      logger.error('Token verification error:', error);
+
+      if (error.code === 'auth/id-token-expired') {
         return res.status(401).json({
           status: 'error',
-          message: 'Session expired. Please log in again.'
+          message: 'Session expired. Please log in again.',
         });
       }
-      if (error.name === 'JsonWebTokenError') {
+
+      if (error.code === 'auth/argument-error') {
         return res.status(401).json({
           status: 'error',
-          message: 'Invalid token. Please log in again.'
+          message: 'Invalid token format. Please provide a valid token.',
         });
       }
-      throw error;
+
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid or expired token. Please log in again.',
+      });
     }
   } catch (error) {
-    console.error('Authentication error:', error);
+    logger.error('Authentication middleware error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'An error occurred during authentication.'
+      message: 'An error occurred during authentication.',
     });
   }
 };
 
+/**
+ * Middleware to check user roles
+ * @param {Array} roles - Array of allowed roles
+ */
 const authorize = (roles = []) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         status: 'error',
-        message: 'Authentication required.'
+        message: 'Authentication required.',
       });
     }
 
-    if (roles.length && !roles.includes(req.user.role)) {
+    // If no roles specified, allow access
+    if (roles.length === 0) {
+      return next();
+    }
+
+    // Check if user has any of the required roles
+    const hasRole = roles.some((role) => req.user.roles?.includes(role));
+
+    if (!hasRole) {
       return res.status(403).json({
         status: 'error',
-        message: 'You do not have permission to perform this action.'
+        message: 'You do not have permission to perform this action.',
       });
     }
 
@@ -84,7 +112,68 @@ const authorize = (roles = []) => {
   };
 };
 
+/**
+ * Middleware to check if user is the owner of the resource or has admin role
+ * @param {string} resourcePath - Path to the resource in Firestore (e.g., 'users/{userId}')
+ * @returns {Function} Express middleware function
+ */
+const isOwnerOrAdmin = (resourcePath) => {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication required.',
+        });
+      }
+
+      // Admin can access any resource
+      if (req.user.roles?.includes('admin')) {
+        return next();
+      }
+
+      // Replace placeholders in the resource path
+      const path = resourcePath.replace('{userId}', req.user.uid);
+
+      // Check if the resource exists and belongs to the user
+      const [collection, docId] = path.split('/');
+      const doc = await admin.firestore().collection(collection).doc(docId).get();
+
+      if (!doc.exists) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Resource not found.',
+        });
+      }
+
+      // Check if the resource belongs to the user
+      const resourceData = doc.data();
+      if (resourceData.userId !== req.user.uid) {
+        return res.status(403).json({
+          status: 'error',
+          message: 'You do not have permission to access this resource.',
+        });
+      }
+
+      // Attach the resource to the request object
+      req.resource = {
+        id: doc.id,
+        ...resourceData,
+      };
+
+      next();
+    } catch (error) {
+      logger.error('Authorization error:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'An error occurred during authorization.',
+      });
+    }
+  };
+};
+
 module.exports = {
   authenticate,
-  authorize
+  authorize,
+  isOwnerOrAdmin,
 };

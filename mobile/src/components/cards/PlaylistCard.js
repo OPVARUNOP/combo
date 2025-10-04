@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -14,7 +8,13 @@ import { colors, spacing, typography, radius } from '../../styles/theme';
 
 const { width } = Dimensions.get('window');
 
-const PlaylistCard = ({ playlist, onPress, size = 'medium', showDescription = true, showTrackCount = true }) => {
+const PlaylistCard = ({
+  playlist,
+  onPress,
+  size = 'medium',
+  showDescription = true,
+  showTrackCount = true,
+}) => {
   const getCardSize = () => {
     switch (size) {
       case 'small':
@@ -46,7 +46,9 @@ const PlaylistCard = ({ playlist, onPress, size = 'medium', showDescription = tr
     }
   };
 
-  if (!playlist) return null;
+  if (!playlist) {
+    return null;
+  }
 
   return (
     <TouchableOpacity
@@ -59,17 +61,22 @@ const PlaylistCard = ({ playlist, onPress, size = 'medium', showDescription = tr
           <FastImage
             source={{ uri: playlist.artwork }}
             style={[styles.image, { width: cardSize.imageSize, height: cardSize.imageSize }]}
-            resizeMode="cover"
+            resizeMode='cover'
           />
         ) : (
-          <View style={[styles.imagePlaceholder, { width: cardSize.imageSize, height: cardSize.imageSize }]}>
-            <Ionicons name="musical-notes" size={24} color={colors.textSecondary} />
+          <View
+            style={[
+              styles.imagePlaceholder,
+              { width: cardSize.imageSize, height: cardSize.imageSize },
+            ]}
+          >
+            <Ionicons name='musical-notes' size={24} color={colors.textSecondary} />
           </View>
         )}
 
         {size === 'large' && (
           <TouchableOpacity style={styles.playButton}>
-            <Ionicons name="play" size={24} color={colors.white} />
+            <Ionicons name='play' size={24} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -98,9 +105,7 @@ const PlaylistCard = ({ playlist, onPress, size = 'medium', showDescription = tr
         )}
 
         {size === 'large' && playlist.createdBy && (
-          <Text style={styles.creator}>
-            By {playlist.createdBy}
-          </Text>
+          <Text style={styles.creator}>By {playlist.createdBy}</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -109,71 +114,71 @@ const PlaylistCard = ({ playlist, onPress, size = 'medium', showDescription = tr
 
 const styles = StyleSheet.create({
   container: {
-    marginRight: spacing.md,
     alignItems: 'flex-start',
-  },
-  imageContainer: {
-    position: 'relative',
-    marginBottom: spacing.sm,
-  },
-  image: {
-    borderRadius: radius.md,
-    backgroundColor: colors.gray800,
-  },
-  imagePlaceholder: {
-    borderRadius: radius.md,
-    backgroundColor: colors.gray800,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: spacing.md,
   },
   content: {
-    width: '100%',
     alignItems: 'flex-start',
+    width: '100%',
   },
-  title: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
+  creator: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginTop: 2,
     textAlign: 'left',
   },
-  largeTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
   description: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
     lineHeight: 16,
     marginBottom: 2,
     textAlign: 'left',
+  },
+  image: {
+    backgroundColor: colors.gray800,
+    borderRadius: radius.md,
+  },
+  imageContainer: {
+    marginBottom: spacing.sm,
+    position: 'relative',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: radius.md,
+    justifyContent: 'center',
   },
   largeDescription: {
     fontSize: typography.fontSize.base,
     lineHeight: 20,
     marginBottom: 4,
   },
-  trackCount: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textDisabled,
+  largeTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  playButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    bottom: 8,
+    height: 40,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 8,
+    width: 40,
+  },
+  title: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: 2,
     textAlign: 'left',
   },
-  creator: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: 2,
+  trackCount: {
+    color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
     textAlign: 'left',
   },
 });

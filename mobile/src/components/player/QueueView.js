@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../../styles/theme';
 
@@ -17,7 +10,7 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
     <TouchableOpacity
       style={[
         styles.trackItem,
-        currentTrack && item.id === currentTrack.id && styles.currentTrackItem
+        currentTrack && item.id === currentTrack.id && styles.currentTrackItem,
       ]}
       onPress={() => onTrackPress(item, index)}
     >
@@ -25,7 +18,7 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
         <Text
           style={[
             styles.trackTitle,
-            currentTrack && item.id === currentTrack.id && styles.currentTrackTitle
+            currentTrack && item.id === currentTrack.id && styles.currentTrackTitle,
           ]}
           numberOfLines={1}
         >
@@ -34,7 +27,7 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
         <Text
           style={[
             styles.trackArtist,
-            currentTrack && item.id === currentTrack.id && styles.currentTrackArtist
+            currentTrack && item.id === currentTrack.id && styles.currentTrackArtist,
           ]}
           numberOfLines={1}
         >
@@ -43,15 +36,10 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
       </View>
 
       <View style={styles.trackActions}>
-        <Text style={styles.trackDuration}>
-          {formatDuration(item.duration)}
-        </Text>
+        <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
         {onRemoveTrack && (
-          <TouchableOpacity
-            style={styles.removeButton}
-            onPress={() => onRemoveTrack(index)}
-          >
-            <Ionicons name="close" size={16} color={colors.textSecondary} />
+          <TouchableOpacity style={styles.removeButton} onPress={() => onRemoveTrack(index)}>
+            <Ionicons name='close' size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -67,7 +55,7 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
   if (!queue || queue.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Ionicons name="list" size={64} color={colors.textSecondary} />
+        <Ionicons name='list' size={64} color={colors.textSecondary} />
         <Text style={styles.emptyTitle}>Queue is empty</Text>
         <Text style={styles.emptySubtitle}>Add some tracks to get started</Text>
       </View>
@@ -94,93 +82,93 @@ const QueueView = ({ queue, currentTrack, onTrackPress, onRemoveTrack }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.background,
+    flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
-  },
-  headerTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  trackCount: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  listContent: {
-    paddingBottom: spacing['4xl'],
-  },
-  trackItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
+  currentTrackArtist: {
+    color: colors.primary,
   },
   currentTrackItem: {
     backgroundColor: colors.white10,
-  },
-  trackInfo: {
-    flex: 1,
-  },
-  trackTitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.text,
-    marginBottom: 2,
   },
   currentTrackTitle: {
     color: colors.primary,
     fontWeight: '600',
   },
-  trackArtist: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  currentTrackArtist: {
-    color: colors.primary,
-  },
-  trackActions: {
-    flexDirection: 'row',
+  emptyContainer: {
     alignItems: 'center',
-    gap: spacing.md,
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing['4xl'],
   },
-  trackDuration: {
-    fontSize: typography.fontSize.sm,
+  emptySubtitle: {
     color: colors.textSecondary,
-    minWidth: 40,
-    textAlign: 'right',
+    fontSize: typography.fontSize.base,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.xl,
+    textAlign: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  headerTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '600',
+  },
+  listContent: {
+    paddingBottom: spacing['4xl'],
   },
   removeButton: {
     padding: spacing.xs,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  trackActions: {
     alignItems: 'center',
-    paddingHorizontal: spacing['4xl'],
+    flexDirection: 'row',
+    gap: spacing.md,
   },
-  emptyTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: typography.fontSize.base,
+  trackArtist: {
     color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
+    fontSize: typography.fontSize.sm,
+  },
+  trackCount: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+  },
+  trackDuration: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  trackInfo: {
+    flex: 1,
+  },
+  trackItem: {
+    alignItems: 'center',
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  trackTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    marginBottom: 2,
   },
 });
 

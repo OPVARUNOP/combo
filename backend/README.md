@@ -1,21 +1,25 @@
 # COMBO Music Streaming API
 
-A comprehensive music streaming platform backend built with Node.js, Express, and Firebase Realtime Database.
+A comprehensive music streaming platform backend built with Node.js, Express, and Firebase (Firestore, Realtime Database, Authentication, and Storage).
 
 ## ???? Features
 
-- ???? **Authentication & Authorization**: JWT-based authentication with role-based access control
-- ???? **Music Management**: Full CRUD operations for songs with search and filtering
+- ???? **Authentication & Authorization**: Firebase Authentication with JWT verification
+- ???? **Real-time Data**: Firebase Realtime Database for live updates
+- ???? **Scalable Storage**: Firebase Storage for media files
+- ???? **Document Database**: Firestore for structured data
+- ???? **File Storage**: Secure file uploads and downloads using Backblaze B2
 - ???? **Playlist Management**: Create, update, and manage playlists with song collections
-- ???? **Search Functionality**: Search songs by title, artist, or genre
-- ??????? **Security**: Rate limiting, input validation, password hashing, and security headers
+- ???? **Search Functionality**: Full-text search and filtering
+- ??????? **Security**: Rate limiting, input validation, and security headers
 - ???? **Health Monitoring**: Built-in health checks and monitoring endpoints
 - ???? **API Documentation**: Comprehensive documentation with examples
 
 ## ???? Prerequisites
 
 - **Node.js**: Version 20.0.0 or higher
-- **Firebase Project**: With Realtime Database enabled
+- **Firebase Project**: With Firestore, Realtime Database, Authentication, and Storage enabled
+- **Firebase CLI**: For deployment and management
 - **npm**: For package management
 
 ## ??????? Installation
@@ -29,21 +33,82 @@ A comprehensive music streaming platform backend built with Node.js, Express, an
 2. **Install dependencies**:
    ```bash
    npm install
+   # Install Firebase CLI globally
+   npm install -g firebase-tools
    ```
 
-3. **Configure environment variables**:
+3. **Set up Firebase**:
    ```bash
-   cp .env.example .env
+   # Login to Firebase
+   firebase login
+   
+   # Initialize Firebase (select your project)
+   firebase init
+   
+   # Set up Firebase Admin
+   npm run setup:firebase
+   ```
+   
+   This will guide you through setting up:
+   - Firebase Authentication
+   - Firestore Database
+   - Realtime Database
+   - Storage
+   - Hosting (optional)
+   - Functions (if needed)
+
+4. **Verify Firebase setup**:
+   ```bash
+   # Test Firebase connection
+   npm run test:firebase
+   
+   # Or run detailed verification
+   npm run verify:firebase
    ```
 
-   Edit the `.env` file with your Firebase credentials and configuration.
-
-4. **Start the development server**:
+5. **Start the development server**:
    ```bash
    npm run dev
    ```
 
-The API will be available at `http://localhost:8080`
+The API will be available at `http://localhost:3000` by default.
+
+## ???? Project Structure
+
+```
+backend/
+├── config/                     # Configuration files
+│   ├── firebase-admin.js       # Firebase Admin SDK configuration
+│   └── firebase-service-account.json  # Service account key (gitignored)
+├── scripts/                    # Utility scripts
+│   ├── setup-firebase.js       # Firebase setup wizard
+│   ├── test-connection.js      # Firebase connection tests
+│   └── verify-firebase.js      # Detailed Firebase verification
+├── src/                        # Application source code
+│   ├── controllers/            # Request handlers
+│   ├── middleware/             # Express middleware
+│   ├── models/                 # Data models
+│   ├── routes/                 # API routes
+│   ├── services/               # Business logic
+│   │   └── firebase.service.js # Firebase service wrapper
+│   └── utils/                  # Utility functions
+├── .env                        # Environment variables
+├── .firebaserc                 # Firebase project configuration
+├── firebase.json               # Firebase deployment configuration
+└── package.json                # Project dependencies and scripts
+```
+
+## ???? Available Scripts
+
+- `npm start` - Start the production server
+- `npm run dev` - Start the development server with hot-reload
+- `npm test` - Run tests
+- `npm run test:firebase` - Test Firebase connection
+- `npm run verify:firebase` - Run detailed Firebase verification
+- `npm run setup:firebase` - Run Firebase setup wizard
+- `firebase:login` - Login to Firebase CLI
+- `firebase:init` - Initialize Firebase project
+- `firebase:deploy` - Deploy to Firebase
 
 ## ???? Environment Variables
 
@@ -52,6 +117,11 @@ The API will be available at `http://localhost:8080`
 | `FIREBASE_DATABASE_URL` | Firebase Realtime Database URL | ??? |
 | `FIREBASE_DATABASE_SECRET` | Firebase Database secret | ??? |
 | `JWT_SECRET` | Secret key for JWT tokens | ??? |
+| `B2_APPLICATION_KEY_ID` | Backblaze B2 Application Key ID | ✅ |
+| `B2_APPLICATION_KEY` | Backblaze B2 Application Key | ✅ |
+| `B2_BUCKET_ID` | Backblaze B2 Bucket ID | ✅ |
+| `B2_BUCKET_NAME` | Backblaze B2 Bucket Name | ✅ |
+| `B2_DOWNLOAD_URL` | Backblaze B2 download URL (e.g., f003.backblazeb2.com) | ✅ |
 | `PORT` | Server port (default: 8080) | ??? |
 | `NODE_ENV` | Environment mode | ??? |
 
@@ -86,6 +156,110 @@ Content-Type: application/json
 ```http
 GET /api/users/me
 Authorization: Bearer <token>
+```
+
+### File Management
+
+#### Upload a File
+```http
+POST /api/files/upload
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+
+# Form Data:
+# - file: The file to upload
+# - metadata: (optional) JSON string with additional metadata
+```
+
+**Example Response (201 Created):**
+```json
+{
+  "success": true,
+  "data": {
+    "fileId": "4d6f6e6b65792d6d616e2d736169642d6e6f2d657870656374696e672d6d6f6e6b657973",
+    "fileName": "example.jpg",
+    "fileKey": "users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg",
+    "downloadUrl": "https://f003.backblazeb2.com/file/your-bucket/users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg",
+    "size": 12345,
+    "mimeType": "image/jpeg",
+    "uploadedAt": "2025-10-01T10:00:00.000Z"
+  }
+}
+```
+
+#### Get Download URL
+```http
+GET /api/files/download/:fileKey
+Authorization: Bearer <token>
+```
+
+**Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "downloadUrl": "https://f003.backblazeb2.com/file/your-bucket/users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg?Authorization=...",
+    "expiresAt": "2025-10-01T11:00:00.000Z",
+    "fileKey": "users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg"
+  }
+}
+```
+
+#### Delete a File
+```http
+DELETE /api/files
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "fileKey": "users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg",
+  "fileId": "4d6f6e6b65792d6d616e2d736169642d6e6f2d657870656374696e672d6d6f6e6b657973"
+}
+```
+
+**Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "File deleted successfully",
+  "data": {
+    "fileKey": "users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg",
+    "fileId": "4d6f6e6b65792d6d616e2d736169642d6e6f2d657870656374696e672d6d6f6e6b657973"
+  }
+}
+```
+
+#### List User's Files
+```http
+GET /api/files?prefix=user-123/
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `prefix`: (optional) Filter files by prefix (e.g., 'user-123/')
+- `delimiter`: (optional) Delimiter for directory-like listing (default: '/')
+- `limit`: (optional) Maximum number of files to return (default: 100, max: 1000)
+
+**Example Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "files": [
+      {
+        "fileId": "4d6f6e6b65792d6d616e2d736169642d6e6f2d657870656374696e672d6d6f6e6b657973",
+        "fileName": "users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg",
+        "contentLength": 12345,
+        "contentType": "image/jpeg",
+        "uploadTimestamp": 1664611200000,
+        "downloadUrl": "https://f003.backblazeb2.com/file/your-bucket/users/user-123/550e8400-e29b-41d4-a716-446655440000.jpg"
+      }
+    ],
+    "nextFileName": null,
+    "nextFileId": null,
+    "count": 1
+  }
+}
 ```
 
 ### Music Management
@@ -297,87 +471,69 @@ npm run demo:database
 
 Run comprehensive API tests:
 ```bash
-npm run test:api
-```
-
 ## ???? Deployment
 
-### Google Cloud Run (Manual)
+### Local Development
 
-1. **Build and push Docker image**:
+1. **Install dependencies**:
    ```bash
-   gcloud builds submit --tag gcr.io/PROJECT-ID/combo-backend
+   npm install
    ```
 
-2. **Deploy to Cloud Run**:
+2. **Configure environment variables**:
    ```bash
-   gcloud run deploy combo-backend \
-     --image gcr.io/PROJECT-ID/combo-backend \
-     --platform managed \
-     --region us-central1 \
-     --allow-unauthenticated \
-     --port 8080 \
-     --memory 1Gi \
-     --cpu 1 \
-     --max-instances 10 \
-     --timeout 300 \
-     --set-env-vars FIREBASE_DATABASE_URL=$FIREBASE_DATABASE_URL,FIREBASE_DATABASE_SECRET=$FIREBASE_DATABASE_SECRET,JWT_SECRET=$JWT_SECRET
+   cp .env.example .env
+   # Edit .env with your configuration
    ```
 
-### Automated Deployment
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
 
-#### Using the Deployment Script
-```bash
-./deploy.sh
-```
+4. **Run tests**:
+   ```bash
+   npm test
+   ```
 
-#### Using GitHub Actions (CI/CD)
-The project includes a GitHub Actions workflow for automated deployments:
+### Production Deployment
 
-1. **Set up GitHub Secrets**:
-   - `GCP_SA_KEY`: Service account key for GCP authentication
-   - `FIREBASE_DATABASE_SECRET`: Firebase database secret
-   - `JWT_SECRET`: JWT secret key
+1. **Set up environment variables**:
+   - Configure all required environment variables in your production environment
+   - Ensure all secrets are properly secured
 
-2. **Push to main branch**: Triggers automatic deployment
+2. **Install production dependencies**:
+   ```bash
+   npm ci --only=production
+   ```
 
-### Environment Variables for Production
+3. **Start the production server**:
+   ```bash
+   npm start
+   ```
 
-Make sure to set these environment variables in your production environment:
+### Monitoring & Logs
 
-- `FIREBASE_DATABASE_URL`
-- `FIREBASE_DATABASE_SECRET`
-- `JWT_SECRET` (use a strong, unique secret)
-- `NODE_ENV=production`
-
-## ???? Monitoring
-
-### Using the Monitoring Script
-```bash
-./monitor.sh
-```
-
-### Google Cloud Console Monitoring
-- **Metrics**: https://console.cloud.google.com/run/detail/us-central1/combo-backend/metrics
-- **Logs**: https://console.cloud.google.com/run/detail/us-central1/combo-backend/logs
-
-### Manual Monitoring Commands
 ```bash
 # Check service status
-gcloud run services describe combo-backend --region us-central1
+npm run status
 
-# View recent logs
-gcloud run services logs read combo-backend --region us-central1 --limit 20
-
-# Monitor logs in real-time
-gcloud run services logs read combo-backend --region us-central1 --follow
+# View logs
+tail -f logs/combined.log
 ```
+
+### Recommended Production Setup
+
+For production, we recommend using:
+- PM2 or similar process manager for Node.js
+- Nginx as a reverse proxy
+- Proper log rotation
+- Monitoring and alerting setup
+- Regular backups of your database
 
 ## ???? Error Handling
 
 All endpoints return standardized error responses:
-
-```json
 {
   "status": "error",
   "message": "Error description",

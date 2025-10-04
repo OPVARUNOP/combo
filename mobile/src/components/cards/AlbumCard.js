@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -46,7 +40,9 @@ const AlbumCard = ({ album, onPress, size = 'medium', showArtist = true, showYea
     }
   };
 
-  if (!album) return null;
+  if (!album) {
+    return null;
+  }
 
   return (
     <TouchableOpacity
@@ -59,17 +55,22 @@ const AlbumCard = ({ album, onPress, size = 'medium', showArtist = true, showYea
           <FastImage
             source={{ uri: album.artwork }}
             style={[styles.image, { width: cardSize.imageSize, height: cardSize.imageSize }]}
-            resizeMode="cover"
+            resizeMode='cover'
           />
         ) : (
-          <View style={[styles.imagePlaceholder, { width: cardSize.imageSize, height: cardSize.imageSize }]}>
-            <Ionicons name="disc" size={24} color={colors.textSecondary} />
+          <View
+            style={[
+              styles.imagePlaceholder,
+              { width: cardSize.imageSize, height: cardSize.imageSize },
+            ]}
+          >
+            <Ionicons name='disc' size={24} color={colors.textSecondary} />
           </View>
         )}
 
         {size === 'large' && (
           <TouchableOpacity style={styles.playButton}>
-            <Ionicons name="play" size={20} color={colors.white} />
+            <Ionicons name='play' size={20} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -83,19 +84,12 @@ const AlbumCard = ({ album, onPress, size = 'medium', showArtist = true, showYea
         </Text>
 
         {showArtist && (
-          <Text
-            style={[styles.artist, size === 'large' && styles.largeArtist]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.artist, size === 'large' && styles.largeArtist]} numberOfLines={1}>
             {album.artist || 'Unknown Artist'}
           </Text>
         )}
 
-        {showYear && album.year && (
-          <Text style={styles.year}>
-            {album.year}
-          </Text>
-        )}
+        {showYear && album.year && <Text style={styles.year}>{album.year}</Text>}
 
         {size === 'large' && album.trackCount && (
           <Text style={styles.trackCount}>
@@ -108,69 +102,69 @@ const AlbumCard = ({ album, onPress, size = 'medium', showArtist = true, showYea
 };
 
 const styles = StyleSheet.create({
+  artist: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    textAlign: 'left',
+  },
   container: {
-    marginRight: spacing.md,
     alignItems: 'flex-start',
-  },
-  imageContainer: {
-    position: 'relative',
-    marginBottom: spacing.sm,
-  },
-  image: {
-    borderRadius: radius.md,
-    backgroundColor: colors.gray800,
-  },
-  imagePlaceholder: {
-    borderRadius: radius.md,
-    backgroundColor: colors.gray800,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: spacing.md,
   },
   content: {
-    width: '100%',
     alignItems: 'flex-start',
+    width: '100%',
   },
-  title: {
+  image: {
+    backgroundColor: colors.gray800,
+    borderRadius: radius.md,
+  },
+  imageContainer: {
+    marginBottom: spacing.sm,
+    position: 'relative',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+    backgroundColor: colors.gray800,
+    borderRadius: radius.md,
+    justifyContent: 'center',
+  },
+  largeArtist: {
     fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-    textAlign: 'left',
+    marginBottom: 4,
   },
   largeTitle: {
     fontSize: typography.fontSize.xl,
     fontWeight: '700',
     marginBottom: 4,
   },
-  artist: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'left',
+  playButton: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    bottom: 8,
+    height: 32,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 8,
+    width: 32,
   },
-  largeArtist: {
+  title: {
+    color: colors.text,
     fontSize: typography.fontSize.base,
-    marginBottom: 4,
-  },
-  year: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textDisabled,
+    fontWeight: '600',
+    marginBottom: 2,
     textAlign: 'left',
-    marginTop: 2,
   },
   trackCount: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginTop: 2,
+    textAlign: 'left',
+  },
+  year: {
+    color: colors.textDisabled,
+    fontSize: typography.fontSize.xs,
     marginTop: 2,
     textAlign: 'left',
   },

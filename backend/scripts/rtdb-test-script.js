@@ -6,7 +6,7 @@ const DATABASE_SECRET = 'mqucsRC7MHfDLdYSbNTU1srwlK4l6RsOtKKgqB4m';
 // Helper function to make authenticated requests to Firebase Realtime Database
 async function firebaseRequest(method, path, data = null) {
   const url = `${DATABASE_URL}${path}.json?auth=${DATABASE_SECRET}`;
-  
+
   try {
     const config = {
       method,
@@ -15,11 +15,11 @@ async function firebaseRequest(method, path, data = null) {
         'Content-Type': 'application/json',
       },
     };
-    
+
     if (data) {
       config.data = data;
     }
-    
+
     const response = await axios(config);
     return response.data;
   } catch (error) {
@@ -37,23 +37,23 @@ async function firebaseRequest(method, path, data = null) {
 async function testRealtimeDatabase() {
   try {
     console.log('Testing Realtime Database connection...');
-    
+
     // Test writing to the database
     const testData = {
       timestamp: new Date().toISOString(),
       status: 'success',
       message: 'Realtime Database connection test',
-      method: 'using_database_secret_rest_api'
+      method: 'using_database_secret_rest_api',
     };
-    
+
     // Write data
     await firebaseRequest('put', '/connection-test', testData);
     console.log('✅ Successfully wrote to Realtime Database');
-    
+
     // Read data back
     const data = await firebaseRequest('get', '/connection-test');
     console.log('📝 Test data:', JSON.stringify(data, null, 2));
-    
+
     console.log('✅ Realtime Database tests completed successfully');
     process.exit(0);
   } catch (error) {

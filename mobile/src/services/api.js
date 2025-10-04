@@ -1,16 +1,18 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import firebaseAuth from './firebaseAuth';
 
-// Production backend URL (Deployed to Google Cloud Run)
-const PRODUCTION_BACKEND_URL = 'https://combo-backend-531640636721.us-central1.run.app/api';
+// Firebase Functions URL (Deployed Firebase Cloud Functions)
+const PRODUCTION_BACKEND_URL = 'https://us-central1-combo-624e1.cloudfunctions.net/api';
 
-// Development backend URL
-const DEVELOPMENT_BACKEND_URL = 'http://localhost:3001/api';
+// Development URL (for local Firebase emulator)
+const DEVELOPMENT_BACKEND_URL = __DEV__
+  ? 'http://localhost:5001/combo-624e1/us-central1/api'
+  : PRODUCTION_BACKEND_URL;
 
-// Use production URL for production builds, development for dev builds
-const API_BASE_URL = __DEV__ ? DEVELOPMENT_BACKEND_URL : PRODUCTION_BACKEND_URL;
+// Use Firebase Functions for all environments
+const API_BASE_URL = DEVELOPMENT_BACKEND_URL;
 
-// Create axios instance
+// Create axios instance for Firebase Functions
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
@@ -23,137 +25,131 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      // Get Firebase token instead of stored token
+      const token = await firebaseAuth.getIdToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     } catch (error) {
-      console.error('Error getting token:', error);
+      console.error('Error adding auth token:', error);
       return config;
     }
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
-// Response interceptor to handle errors and token refresh
+// Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // If the error status is 401 and there is no originalRequest._retry flag,
-    // it means the token has expired and we need to refresh it
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
-        const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-          refreshToken,
-        });
-
-        const { accessToken } = response.data;
-
-        // Store the new token
-        await AsyncStorage.setItem('userToken', accessToken);
-
-        // Update the Authorization header
-        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
-        // Retry the original request with the new token
-        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
-        return api(originalRequest);
-      } catch (error) {
-        // If refresh token fails, log out the user
-        await AsyncStorage.removeItem('userToken');
-        await AsyncStorage.removeItem('refreshToken');
-        // You might want to redirect to login screen here
-        console.error('Token refresh failed:', error);
-        return Promise.reject(error);
-      }
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      console.error('API Error:', error.response.data);
+      return Promise.reject(error.response.data);
+    } else if (error.request) {
+      // Network error
+      console.error('Network Error:', error.request);
+      return Promise.reject({
+        error: 'Network error. Please check your connection.',
+      });
+    } else {
+      // Other error
+      console.error('Request Error:', error.message);
+      return Promise.reject({ error: error.message });
     }
-
-    return Promise.reject(error);
-  }
+  },
 );
 
-// Auth API
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      console.error('API Error:', error.response.data);
+      return Promise.reject(error.response.data);
+    } else if (error.request) {
+      // Network error
+      console.error('Network Error:', error.request);
+      return Promise.reject({
+        error: 'Network error. Please check your connection.',
+      });
+    } else {
+      // Other error
+      console.error('Request Error:', error.message);
+      return Promise.reject({ error: error.message });
+    }
+  },
+);
+
+// Auth API (Firebase Functions)
 export const authAPI = {
-  register: (userData) => api.post('/users/register', userData),
-  login: (email, password) => api.post('/users/login', { email, password }),
-  logout: () => api.post('/users/logout'),
+  register: (userData) => api.post('/users', userData),
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  logout: () => api.post('/auth/logout'),
 };
 
-// Music API
-export const musicAPI = {
-  // Get all songs with optional search/filter
-  getAll: (params = {}) => api.get('/music', { params }),
-
-  // Get song by ID
-  getById: (id) => api.get(`/music/${id}`),
-
-  // Create new song
-  create: (songData) => api.post('/music', songData),
-
-  // Update song
-  update: (id, songData) => api.put(`/music/${id}`, songData),
-
-  // Delete song
-  delete: (id) => api.delete(`/music/${id}`),
-
-  // Search songs
-  search: (query) => api.get('/music', { params: { search: query } }),
-
-  // Get songs by artist
-  getByArtist: (artist) => api.get('/music', { params: { artist } }),
-
-  // Get songs by genre
-  getByGenre: (genre) => api.get('/music', { params: { genre } }),
-};
-
-// Playlist API
-export const playlistAPI = {
-  // Get all playlists
-  getAll: () => api.get('/playlists'),
-
-  // Get playlist by ID
-  getById: (id) => api.get(`/playlists/${id}`),
-
-  // Create new playlist
-  create: (playlistData) => api.post('/playlists', playlistData),
-
-  // Update playlist
-  update: (id, playlistData) => api.put(`/playlists/${id}`, playlistData),
-
-  // Delete playlist
-  delete: (id) => api.delete(`/playlists/${id}`),
-
-  // Add song to playlist
-  addSong: (playlistId, songId) =>
-    api.post(`/playlists/${playlistId}/songs`, { songId }),
-
-  // Remove song from playlist
-  removeSong: (playlistId, songId) =>
-    api.delete(`/playlists/${playlistId}/songs/${songId}`),
-};
-
-// User API
+// User API (Firebase Functions)
 export const userAPI = {
-  // Get current user profile
   getProfile: () => api.get('/users/me'),
+  updateProfile: (data) => api.patch('/users/me', data),
+  getUser: (userId) => api.get(`/users/${userId}`),
+  searchUsers: (query) => api.get('/search', { params: { q: query, type: 'users' } }),
+  followUser: (userId) => api.post(`/users/${userId}/follow`),
+  unfollowUser: (userId) => api.delete(`/users/${userId}/follow`),
+};
 
-  // Update user profile
-  updateProfile: (data) => api.put('/users/me', data),
+// Music API (Firebase Functions)
+export const musicAPI = {
+  getAll: (params = {}) => api.get('/music', { params }),
+  getById: (id) => api.get(`/music/${id}`),
+  streamTrack: (trackId, userId) => api.post(`/tracks/${trackId}/stream`, { userId }),
+  getRecommendations: (userId) => api.get(`/recommendations/${userId}`),
+  getTrending: (type = 'tracks') => api.get('/trending', { params: { type } }),
+};
 
-  // Get user playlists
-  getPlaylists: () => api.get('/users/me/playlists'),
+// Playlist API (Firebase Functions)
+export const playlistAPI = {
+  getAll: (params = {}) => api.get('/playlists', { params }),
+  getById: (id) => api.get(`/playlists/${id}`),
+  create: (playlistData) => api.post('/playlists', playlistData),
+  update: (id, playlistData) => api.put(`/playlists/${id}`, playlistData),
+  delete: (id) => api.delete(`/playlists/${id}`),
+  getMyPlaylists: () => api.get('/users/me/playlists'),
+};
+
+// Social API (Firebase Functions)
+export const socialAPI = {
+  getFeed: (params = {}) => api.get('/social/feed', { params }),
+  createPost: (postData) => api.post('/social/posts', postData),
+  likePost: (postId) => api.post(`/social/posts/${postId}/like`),
+  unlikePost: (postId) => api.delete(`/social/posts/${postId}/like`),
+  followUser: (userId) => api.post(`/users/${userId}/follow`),
+  unfollowUser: (userId) => api.delete(`/users/${userId}/follow`),
+  getUserFollowers: (userId) => api.get(`/users/${userId}/followers`),
+  getUserFollowing: (userId) => api.get(`/users/${userId}/following`),
+  getActivityFeed: (params = {}) => api.get('/social/activity', { params }),
+};
+
+// Search API (Firebase Functions)
+export const searchAPI = {
+  search: (query, type = 'all') => api.get('/search', { params: { q: query, type } }),
+  searchTracks: (query) => api.get('/search', { params: { q: query, type: 'tracks' } }),
+  searchUsers: (query) => api.get('/search', { params: { q: query, type: 'users' } }),
+};
+
+// Analytics API (Firebase Functions)
+export const analyticsAPI = {
+  trackStream: (trackId, userId, duration) =>
+    api.post(`/tracks/${trackId}/stream`, { userId, duration }),
+  trackActivity: (activity) => api.post('/analytics/activity', activity),
 };
 
 // Export the configured axios instance

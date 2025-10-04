@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  StatusBar,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, StatusBar } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, {
@@ -51,13 +44,9 @@ const PlayerScreen = ({ navigation, route }) => {
   const [showQueue, setShowQueue] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
 
-  const {
-    currentTrack,
-    playbackState,
-    repeatMode,
-    shuffleMode,
-    isMiniPlayer,
-  } = useSelector((state) => state.player);
+  const { currentTrack, playbackState, repeatMode, shuffleMode, isMiniPlayer } = useSelector(
+    (state) => state.player,
+  );
 
   const progress = useProgress();
 
@@ -114,12 +103,7 @@ const PlayerScreen = ({ navigation, route }) => {
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      translateY.value,
-      [0, height * 0.3],
-      [1, 0.3],
-      Extrapolate.CLAMP
-    );
+    const opacity = interpolate(translateY.value, [0, height * 0.3], [1, 0.3], Extrapolate.CLAMP);
 
     return {
       transform: [{ translateY: translateY.value }],
@@ -132,7 +116,7 @@ const PlayerScreen = ({ navigation, route }) => {
       translateY.value,
       [0, height * 0.3],
       [1, 0],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     );
 
     return {
@@ -185,15 +169,11 @@ const PlayerScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle='light-content' />
 
       {/* Background */}
       <Animated.View style={[styles.background, backgroundStyle]}>
-        <AlbumArt
-          source={currentTrack.thumbnail}
-          size={width}
-          blur
-        />
+        <AlbumArt source={currentTrack.thumbnail} size={width} blur />
       </Animated.View>
 
       {/* Main Content */}
@@ -201,10 +181,7 @@ const PlayerScreen = ({ navigation, route }) => {
         <Animated.View style={[styles.content, animatedStyle]}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
               <Text style={styles.backButtonText}>↓</Text>
             </TouchableOpacity>
 
@@ -224,10 +201,7 @@ const PlayerScreen = ({ navigation, route }) => {
 
           {/* Album Art */}
           <View style={styles.albumArtContainer}>
-            <AlbumArt
-              source={currentTrack.thumbnail}
-              size={width * 0.7}
-            />
+            <AlbumArt source={currentTrack.thumbnail} size={width * 0.7} />
           </View>
 
           {/* Track Info */}
@@ -269,42 +243,24 @@ const PlayerScreen = ({ navigation, route }) => {
           {/* Queue/Lyrics Toggle */}
           <View style={styles.toggleContainer}>
             <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                !showQueue && styles.activeToggle,
-              ]}
+              style={[styles.toggleButton, !showQueue && styles.activeToggle]}
               onPress={() => setShowQueue(false)}
             >
-              <Text style={[
-                styles.toggleText,
-                !showQueue && styles.activeToggleText,
-              ]}>
+              <Text style={[styles.toggleText, !showQueue && styles.activeToggleText]}>
                 Up Next
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.toggleButton,
-                showQueue && styles.activeToggle,
-              ]}
+              style={[styles.toggleButton, showQueue && styles.activeToggle]}
               onPress={() => setShowQueue(true)}
             >
-              <Text style={[
-                styles.toggleText,
-                showQueue && styles.activeToggleText,
-              ]}>
-                Lyrics
-              </Text>
+              <Text style={[styles.toggleText, showQueue && styles.activeToggleText]}>Lyrics</Text>
             </TouchableOpacity>
           </View>
 
           {/* Queue or Lyrics */}
-          {showQueue ? (
-            <QueueView />
-          ) : (
-            <LyricsView />
-          )}
+          {showQueue ? <QueueView /> : <LyricsView />}
         </Animated.View>
       </PanGestureHandler>
     </View>
@@ -312,100 +268,100 @@ const PlayerScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
+  activeToggle: {
+    backgroundColor: colors.primary,
   },
-  background: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  content: {
-    flex: 1,
-    paddingTop: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
+  activeToggleText: {
     color: colors.text.primary,
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  trackTitle: {
-    ...typography.h3,
-    color: colors.text.primary,
-    textAlign: 'center',
-    flex: 1,
-    marginHorizontal: spacing.md,
-  },
-  moreButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  moreButtonText: {
-    color: colors.text.primary,
-    fontSize: 18,
   },
   albumArtContainer: {
     alignItems: 'center',
     marginVertical: spacing.xl,
-  },
-  trackInfo: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.lg,
   },
   artistName: {
     ...typography.body1,
     color: colors.text.secondary,
     marginTop: spacing.xs,
   },
-  progressContainer: {
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.lg,
+  backButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  backButtonText: {
+    color: colors.text.primary,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingTop: spacing.xl,
   },
   controlsContainer: {
-    paddingHorizontal: spacing.xl,
     marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  moreButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  moreButtonText: {
+    color: colors.text.primary,
+    fontSize: 18,
+  },
+  progressContainer: {
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  toggleButton: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 20,
+    flex: 1,
+    marginHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
   },
   toggleContainer: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.xl,
     marginBottom: spacing.md,
-  },
-  toggleButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    marginHorizontal: spacing.xs,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  activeToggle: {
-    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xl,
   },
   toggleText: {
     ...typography.caption,
     color: colors.text.secondary,
   },
-  activeToggleText: {
+  trackInfo: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  trackTitle: {
+    ...typography.h3,
     color: colors.text.primary,
+    flex: 1,
+    marginHorizontal: spacing.md,
+    textAlign: 'center',
   },
 });
 

@@ -82,7 +82,7 @@ const getStreamUrl = async (musicId) => {
 const getTrendingMusic = async (options = {}) => {
   try {
     const { category = 'music', regionCode = 'US', maxResults = 10 } = options;
-    
+
     const result = await jamendoService.getTrendingTracks({ limit: maxResults });
 
     return {
@@ -137,7 +137,7 @@ const getArtistById = async (artistId) => {
     // Jamendo API doesn't have a direct get artist by ID endpoint
     // This is a simplified implementation
     const result = await jamendoService.getArtists({ limit: 1 });
-    
+
     if (result.artists.length === 0) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Artist not found');
     }
@@ -191,7 +191,7 @@ const getAlbumById = async (albumId) => {
     // Jamendo API doesn't have a direct get album by ID endpoint
     // This is a simplified implementation
     const result = await jamendoService.getAlbums({ limit: 1 });
-    
+
     if (result.albums.length === 0) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Album not found');
     }

@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { persistStore, persistReducer } from 'redux-persist';
 
@@ -10,16 +10,17 @@ import searchSlice from './slices/searchSlice';
 import userSlice from './slices/userSlice';
 import settingsSlice from './slices/settingsSlice';
 import socialSlice from './slices/socialSlice';
+import personalizationSlice from './slices/personalizationSlice';
 
 // Persist configuration
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'user', 'settings', 'library'], // Only persist these slices
+  whitelist: ['auth', 'user', 'settings', 'library', 'personalization'], // Only persist these slices
 };
 
 // Root reducer
-const rootReducer = {
+const rootReducer = combineReducers({
   auth: authSlice,
   player: playerSlice,
   library: librarySlice,
@@ -27,7 +28,8 @@ const rootReducer = {
   user: userSlice,
   settings: settingsSlice,
   social: socialSlice,
-};
+  personalization: personalizationSlice,
+});
 
 // Create persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);

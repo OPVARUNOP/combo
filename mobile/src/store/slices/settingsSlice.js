@@ -18,7 +18,7 @@ export const loadSettings = createAsyncThunk(
       }
       return null;
     }
-  }
+  },
 );
 
 export const saveSettings = createAsyncThunk(
@@ -37,7 +37,7 @@ export const saveSettings = createAsyncThunk(
       await AsyncStorage.setItem('appSettings', JSON.stringify(settings));
       return rejectWithValue(error.response?.data?.message || 'Failed to save settings');
     }
-  }
+  },
 );
 
 export const resetSettings = createAsyncThunk(
@@ -101,7 +101,7 @@ export const resetSettings = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to reset settings');
     }
-  }
+  },
 );
 
 export const updateNotificationSettings = createAsyncThunk(
@@ -113,7 +113,7 @@ export const updateNotificationSettings = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update notifications');
     }
-  }
+  },
 );
 
 export const updatePrivacySettings = createAsyncThunk(
@@ -125,7 +125,7 @@ export const updatePrivacySettings = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update privacy');
     }
-  }
+  },
 );
 
 const initialState = {
@@ -204,7 +204,7 @@ const settingsSlice = createSlice({
       }
     },
     updateMultipleSettings: (state, action) => {
-      Object.keys(action.payload).forEach(key => {
+      Object.keys(action.payload).forEach((key) => {
         if (state.hasOwnProperty(key)) {
           state[key] = action.payload[key];
         }
@@ -245,7 +245,7 @@ const settingsSlice = createSlice({
         allowTagging: true,
       };
 
-      Object.keys(defaultSettings).forEach(key => {
+      Object.keys(defaultSettings).forEach((key) => {
         state[key] = defaultSettings[key];
       });
     },
@@ -263,7 +263,7 @@ const settingsSlice = createSlice({
       .addCase(loadSettings.fulfilled, (state, action) => {
         state.isLoading = false;
         if (action.payload) {
-          Object.keys(action.payload).forEach(key => {
+          Object.keys(action.payload).forEach((key) => {
             if (state.hasOwnProperty(key)) {
               state[key] = action.payload[key];
             }
@@ -284,7 +284,7 @@ const settingsSlice = createSlice({
         state.isSaving = false;
         state.lastSaved = new Date().toISOString();
         // Update state with saved values
-        Object.keys(action.payload).forEach(key => {
+        Object.keys(action.payload).forEach((key) => {
           if (state.hasOwnProperty(key)) {
             state[key] = action.payload[key];
           }
@@ -304,7 +304,7 @@ const settingsSlice = createSlice({
         state.isSaving = false;
         state.lastSaved = new Date().toISOString();
         // Update state with default values
-        Object.keys(action.payload).forEach(key => {
+        Object.keys(action.payload).forEach((key) => {
           state[key] = action.payload[key];
         });
       })
@@ -319,7 +319,7 @@ const settingsSlice = createSlice({
       })
       .addCase(updateNotificationSettings.fulfilled, (state, action) => {
         state.isSaving = false;
-        Object.keys(action.payload).forEach(key => {
+        Object.keys(action.payload).forEach((key) => {
           if (state.hasOwnProperty(key)) {
             state[key] = action.payload[key];
           }
@@ -336,7 +336,7 @@ const settingsSlice = createSlice({
       })
       .addCase(updatePrivacySettings.fulfilled, (state, action) => {
         state.isSaving = false;
-        Object.keys(action.payload).forEach(key => {
+        Object.keys(action.payload).forEach((key) => {
           if (state.hasOwnProperty(key)) {
             state[key] = action.payload[key];
           }

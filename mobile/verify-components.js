@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('🎵 COMBO Music Streaming App - Component Verification');
-console.log('=' .repeat(60));
+console.log('='.repeat(60));
 
 // List of key files to verify
 const filesToVerify = [
@@ -71,7 +71,7 @@ let failedCount = 0;
 
 console.log('\n📁 Verifying Core Components...\n');
 
-filesToVerify.forEach(filePath => {
+filesToVerify.forEach((filePath) => {
   try {
     if (fs.existsSync(filePath)) {
       const stats = fs.statSync(filePath);
@@ -83,9 +83,9 @@ filesToVerify.forEach(filePath => {
       // Basic syntax check by trying to read the file
       const content = fs.readFileSync(filePath, 'utf8');
       if (content.includes('export default') || content.includes('export ')) {
-        console.log(`   ✅ Has valid export statement`);
+        console.log('   ✅ Has valid export statement');
       } else {
-        console.log(`   ⚠️  No export statement found`);
+        console.log('   ⚠️  No export statement found');
       }
 
       verifiedCount++;
@@ -100,8 +100,8 @@ filesToVerify.forEach(filePath => {
   console.log('');
 });
 
-console.log('=' .repeat(60));
-console.log(`📊 VERIFICATION SUMMARY:`);
+console.log('='.repeat(60));
+console.log('📊 VERIFICATION SUMMARY:');
 console.log(`✅ Successfully verified: ${verifiedCount} files`);
 console.log(`❌ Failed to verify: ${failedCount} files`);
 

@@ -1,17 +1,24 @@
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const config = require('../config/config');
-const { Token } = require('../models');
-const { tokenTypes } = require('../config/tokens');
+const admin = require('firebase-admin');
 const ApiError = require('../utils/ApiError');
 
+// Token types for JWT
+const tokenTypes = {
+  ACCESS: 'access',
+  REFRESH: 'refresh',
+  RESET_PASSWORD: 'resetPassword',
+  VERIFY_EMAIL: 'verifyEmail',
+};
+
 /**
- * Generate token
- * @param {ObjectId} userId
- * @param {Moment} expires
- * @param {string} type
- * @param {string} [secret]
- * @returns {string}
+ * Generate JWT token
+ * @param {string} userId - User ID
+ * @param {Moment} expires - Expiration time
+ * @param {string} type - Token type
+ * @param {string} [secret=config.jwt.secret] - Secret key
+ * @returns {string} Generated token
  */
 const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   const payload = {
@@ -24,71 +31,52 @@ const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
 };
 
 /**
- * Save a token
- * @param {string} token
- * @param {ObjectId} userId
- * @param {Moment} expires
- * @param {string} type
- * @param {boolean} [blacklisted]
- * @returns {Promise<Token>}
- */
-const saveToken = async (token, userId, expires, type, blacklisted = false) => {
-  const tokenDoc = await Token.create({
-    token,
-    user: userId,
-    expires: expires.toDate(),
-    type,
-    blacklisted,
-  });
-  return tokenDoc;
-};
-
-/**
- * Verify token and return token doc (or throw an error if it is not valid)
- * @param {string} token
- * @param {string} type
- * @returns {Promise<Token>}
+ * Verify JWT token
+ * @param {string} token - JWT token to verify
+ * @param {string} type - Expected token type
+ * @returns {Promise<Object>} Decoded token payload
  */
 const verifyToken = async (token, type) => {
-  const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findOne({
-    token,
-    type,
-    user: payload.sub,
-    blacklisted: false,
-  });
-  if (!tokenDoc) {
-    throw new Error('Token not found');
+  try {
+    const payload = jwt.verify(token, config.jwt.secret);
+
+    // Verify token type if provided
+    if (type && payload.type !== type) {
+      throw new Error('Invalid token type');
+    }
+
+    return payload;
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Token expired');
+    }
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
   }
-  return tokenDoc;
 };
 
 /**
- * Generate auth tokens
- * @param {User} user
- * @returns {Promise<Object>}
+ * Generate auth tokens (access and refresh)
+ * @param {Object} user - User object
+ * @returns {Promise<Object>} Auth tokens
  */
 const generateAuthTokens = async (user) => {
+  // Generate access token (short-lived)
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
-  const accessToken = generateToken(
-    user.id,
-    accessTokenExpires,
-    tokenTypes.ACCESS
-  );
+  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
 
+  // Generate refresh token (long-lived)
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const refreshToken = generateToken(
-    user.id,
-    refreshTokenExpires,
-    tokenTypes.REFRESH
-  );
-  
-  await saveToken(
-    refreshToken,
-    user.id,
-    refreshTokenExpires,
-    tokenTypes.REFRESH
-  );
+  const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
+
+  // Store refresh token in Firestore
+  await admin.firestore().collection('refreshTokens').doc(refreshToken).set({
+    userId: user.id,
+    token: refreshToken,
+    expires: refreshTokenExpires.toDate(),
+    type: tokenTypes.REFRESH,
+    blacklisted: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   return {
     access: {
@@ -104,55 +92,113 @@ const generateAuthTokens = async (user) => {
 
 /**
  * Generate reset password token
- * @param {string} email
- * @returns {Promise<string>}
+ * @param {string} email - User's email
+ * @returns {Promise<string>} Reset password token
  */
 const generateResetPasswordToken = async (email) => {
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
+  try {
+    // Check if user exists in Firebase Auth
+    const user = await admin.auth().getUserByEmail(email);
+
+    // Generate a reset password token with short expiration
+    const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+    const resetPasswordToken = generateToken(user.uid, expires, tokenTypes.RESET_PASSWORD);
+
+    // Store the token in Firestore
+    await admin.firestore().collection('tokens').doc(resetPasswordToken).set({
+      userId: user.uid,
+      token: resetPasswordToken,
+      type: tokenTypes.RESET_PASSWORD,
+      expires: expires.toDate(),
+      blacklisted: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return resetPasswordToken;
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      // Don't reveal that the email doesn't exist
+      return null;
+    }
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate reset password token');
   }
-  const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
-  const resetPasswordToken = generateToken(
-    user.id,
-    expires,
-    tokenTypes.RESET_PASSWORD
-  );
-  await saveToken(
-    resetPasswordToken,
-    user.id,
-    expires,
-    tokenTypes.RESET_PASSWORD
-  );
-  return resetPasswordToken;
 };
 
 /**
  * Generate verify email token
- * @param {User} user
- * @returns {Promise<string>}
+ * @param {Object} user - User object
+ * @returns {Promise<string>} Verify email token
  */
 const generateVerifyEmailToken = async (user) => {
-  const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
-  const verifyEmailToken = generateToken(
-    user.id,
-    expires,
-    tokenTypes.VERIFY_EMAIL
-  );
-  await saveToken(
-    verifyEmailToken,
-    user.id,
-    expires,
-    tokenTypes.VERIFY_EMAIL
-  );
-  return verifyEmailToken;
+  try {
+    const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
+    const verifyEmailToken = generateToken(user.uid, expires, tokenTypes.VERIFY_EMAIL);
+
+    // Store the token in Firestore
+    await admin.firestore().collection('tokens').doc(verifyEmailToken).set({
+      userId: user.uid,
+      token: verifyEmailToken,
+      type: tokenTypes.VERIFY_EMAIL,
+      expires: expires.toDate(),
+      blacklisted: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return verifyEmailToken;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate verification token');
+  }
 };
+
+/**
+ * Blacklist a token
+ * @param {string} token - Token to blacklist
+ * @returns {Promise<void>}
+ */
+const blacklistToken = async (token) => {
+  try {
+    await admin.firestore().collection('tokens').doc(token).update({
+      blacklisted: true,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to blacklist token');
+  }
+};
+
+/**
+ * Clean up expired tokens
+ * @returns {Promise<void>}
+ */
+const cleanupExpiredTokens = async () => {
+  try {
+    const now = new Date();
+    const expiredTokens = await admin
+      .firestore()
+      .collection('tokens')
+      .where('expires', '<=', now)
+      .get();
+
+    const batch = admin.firestore().batch();
+    expiredTokens.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Error cleaning up expired tokens:', error);
+  }
+};
+
+// Schedule token cleanup every 24 hours
+setInterval(cleanupExpiredTokens, 24 * 60 * 60 * 1000);
 
 module.exports = {
   generateToken,
-  saveToken,
   verifyToken,
   generateAuthTokens,
   generateResetPasswordToken,
   generateVerifyEmailToken,
+  blacklistToken,
+  tokenTypes,
 };

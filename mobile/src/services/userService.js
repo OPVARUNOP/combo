@@ -12,12 +12,9 @@ import {
   addDoc,
   deleteDoc,
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
 } from 'firebase/firestore';
-import { 
-  signOut,
-  onAuthStateChanged 
-} from 'firebase/auth';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,20 +22,24 @@ export const userService = {
   // Get current authenticated user
   getCurrentUser() {
     return new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        unsubscribe();
-        if (user) {
-          resolve({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            emailVerified: user.emailVerified,
-            photoURL: user.photoURL,
-          });
-        } else {
-          resolve(null);
-        }
-      }, reject);
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          unsubscribe();
+          if (user) {
+            resolve({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              emailVerified: user.emailVerified,
+              photoURL: user.photoURL,
+            });
+          } else {
+            resolve(null);
+          }
+        },
+        reject,
+      );
     });
   },
 
@@ -47,14 +48,14 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
 
       const userDocRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         return { id: userDoc.id, ...userDoc.data() };
       } else {
@@ -75,9 +76,9 @@ export const userService = {
             totalTracksPlayed: 0,
             favoriteGenres: [],
             listeningStreak: 0,
-          }
+          },
         };
-        
+
         await setDoc(userDocRef, defaultProfile);
         return { id: uid, ...defaultProfile };
       }
@@ -92,7 +93,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -116,7 +117,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -124,7 +125,7 @@ export const userService = {
       const userDocRef = doc(db, 'users', uid);
       await updateDoc(userDocRef, {
         preferences: {
-          ...preferences
+          ...preferences,
         },
         updatedAt: serverTimestamp(),
       });
@@ -141,30 +142,32 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
 
       const userDocRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        return userData.stats || {
+        return (
+          userData.stats || {
+            totalPlayTime: 0,
+            totalTracksPlayed: 0,
+            favoriteGenres: [],
+            listeningStreak: 0,
+          }
+        );
+      } else {
+        return {
           totalPlayTime: 0,
           totalTracksPlayed: 0,
           favoriteGenres: [],
           listeningStreak: 0,
         };
       }
-      
-      return {
-        totalPlayTime: 0,
-        totalTracksPlayed: 0,
-        favoriteGenres: [],
-        listeningStreak: 0,
-      };
     } catch (error) {
       console.error('Error getting user stats:', error);
       throw new Error(error.message || 'Failed to fetch user stats');
@@ -176,7 +179,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -200,7 +203,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -220,7 +223,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -228,7 +231,7 @@ export const userService = {
       const likedTracksRef = collection(db, 'users', uid, 'likedTracks');
       const q = query(likedTracksRef, orderBy('likedAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      
+
       const likedTracks = [];
       querySnapshot.forEach((doc) => {
         likedTracks.push({ id: doc.id, ...doc.data() });
@@ -246,20 +249,24 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
 
       const recentlyPlayedRef = collection(db, 'users', uid, 'recentlyPlayed');
       const trackDocRef = doc(recentlyPlayedRef, trackId);
-      
-      await setDoc(trackDocRef, {
-        trackId,
-        ...trackData,
-        playedAt: serverTimestamp(),
-        playCount: 1,
-      }, { merge: true });
+
+      await setDoc(
+        trackDocRef,
+        {
+          trackId,
+          ...trackData,
+          playedAt: serverTimestamp(),
+          playCount: 1,
+        },
+        { merge: true },
+      );
 
       return { trackId, message: 'Added to recently played' };
     } catch (error) {
@@ -273,7 +280,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -281,7 +288,7 @@ export const userService = {
       const recentlyPlayedRef = collection(db, 'users', uid, 'recentlyPlayed');
       const q = query(recentlyPlayedRef, orderBy('playedAt', 'desc'), limit(limit));
       const querySnapshot = await getDocs(q);
-      
+
       const recentlyPlayed = [];
       querySnapshot.forEach((doc) => {
         recentlyPlayed.push({ id: doc.id, ...doc.data() });
@@ -299,7 +306,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -326,7 +333,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -334,7 +341,7 @@ export const userService = {
       const historyRef = collection(db, 'users', uid, 'listeningHistory');
       const q = query(historyRef, orderBy('playedAt', 'desc'), limit(limit));
       const querySnapshot = await getDocs(q);
-      
+
       const history = [];
       querySnapshot.forEach((doc) => {
         history.push({ id: doc.id, ...doc.data() });
@@ -352,7 +359,7 @@ export const userService = {
     try {
       const currentUser = await this.getCurrentUser();
       const uid = userId || currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
@@ -360,7 +367,7 @@ export const userService = {
       const userDocRef = doc(db, 'users', uid);
       await updateDoc(userDocRef, {
         stats: {
-          ...statsUpdate
+          ...statsUpdate,
         },
         updatedAt: serverTimestamp(),
       });
@@ -389,7 +396,7 @@ export const userService = {
   onUserProfileChange(userId = null, callback) {
     try {
       const currentUser = userId || auth.currentUser?.uid;
-      
+
       if (!currentUser) {
         throw new Error('User not authenticated');
       }

@@ -69,11 +69,13 @@ const HelpScreen = () => {
       content: [
         {
           title: 'Welcome to COMBO!',
-          description: 'COMBO is your personal music streaming companion with access to over 600,000 tracks.',
+          description:
+            'COMBO is your personal music streaming companion with access to over 600,000 tracks.',
         },
         {
           title: 'Browse Music',
-          description: 'Explore trending tracks, new releases, and curated playlists on the home screen.',
+          description:
+            'Explore trending tracks, new releases, and curated playlists on the home screen.',
         },
         {
           title: 'Search for Music',
@@ -114,7 +116,7 @@ const HelpScreen = () => {
         },
       ],
     },
-    'playlists': {
+    playlists: {
       title: 'Create & Manage Playlists',
       content: [
         {
@@ -127,7 +129,8 @@ const HelpScreen = () => {
         },
         {
           title: 'Edit Playlist',
-          description: 'Tap the three dots on a playlist to rename, change description, or delete it.',
+          description:
+            'Tap the three dots on a playlist to rename, change description, or delete it.',
         },
         {
           title: 'Share Playlists',
@@ -139,7 +142,7 @@ const HelpScreen = () => {
         },
       ],
     },
-    'library': {
+    library: {
       title: 'Your Personal Library',
       content: [
         {
@@ -164,7 +167,7 @@ const HelpScreen = () => {
         },
       ],
     },
-    'offline': {
+    offline: {
       title: 'Offline Music',
       content: [
         {
@@ -189,7 +192,7 @@ const HelpScreen = () => {
         },
       ],
     },
-    'account': {
+    account: {
       title: 'Account & Settings',
       content: [
         {
@@ -218,10 +221,7 @@ const HelpScreen = () => {
 
   const renderHelpCategory = ({ item }) => (
     <TouchableOpacity
-      style={[
-        styles.categoryCard,
-        selectedCategory === item.id && styles.selectedCategory,
-      ]}
+      style={[styles.categoryCard, selectedCategory === item.id && styles.selectedCategory]}
       onPress={() => setSelectedCategory(item.id)}
     >
       <View style={styles.categoryIcon}>
@@ -235,7 +235,9 @@ const HelpScreen = () => {
         <Text
           style={[
             styles.categoryTitle,
-            { color: selectedCategory === item.id ? colors.white : colors.text },
+            {
+              color: selectedCategory === item.id ? colors.white : colors.text,
+            },
           ]}
         >
           {item.title}
@@ -243,21 +245,25 @@ const HelpScreen = () => {
         <Text
           style={[
             styles.categoryDescription,
-            { color: selectedCategory === item.id ? colors.white : colors.textSecondary },
+            {
+              color: selectedCategory === item.id ? colors.white : colors.textSecondary,
+            },
           ]}
         >
           {item.description}
         </Text>
       </View>
       {selectedCategory === item.id && (
-        <Ionicons name="chevron-forward" size={20} color={colors.white} />
+        <Ionicons name='chevron-forward' size={20} color={colors.white} />
       )}
     </TouchableOpacity>
   );
 
   const renderHelpContent = () => {
     const content = helpContent[selectedCategory];
-    if (!content) return null;
+    if (!content) {
+      return null;
+    }
 
     return (
       <View style={styles.contentContainer}>
@@ -277,8 +283,8 @@ const HelpScreen = () => {
       <LinearGradient colors={colors.gradientBg} style={styles.gradient}>
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <BrandedHeader
-            title="Help & Support"
-            subtitle="Find answers to common questions"
+            title='Help & Support'
+            subtitle='Find answers to common questions'
             style={styles.header}
           />
 
@@ -312,24 +318,22 @@ const HelpScreen = () => {
                     </Text>
                   </View>
                   {selectedCategory === category.id && (
-                    <Ionicons name="chevron-forward" size={16} color={colors.white} />
+                    <Ionicons name='chevron-forward' size={16} color={colors.white} />
                   )}
                 </TouchableOpacity>
               ))}
             </View>
 
-            <View style={styles.helpContent}>
-              {renderHelpContent()}
-            </View>
+            <View style={styles.helpContent}>{renderHelpContent()}</View>
           </View>
         </ScrollView>
 
         <View style={styles.footer}>
           <AnimatedButton
-            title="Contact Support"
+            title='Contact Support'
             onPress={() => setShowModal(true)}
-            variant="outline"
-            icon="mail"
+            variant='outline'
+            icon='mail'
             style={styles.supportButton}
           />
         </View>
@@ -338,15 +342,15 @@ const HelpScreen = () => {
       {/* Support Modal */}
       <Modal
         visible={showModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
+        animationType='slide'
+        presentationStyle='pageSheet'
         onRequestClose={() => setShowModal(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Contact Support</Text>
             <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Ionicons name="close" size={24} color={colors.text} />
+              <Ionicons name='close' size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -354,22 +358,23 @@ const HelpScreen = () => {
             <BrandedCard style={styles.supportCard}>
               <Text style={styles.supportTitle}>Get Help</Text>
               <Text style={styles.supportDescription}>
-                Need help with something specific? Our support team is here to help you get the most out of COMBO.
+                Need help with something specific? Our support team is here to help you get the most
+                out of COMBO.
               </Text>
 
               <View style={styles.supportOptions}>
                 <TouchableOpacity style={styles.supportOption}>
-                  <Ionicons name="mail" size={24} color={colors.primary} />
+                  <Ionicons name='mail' size={24} color={colors.primary} />
                   <Text style={styles.supportOptionText}>Email Support</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.supportOption}>
-                  <Ionicons name="chatbubble" size={24} color={colors.primary} />
+                  <Ionicons name='chatbubble' size={24} color={colors.primary} />
                   <Text style={styles.supportOptionText}>Live Chat</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.supportOption}>
-                  <Ionicons name="help-circle" size={24} color={colors.primary} />
+                  <Ionicons name='help-circle' size={24} color={colors.primary} />
                   <Text style={styles.supportOptionText}>FAQ</Text>
                 </TouchableOpacity>
               </View>
@@ -382,40 +387,17 @@ const HelpScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  gradient: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    marginBottom: spacing.xl,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
   categoriesContainer: {
     marginBottom: spacing.xl,
   },
-  sectionTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.lg,
-  },
   categoryItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: radius.lg,
     backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+    padding: spacing.md,
     ...Platform.select({
       ios: {
         shadowColor: colors.black,
@@ -428,20 +410,25 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  selectedCategoryItem: {
-    backgroundColor: colors.primary,
-  },
   categoryItemContent: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   categoryItemText: {
     fontSize: typography.fontSize.base,
     fontWeight: '500',
     marginLeft: spacing.sm,
   },
-  helpContent: {
+  container: {
+    backgroundColor: colors.background,
     flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+  },
+  contentCard: {
+    marginBottom: spacing.md,
   },
   contentContainer: {
     backgroundColor: colors.card,
@@ -459,87 +446,105 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  contentTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.lg,
-  },
-  contentCard: {
-    marginBottom: spacing.md,
-  },
-  contentItemTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
   contentItemDescription: {
-    fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
     lineHeight: 20,
   },
-  footer: {
-    padding: spacing.lg,
-    backgroundColor: colors.card,
+  contentItemTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
   },
-  supportButton: {
-    marginBottom: spacing.md,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surface,
-  },
-  modalTitle: {
+  contentTitle: {
+    color: colors.primary,
     fontSize: typography.fontSize.xl,
     fontWeight: '600',
-    color: colors.text,
+    marginBottom: spacing.lg,
+  },
+  footer: {
+    backgroundColor: colors.card,
+    padding: spacing.lg,
+  },
+  gradient: {
+    flex: 1,
+  },
+  header: {
+    marginBottom: spacing.xl,
+  },
+  helpContent: {
+    flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: colors.background,
+    flex: 1,
   },
   modalContent: {
     flex: 1,
     padding: spacing.lg,
   },
+  modalHeader: {
+    alignItems: 'center',
+    borderBottomColor: colors.surface,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: spacing.lg,
+  },
+  modalTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '600',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '600',
+    marginBottom: spacing.lg,
+  },
+  selectedCategoryItem: {
+    backgroundColor: colors.primary,
+  },
+  supportButton: {
+    marginBottom: spacing.md,
+  },
   supportCard: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
   },
-  supportTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.md,
-  },
   supportDescription: {
-    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
+    fontSize: typography.fontSize.base,
     lineHeight: 24,
+    marginBottom: spacing.xl,
+    textAlign: 'center',
+  },
+  supportOption: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    flexDirection: 'row',
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+  },
+  supportOptionText: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '500',
+    marginLeft: spacing.md,
   },
   supportOptions: {
     width: '100%',
   },
-  supportOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-  },
-  supportOptionText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: '500',
-    color: colors.text,
-    marginLeft: spacing.md,
+  supportTitle: {
+    color: colors.primary,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '600',
+    marginBottom: spacing.md,
   },
 });
 

@@ -1,93 +1,182 @@
-# Firebase Setup Guide
+# Firebase Backend Setup Guide
 
-This guide will help you set up Firebase for the COMBO backend.
+This guide will help you set up and configure the Firebase backend for the COMBO application.
 
 ## Prerequisites
 
-1. Node.js 16+ installed
-2. npm or yarn installed
-3. Firebase project created at [Firebase Console](https://console.firebase.google.com/)
-4. Service account key downloaded from Firebase Console
+1. Node.js (v14 or later)
+2. Firebase CLI (`npm install -g firebase-tools`)
+3. A Firebase project with Firestore and Authentication enabled
+4. Service account key JSON file (download from Firebase Console > Project Settings > Service Accounts)
 
 ## Setup Instructions
 
-### 1. Install Dependencies
+### 1. Environment Variables
+
+Create a `.env` file in the backend root directory with the following variables:
+
+```env
+# Firebase
+FIREBASE_DATABASE_URL=your-firebase-database-url
+FIREBASE_STORAGE_BUCKET=your-firebase-storage-bucket
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+
+# Default Admin User
+DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=your-secure-password
+
+# JWT
+JWT_SECRET=your-jwt-secret
+JWT_ACCESS_EXPIRATION_MINUTES=15
+JWT_REFRESH_EXPIRATION_DAYS=30
+
+# Backblaze B2 (if using)
+B2_KEY_ID=your-b2-key-id
+B2_APPLICATION_KEY=your-b2-application-key
+B2_BUCKET_ID=your-b2-bucket-id
+B2_BUCKET_NAME=your-b2-bucket-name
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
-# or
-yarn install
 ```
 
-### 2. Configure Firebase Service Account
+### 3. Initialize Firebase
 
-Run the setup script to configure your Firebase service account:
+1. Log in to Firebase CLI:
+   ```bash
+   firebase login
+   ```
+
+2. Initialize Firebase project:
+   ```bash
+   firebase init
+   ```
+   Select:
+   - Firestore: Configure security rules and indexes
+   - Storage: Configure security rules
+   - Hosting: Not needed for backend
+
+### 4. Set Up Firestore
+
+Run the setup script to create indexes and security rules:
 
 ```bash
 npm run setup:firebase
 ```
 
-Follow the interactive prompts to enter your Firebase service account details. The script will:
+### 5. Migrate Data (If Applicable)
 
-1. Create a `config` directory if it doesn't exist
-2. Store the service account in `config/firebase-service-account.json`
-3. Set secure file permissions (600)
-
-### 3. Verify Firebase Connection
-
-Test the Firebase connection:
+If you're migrating from MongoDB, run:
 
 ```bash
-npm run verify:firebase
+npm run migrate:firebase
 ```
 
-This will test:
-- Firestore connection
-- Authentication service
-- Realtime Database (if configured)
+### 6. Start the Server
 
-## Environment Variables
+```bash
+npm start
+# or for development
+npm run dev
+```
 
-For production, you can set these environment variables:
+## Security Rules
 
-- `FIREBASE_DATABASE_URL`: Your Firebase Realtime Database URL (default: `https://combo-624e1-default-rtdb.firebaseio.com`)
-- `NODE_ENV`: Set to `production` for production mode
+The following security rules are applied:
 
-## Security Notes
+1. **Authentication Required**: All write operations require authentication
+2. **Email Verification**: Write operations require verified email
+3. **User-Specific Access**: Users can only modify their own data
+4. **Public Read Access**: Some resources (like public playlists) are readable by all authenticated users
 
-- The service account file is stored locally with 600 permissions (read/write for owner only)
-- The `config` directory is included in `.gitignore` to prevent accidental commits
-- Never commit the service account key to version control
-- In production, consider using environment variables or a secure secret manager
+## API Endpoints
+
+### Authentication
+
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login with email/password
+- `POST /api/auth/refresh-token` - Refresh access token
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password with token
+
+### Users
+
+- `GET /api/users/me` - Get current user profile
+- `PATCH /api/users/me` - Update current user profile
+- `DELETE /api/users/me` - Delete current user account
+
+### Music
+
+- `GET /api/music` - Get all music
+- `GET /api/music/search` - Search music
+- `GET /api/music/:id` - Get music by ID
+
+### Playlists
+
+- `GET /api/playlists` - Get user's playlists
+- `POST /api/playlists` - Create a new playlist
+- `GET /api/playlists/:id` - Get playlist by ID
+- `PATCH /api/playlists/:id` - Update playlist
+- `DELETE /api/playlists/:id` - Delete playlist
+
+## Error Handling
+
+The API returns standard HTTP status codes with JSON error responses:
+
+```json
+{
+  "status": "error",
+  "message": "Error message",
+  "code": "ERROR_CODE",
+  "details": {}
+}
+```
+
+## Monitoring
+
+1. **Firebase Console**: Monitor usage, errors, and performance
+2. **Logs**: Check server logs for debugging
+3. **Error Tracking**: Set up error tracking with Firebase Crashlytics
+
+## Deployment
+
+### Firebase Functions
+
+For production, consider deploying the backend as Firebase Functions:
+
+1. Install dependencies:
+   ```bash
+   npm install firebase-functions
+   ```
+
+2. Deploy:
+   ```bash
+   firebase deploy --only functions
+   ```
+
+### Environment Configuration
+
+For production, set environment variables in:
+- Firebase Console > Project Settings > Service Accounts
+- Firebase Console > Functions > Environment Variables
 
 ## Troubleshooting
 
-### Service account not found
+1. **Authentication Errors**:
+   - Verify service account key permissions
+   - Check Firebase Authentication rules
 
-If you see an error about the service account not being found:
+2. **Firestore Permission Denied**:
+   - Verify security rules
+   - Check user authentication status
 
-1. Make sure you've run `npm run setup:firebase`
-2. Verify the file exists at `config/firebase-service-account.json`
-3. Check file permissions: `ls -l config/firebase-service-account.json`
-
-### Permission denied errors
-
-If you see permission errors:
-
-```bash
-chmod 600 config/firebase-service-account.json
-```
-
-### Regenerating Service Account Key
-
-If you need to regenerate your service account key:
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project
-3. Go to Project Settings > Service Accounts
-4. Click "Generate New Private Key"
-5. Run `npm run setup:firebase` again with the new key
+3. **Storage Access Issues**:
+   - Verify storage rules
+   - Check file permissions
 
 ## Support
 
-For additional help, please contact the development team.
+For issues, please open a GitHub issue or contact the development team.

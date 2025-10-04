@@ -11,7 +11,7 @@ export const loadUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load user profile');
     }
-  }
+  },
 );
 
 export const updateUserProfile = createAsyncThunk(
@@ -23,20 +23,17 @@ export const updateUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
     }
-  }
+  },
 );
 
-export const loadUserStats = createAsyncThunk(
-  'user/loadStats',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await userAPI.getStats();
-      return response.data.stats;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to load user stats');
-    }
+export const loadUserStats = createAsyncThunk('user/loadStats', async (_, { rejectWithValue }) => {
+  try {
+    const response = await userAPI.getStats();
+    return response.data.stats;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to load user stats');
   }
-);
+});
 
 export const loadUserAchievements = createAsyncThunk(
   'user/loadAchievements',
@@ -47,7 +44,7 @@ export const loadUserAchievements = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load achievements');
     }
-  }
+  },
 );
 
 export const loadListeningHistory = createAsyncThunk(
@@ -63,7 +60,7 @@ export const loadListeningHistory = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load listening history');
     }
-  }
+  },
 );
 
 export const loadUserPreferences = createAsyncThunk(
@@ -75,7 +72,7 @@ export const loadUserPreferences = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load preferences');
     }
-  }
+  },
 );
 
 export const updateUserPreferences = createAsyncThunk(
@@ -87,7 +84,7 @@ export const updateUserPreferences = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update preferences');
     }
-  }
+  },
 );
 
 export const loadFollowers = createAsyncThunk(
@@ -103,7 +100,7 @@ export const loadFollowers = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load followers');
     }
-  }
+  },
 );
 
 export const loadFollowing = createAsyncThunk(
@@ -119,7 +116,7 @@ export const loadFollowing = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load following');
     }
-  }
+  },
 );
 
 export const followUser = createAsyncThunk(
@@ -131,7 +128,7 @@ export const followUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to follow user');
     }
-  }
+  },
 );
 
 export const unfollowUser = createAsyncThunk(
@@ -143,7 +140,7 @@ export const unfollowUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to unfollow user');
     }
-  }
+  },
 );
 
 const initialState = {
@@ -301,26 +298,26 @@ const userSlice = createSlice({
     },
     addFollower: (state, action) => {
       const user = action.payload;
-      if (!state.followers.list.some(f => f.id === user.id)) {
+      if (!state.followers.list.some((f) => f.id === user.id)) {
         state.followers.list.unshift(user);
         state.followers.total += 1;
       }
     },
     removeFollower: (state, action) => {
       const userId = action.payload;
-      state.followers.list = state.followers.list.filter(f => f.id !== userId);
+      state.followers.list = state.followers.list.filter((f) => f.id !== userId);
       state.followers.total = Math.max(0, state.followers.total - 1);
     },
     addFollowing: (state, action) => {
       const user = action.payload;
-      if (!state.following.list.some(f => f.id === user.id)) {
+      if (!state.following.list.some((f) => f.id === user.id)) {
         state.following.list.unshift(user);
         state.following.total += 1;
       }
     },
     removeFollowing: (state, action) => {
       const userId = action.payload;
-      state.following.list = state.following.list.filter(f => f.id !== userId);
+      state.following.list = state.following.list.filter((f) => f.id !== userId);
       state.following.total = Math.max(0, state.following.total - 1);
     },
   },

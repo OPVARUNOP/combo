@@ -1,0 +1,778 @@
+const axios = require('axios');
+const axiosRetry = require('axios-retry');
+const cacheService = require('./cache.service');
+const logger = require('../config/logger');
+
+// Configuration
+const JAMENDO_CONFIG = {
+  BASE_URL: process.env.JAMENDO_BASE_URL || 'https://api.jamendo.com/v3.0',
+  CLIENT_ID: process.env.JAMENDO_CLIENT_ID || 'c1eea382',
+  TIMEOUT: parseInt(process.env.JAMENDO_TIMEOUT_MS) || 15000,
+  MAX_RETRIES: parseInt(process.env.JAMENDO_MAX_RETRIES) || 3,
+  CACHE_TTL: {
+    SEARCH: parseInt(process.env.CACHE_TTL_SEARCH) || 3600,
+    TRACK: parseInt(process.env.CACHE_TTL_TRACK) || 86400,
+    TRENDING: parseInt(process.env.CACHE_TTL_TRENDING) || 1800,
+    ALBUM: parseInt(process.env.CACHE_TTL_ALBUM) || 7200,
+    ARTIST: parseInt(process.env.CACHE_TTL_ARTIST) || 14400,
+    GENRES: parseInt(process.env.CACHE_TTL_GENRES) || 86400 * 7 // 1 week
+  }
+};
+
+class JamendoError extends Error {
+  constructor(message, statusCode, code) {
+    super(message);
+    this.name = 'JamendoError';
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
+
+class JamendoService {
+  /**
+   * Jamendo API Service
+   * Handles all interactions with the Jamendo API
+   */
+  constructor() {
+    this.client = axios.create({
+      baseURL: JAMENDO_CONFIG.BASE_URL,
+      timeout: JAMENDO_CONFIG.TIMEOUT,
+      params: {
+        client_id: JAMENDO_CONFIG.CLIENT_ID,
+        format: 'json',
+      },
+    });
+
+    // Configure retry logic
+    axiosRetry(this.client, {
+      retries: JAMENDO_CONFIG.MAX_RETRIES,
+      retryDelay: axiosRetry.exponentialDelay,
+      retryCondition: (error) => {
+        // Retry on network errors or 5xx responses
+        return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
+               (error.response && error.response.status >= 500);
+      }
+    });
+
+    // Log request/response
+    this.client.interceptors.request.use(
+      config => {
+        logger.debug(`Jamendo API Request: ${config.method.toUpperCase()} ${config.url}`, {
+          params: config.params,
+          headers: config.headers
+        });
+        return config;
+      },
+      error => {
+        logger.error('Jamendo API Request Error:', error);
+        return Promise.reject(error);
+      }
+    );
+
+    this.client.interceptors.response.use(
+      response => {
+        logger.debug(`Jamendo API Response: ${response.status} ${response.config.url}`);
+        return response;
+      },
+      error => {
+        const errorMessage = error.response 
+          ? `Status: ${error.response.status} - ${error.response.statusText}`
+          : error.message;
+        
+        logger.error('Jamendo API Error:', {
+          message: errorMessage,
+          url: error.config?.url,
+          method: error.config?.method,
+          params: error.config?.params
+        });
+
+        if (error.response) {
+          // Handle specific error statuses
+          switch (error.response.status) {
+            case 400:
+              return Promise.reject(new JamendoError('Invalid request', 400, 'INVALID_REQUEST'));
+            case 401:
+              return Promise.reject(new JamendoError('Unauthorized - check your API key', 401, 'UNAUTHORIZED'));
+            case 404:
+              return Promise.reject(new JamendoError('Resource not found', 404, 'NOT_FOUND'));
+            case 429:
+              return Promise.reject(new JamendoError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED'));
+            case 500:
+              return Promise.reject(new JamendoError('Internal server error', 500, 'SERVER_ERROR'));
+            default:
+              return Promise.reject(new JamendoError('API request failed', error.response.status, 'API_ERROR'));
+          }
+        }
+        return Promise.reject(new JamendoError('Network error', 503, 'NETWORK_ERROR'));
+      }
+    );
+  }
+
+  /**
+   * Search for tracks
+   * @param {string} query - Search query
+   * @param {Object} options - Search options (limit, offset, etc.)
+   * @returns {Promise<Object>} - Search results
+   */
+  /**
+   * Search for tracks with advanced filtering and sorting
+   * @param {string} query - Search query
+   * @param {Object} options - Search options
+   * @param {number} [options.limit=20] - Number of results to return
+   * @param {number} [options.offset=0] - Pagination offset
+   * @param {string} [options.order='popularity_total'] - Sort order (popularity_total, releasedate, duration, etc.)
+   * @param {string} [options.genre] - Filter by genre
+   * @param {boolean} [options.hasLyrics] - Only include tracks with lyrics
+   * @param {number} [options.minBpm] - Minimum BPM
+   * @param {number} [options.maxBpm] - Maximum BPM
+   * @param {string} [options.license] - Filter by license (e.g., 'cc-by')
+   * @returns {Promise<Object>} Search results with tracks and metadata
+   */
+  async searchTracks(query, options = {}) {
+    try {
+      const {
+        limit = 20,
+        offset = 0,
+        order = 'popularity_total',
+        genre,
+        hasLyrics,
+        minBpm,
+        maxBpm,
+        license,
+      } = options;
+
+      // Generate a cache key based on all parameters
+      const cacheKey = `jamendo:search:${JSON.stringify({ query, ...options })}`;
+      
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for Jamendo search', { query, options });
+        return cached;
+      }
+
+      logger.info('Searching Jamendo API', { query, options });
+
+      // Build query parameters
+      const params = {
+        search: query,
+        limit,
+        offset,
+        order: `${order}_desc`, // Default to descending order
+        groupby: 'artist_id',  // Group by artist to avoid duplicates
+        include: 'musicinfo,lyrics,tags',
+      };
+
+      // Add optional filters
+      if (genre) params.tags = genre;
+      if (hasLyrics) params.haslyrics = true;
+      if (minBpm) params.bpm_from = minBpm;
+      if (maxBpm) params.bpm_to = maxBpm;
+      if (license) params.license_cc0 = license === 'cc0';
+
+      const response = await this.client.get('/tracks/', { params });
+
+      if (!response.data || !response.data.results) {
+        throw new JamendoError('Invalid response format', 500, 'INVALID_RESPONSE');
+      }
+
+      // Process and normalize track data
+      const tracks = response.data.results.map(track => this.normalizeTrack(track));
+      const pagination = this.extractPagination(response.data.headers);
+
+      const result = {
+        tracks,
+        total: pagination.total,
+        offset: pagination.offset,
+        limit: pagination.limit,
+        query,
+        source: 'jamendo',
+        ...(genre && { genre }),
+      };
+
+      // Cache the results
+      await cacheService.set(cacheKey, result, JAMENDO_CONFIG.CACHE_TTL.SEARCH);
+
+      return result;
+    } catch (error) {
+      logger.error('Jamendo search error', { error: error.message, query, options });
+      throw new JamendoError(
+        error.message || 'Failed to search tracks',
+        error.statusCode || 500,
+        error.code || 'SEARCH_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Normalize track data from Jamendo API response
+   * @private
+   */
+  normalizeTrack(track) {
+    if (!track) return null;
+
+    return {
+      id: track.id?.toString(),
+      title: track.name,
+      artist: track.artist_name,
+      artistId: track.artist_id,
+      album: track.album_name,
+      albumId: track.album_id,
+      duration: track.duration,
+      releaseDate: track.releasedate,
+      releaseYear: track.releasedate ? new Date(track.releasedate).getFullYear() : null,
+      audioUrl: track.audio,
+      audioDownloadUrl: track.audiodownload,
+      imageUrl: track.image,
+      largeImageUrl: track.image?.replace(/\/\d+\//, '/crop/1000x1000/'),
+      smallImageUrl: track.image?.replace(/\/\d+\//, '/crop/150x150/'),
+      license: track.license_ccurl,
+      licenseType: track.license_cc0 ? 'cc0' : 'standard',
+      bpm: track.bpm,
+      tags: track.tags ? track.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+      genres: track.musicinfo?.tags?.genre || [],
+      instruments: track.musicinfo?.tags?.instruments || [],
+      moods: track.musicinfo?.tags?.mood || [],
+      vocals: track.musicinfo?.vocalinstrumental === 'vocal',
+      hasLyrics: track.lyrics !== '0',
+      popularity: track.popularity_total || 0,
+      playCount: track.audiodownload_allowed ? track.audiodownload_allowed : 0,
+      downloadCount: track.audiodownload_allowed ? track.audiodownload_allowed : 0,
+      // Add additional Jamendo-specific fields
+      jamendoId: track.id,
+      jamendoArtistId: track.artist_id,
+      jamendoAlbumId: track.album_id,
+      audioInfo: {
+        bitrate: track.audiodownload_allowed ? 320 : 128, // Default to 128kbps for streaming, 320kbps for download
+        format: 'mp3',
+        sampleRate: 44100,
+      },
+      urls: {
+        jamendo: track.shorturl,
+        artist: track.artist_id ? `https://www.jamendo.com/artist/${track.artist_id}` : null,
+        album: track.album_id ? `https://www.jamendo.com/album/${track.album_id}` : null,
+      },
+      timestamps: {
+        createdAt: track.releasedate ? new Date(track.releasedate).toISOString() : null,
+        updatedAt: new Date().toISOString(),
+      },
+    };
+  }
+
+  /**
+   * Extract pagination info from response headers
+   * @private
+   */
+  extractPagination(headers) {
+    if (!headers) return { total: 0, offset: 0, limit: 0 };
+    
+    return {
+      total: parseInt(headers.results_count) || 0,
+      offset: parseInt(headers.params?.offset) || 0,
+      limit: parseInt(headers.params?.limit) || 20,
+    };
+  }
+
+  /**
+   * Get trending tracks with advanced options
+   * @param {Object} options - Trending options
+   * @param {number} [options.limit=20] - Number of tracks to return
+   * @param {string} [options.timeRange='week'] - Time range for trending (day, week, month, year)
+   * @param {string} [options.genre] - Filter by genre
+   * @param {string} [options.order='popularity_total'] - Sort order (popularity_total, listened, downloaded)
+   * @returns {Promise<Object>} Trending tracks with metadata
+   */
+  async getTrendingTracks(options = {}) {
+    try {
+      const {
+        limit = 20,
+        timeRange = 'week',
+        genre,
+        order = 'popularity_total',
+      } = options;
+
+      const cacheKey = `jamendo:trending:${JSON.stringify({ timeRange, limit, genre, order })}`;
+      
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for trending tracks', { options });
+        return cached;
+      }
+
+      logger.info('Fetching trending tracks from Jamendo', { options });
+
+      // Build query parameters
+      const params = {
+        limit,
+        order: `${order}_desc`,
+        include: 'musicinfo,tags',
+        groupby: 'artist_id',
+      };
+
+      // Add time range filter
+      const now = new Date();
+      let dateFilter = new Date();
+      
+      switch (timeRange) {
+        case 'day':
+          dateFilter.setDate(now.getDate() - 1);
+          break;
+        case 'month':
+          dateFilter.setMonth(now.getMonth() - 1);
+          break;
+        case 'year':
+          dateFilter.setFullYear(now.getFullYear() - 1);
+          break;
+        case 'week':
+        default:
+          dateFilter.setDate(now.getDate() - 7);
+      }
+      
+      params.datebetween = [
+        dateFilter.toISOString().split('T')[0],
+        now.toISOString().split('T')[0]
+      ].join('_');
+
+      // Add genre filter if specified
+      if (genre) {
+        params.tags = genre;
+      }
+
+      const response = await this.client.get('/tracks/', { params });
+
+      if (!response.data?.results) {
+        throw new JamendoError('Invalid response format', 500, 'INVALID_RESPONSE');
+      }
+
+      // Process and normalize track data
+      const tracks = response.data.results.map(track => this.normalizeTrack(track));
+      const pagination = this.extractPagination(response.data.headers);
+
+      const result = {
+        tracks,
+        total: pagination.total,
+        limit: pagination.limit,
+        timeRange,
+        ...(genre && { genre }),
+        source: 'jamendo',
+        timestamp: new Date().toISOString(),
+      };
+
+      // Cache for 30 minutes
+      await cacheService.set(cacheKey, result, JAMENDO_CONFIG.CACHE_TTL.TRENDING);
+
+      return result;
+    } catch (error) {
+      logger.error('Error fetching trending tracks', { 
+        error: error.message, 
+        options,
+        stack: error.stack 
+      });
+      
+      throw new JamendoError(
+        error.message || 'Failed to fetch trending tracks',
+        error.statusCode || 500,
+        error.code || 'TRENDING_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Get detailed track information by ID
+   * @param {string} trackId - The Jamendo track ID
+   * @param {Object} [options] - Additional options
+   * @param {boolean} [options.includeLyrics=false] - Whether to include lyrics if available
+   * @param {boolean} [options.includeSimilar=false] - Whether to include similar tracks
+   * @returns {Promise<Object>} Detailed track information
+   */
+  async getTrackById(trackId, options = {}) {
+    try {
+      if (!trackId) {
+        throw new JamendoError('Track ID is required', 400, 'MISSING_TRACK_ID');
+      }
+
+      const { includeLyrics = false, includeSimilar = false } = options;
+      const cacheKey = `jamendo:track:${trackId}:${includeLyrics ? 'with_lyrics' : 'no_lyrics'}:${includeSimilar ? 'with_similar' : 'no_similar'}`;
+      
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for track', { trackId });
+        return cached;
+      }
+
+      logger.info('Fetching track from Jamendo', { trackId, options });
+
+      // Build query parameters
+      const params = {
+        id: trackId,
+        include: 'musicinfo,tags,lyrics,stats',
+      };
+
+      if (includeLyrics) {
+        params.include += ',lyrics';
+      }
+
+      const response = await this.client.get('/tracks/', { params });
+
+      if (!response.data?.results?.length) {
+        throw new JamendoError('Track not found', 404, 'TRACK_NOT_FOUND');
+      }
+
+      // Get the first (and should be only) track
+      const trackData = response.data.results[0];
+      
+      // Normalize track data
+      const track = this.normalizeTrack(trackData);
+      
+      // Add additional details
+      const result = {
+        ...track,
+        stats: {
+          playCount: trackData.stats?.rate_downloads_total || 0,
+          downloadCount: trackData.stats?.rate_downloads_total || 0,
+          listCount: trackData.stats?.rate_listened_total || 0,
+          rate: trackData.stats?.rate || 0,
+        },
+        provider: 'jamendo',
+        _raw: options.includeRaw ? trackData : undefined,
+      };
+
+      // Include lyrics if requested and available
+      if (includeLyrics && trackData.lyrics) {
+        result.lyrics = {
+          text: trackData.lyrics.lyrics_text,
+          language: trackData.lyrics.language,
+          copyright: trackData.lyrics.copyright,
+        };
+      }
+
+      // Include similar tracks if requested
+      if (includeSimilar) {
+        try {
+          const similarTracks = await this.getSimilarTracks(trackId, { limit: 5 });
+          result.similarTracks = similarTracks;
+        } catch (similarError) {
+          logger.warn('Failed to fetch similar tracks', { 
+            trackId, 
+            error: similarError.message 
+          });
+          result.similarTracks = [];
+        }
+      }
+
+      // Cache for 24 hours
+      await cacheService.set(cacheKey, result, JAMENDO_CONFIG.CACHE_TTL.TRACK);
+
+      return result;
+    } catch (error) {
+      logger.error('Error fetching track', { 
+        trackId, 
+        error: error.message,
+        code: error.code,
+        stack: error.stack 
+      });
+      
+      throw new JamendoError(
+        error.message || 'Failed to fetch track',
+        error.statusCode || 500,
+        error.code || 'TRACK_FETCH_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Get similar tracks based on a track ID
+   * @param {string} trackId - The Jamendo track ID
+   * @param {Object} [options] - Options
+   * @param {number} [options.limit=5] - Number of similar tracks to return
+   * @returns {Promise<Array>} Array of similar tracks
+   */
+  async getSimilarTracks(trackId, options = {}) {
+    const { limit = 5 } = options;
+    const cacheKey = `jamendo:similar:${trackId}:${limit}`;
+    
+    try {
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for similar tracks', { trackId });
+        return cached;
+      }
+
+      logger.info('Fetching similar tracks from Jamendo', { trackId, limit });
+      
+      // First get the track's tags to find similar tracks
+      const track = await this.getTrackById(trackId);
+      
+      if (!track.tags?.length) {
+        return [];
+      }
+
+      // Use the first few tags to find similar tracks
+      const mainTags = track.tags.slice(0, 3).join(',');
+      
+      // Search for tracks with similar tags
+      const similarTracks = await this.searchTracks(mainTags, { 
+        limit,
+        excludeId: trackId // Exclude the current track
+      });
+
+      // Cache for 1 hour
+      await cacheService.set(cacheKey, similarTracks.tracks, 3600);
+
+      return similarTracks.tracks;
+    } catch (error) {
+      logger.error('Error fetching similar tracks', { 
+        trackId, 
+        error: error.message,
+        stack: error.stack 
+      });
+      
+      // Don't fail the whole request if similar tracks can't be fetched
+      return [];
+    }
+  }
+
+  /**
+   * Get albums with advanced filtering and pagination
+   * @param {Object} [options] - Query options
+   * @param {number} [options.limit=20] - Number of albums per page
+   * @param {number} [options.offset=0] - Pagination offset
+   * @param {string} [options.order='popularity_total'] - Sort order (popularity_total, releasedate, etc.)
+   * @param {string} [options.artistId] - Filter by artist ID
+   * @param {string} [options.genre] - Filter by genre
+   * @param {string} [options.query] - Search query for album names
+   * @returns {Promise<Object>} Paginated albums with metadata
+   */
+  async getAlbums(options = {}) {
+    try {
+      const {
+        limit = 20,
+        offset = 0,
+        order = 'popularity_total',
+        artistId,
+        genre,
+        query,
+      } = options;
+
+      // Generate cache key based on all parameters
+      const cacheKey = `jamendo:albums:${JSON.stringify({ limit, offset, order, artistId, genre, query })}`;
+      
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for albums', { options });
+        return cached;
+      }
+
+      logger.info('Fetching albums from Jamendo', { options });
+
+      // Build query parameters
+      const params = {
+        limit,
+        offset,
+        order: `${order}_desc`,
+        include: 'tracks,artist',
+      };
+
+      // Add filters
+      if (artistId) params.artist_id = artistId;
+      if (genre) params.tags = genre;
+      if (query) params.name = query;
+
+      const response = await this.client.get('/albums/', { params });
+
+      if (!response.data?.results) {
+        throw new JamendoError('Invalid response format', 500, 'INVALID_RESPONSE');
+      }
+
+      // Process and normalize album data
+      const albums = response.data.results.map(album => ({
+        id: album.id.toString(),
+        title: album.name,
+        artist: album.artist_name,
+        artistId: album.artist_id,
+        releaseDate: album.releasedate,
+        releaseYear: album.releasedate ? new Date(album.releasedate).getFullYear() : null,
+        imageUrl: album.image,
+        largeImageUrl: album.image?.replace(/\/\d+\//, '/crop/1000x1000/'),
+        smallImageUrl: album.image?.replace(/\/\d+\//, '/crop/150x150/'),
+        trackCount: album.tracks?.length || 0,
+        duration: album.duration,
+        genre: album.tags ? album.tags.split(',').map(tag => tag.trim()).filter(Boolean)[0] : null,
+        tags: album.tags ? album.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        provider: 'jamendo',
+        urls: {
+          jamendo: `https://www.jamendo.com/album/${album.id}`,
+          artist: `https://www.jamendo.com/artist/${album.artist_id}`,
+        },
+        // Include track IDs for further processing
+        trackIds: album.tracks?.map(track => track.id.toString()) || [],
+      }));
+
+      const result = {
+        albums,
+        total: response.data.headers?.results_count || 0,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        ...(artistId && { artistId }),
+        ...(genre && { genre }),
+        ...(query && { query }),
+        source: 'jamendo',
+        timestamp: new Date().toISOString(),
+      };
+
+      // Cache for 2 hours
+      await cacheService.set(cacheKey, result, JAMENDO_CONFIG.CACHE_TTL.ALBUM);
+
+      return result;
+    } catch (error) {
+      logger.error('Error fetching albums', { 
+        error: error.message, 
+        options,
+        stack: error.stack 
+      });
+      
+      throw new JamendoError(
+        error.message || 'Failed to fetch albums',
+        error.statusCode || 500,
+        error.code || 'ALBUMS_FETCH_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Get detailed artist information by ID
+   * @param {string} artistId - The Jamendo artist ID
+   * @param {Object} [options] - Additional options
+   * @param {boolean} [options.includeTracks=false] - Whether to include artist's top tracks
+   * @param {boolean} [options.includeAlbums=false] - Whether to include artist's albums
+   * @param {number} [options.tracksLimit=10] - Number of tracks to include if includeTracks is true
+   * @param {number} [options.albumsLimit=10] - Number of albums to include if includeAlbums is true
+   * @returns {Promise<Object>} Detailed artist information
+   */
+  async getArtistById(artistId, options = {}) {
+    try {
+      if (!artistId) {
+        throw new JamendoError('Artist ID is required', 400, 'MISSING_ARTIST_ID');
+      }
+
+      const {
+        includeTracks = false,
+        includeAlbums = false,
+        tracksLimit = 10,
+        albumsLimit = 10,
+      } = options;
+
+      const cacheKey = `jamendo:artist:${artistId}:${includeTracks ? 'with_tracks' : 'no_tracks'}:${includeAlbums ? 'with_albums' : 'no_albums'}`;
+      
+      // Try to get from cache first
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        logger.debug('Cache hit for artist', { artistId });
+        return cached;
+      }
+
+      logger.info('Fetching artist from Jamendo', { artistId, options });
+
+      // First get the basic artist info
+      const response = await this.client.get(`/artists/${artistId}`, {
+        params: {
+          include: 'musicinfo,stats',
+        },
+      });
+
+      if (!response.data?.results?.[0]) {
+        throw new JamendoError('Artist not found', 404, 'ARTIST_NOT_FOUND');
+      }
+
+      const artistData = response.data.results[0];
+      
+      // Fetch additional data in parallel if needed
+      const [tracks, albums] = await Promise.all([
+        includeTracks 
+          ? this.searchTracks('', { 
+              artistId,
+              limit: tracksLimit,
+              order: 'popularity_total',
+            })
+          : Promise.resolve({ tracks: [] }),
+        includeAlbums
+          ? this.getAlbums({
+              artistId,
+              limit: albumsLimit,
+              order: 'releasedate',
+            })
+          : Promise.resolve({ albums: [] }),
+      ]);
+
+      // Build the complete artist object
+      const artist = {
+        id: artistData.id.toString(),
+        name: artistData.name,
+        displayName: artistData.display_name || artistData.name,
+        imageUrl: artistData.image,
+        largeImageUrl: artistData.image?.replace(/\/\d+\//, '/crop/1000x1000/'),
+        smallImageUrl: artistData.image?.replace(/\/\d+\//, '/crop/150x150/'),
+        bio: artistData.bio || null,
+        location: {
+          country: artistData.country || null,
+          countryCode: artistData.country_code || null,
+          city: artistData.city || null,
+        },
+        contact: {
+          website: artistData.website || null,
+          websiteTitle: artistData.website_title || null,
+        },
+        stats: {
+          trackCount: artistData.track_count || 0,
+          albumCount: artistData.album_count || 0,
+          fanCount: artistData.fans || 0,
+          playCount: artistData.stats?.rate_listened_total || 0,
+          downloadCount: artistData.stats?.rate_downloads_total || 0,
+          rate: artistData.stats?.rate || 0,
+        },
+        genres: artistData.musicinfo?.tags?.genre || [],
+        influences: artistData.influences || null,
+        tags: artistData.tags ? artistData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+        provider: 'jamendo',
+        urls: {
+          jamendo: `https://www.jamendo.com/artist/${artistData.id}`,
+          website: artistData.website || null,
+        },
+        timestamps: {
+          joined: artistData.joined_date || null,
+          lastUpdated: artistData.updated_time || null,
+        },
+        // Add related content if requested
+        ...(includeTracks && { topTracks: tracks.tracks }),
+        ...(includeAlbums && { albums: albums.albums }),
+      };
+
+      // Cache for 24 hours
+      await cacheService.set(cacheKey, artist, JAMENDO_CONFIG.CACHE_TTL.ARTIST);
+
+      return artist;
+    } catch (error) {
+      logger.error('Error fetching artist', { 
+        artistId, 
+        error: error.message,
+        code: error.code,
+        stack: error.stack 
+      });
+      
+      throw new JamendoError(
+        error.message || 'Failed to fetch artist',
+        error.statusCode || 500,
+        error.code || 'ARTIST_FETCH_ERROR'
+      );
+    }
+  }
+
+// Create a singleton instance of the JamendoService
+const jamendoService = new JamendoService();
+
+// Export the service instance
+module.exports = jamendoService;

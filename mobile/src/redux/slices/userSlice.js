@@ -36,7 +36,7 @@ export const fetchUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const updateUserProfile = createAsyncThunk(
@@ -48,7 +48,7 @@ export const updateUserProfile = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const updatePreferences = createAsyncThunk(
@@ -60,7 +60,7 @@ export const updatePreferences = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const userSlice = createSlice({
@@ -101,7 +101,10 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.profile = action.payload.profile;
-        state.preferences = { ...state.preferences, ...action.payload.preferences };
+        state.preferences = {
+          ...state.preferences,
+          ...action.payload.preferences,
+        };
         state.stats = { ...state.stats, ...action.payload.stats };
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {

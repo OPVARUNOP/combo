@@ -19,7 +19,6 @@ export const SplashSoundService = {
       // In a real web implementation, you could use Web Audio API:
       // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       // Or use HTML5 audio elements
-
     } catch (error) {
       console.error(`Failed to play sound effect ${effectName}:`, error);
     }
@@ -47,7 +46,7 @@ export const SplashSoundService = {
     } catch (error) {
       console.error('Failed to cleanup splash sounds:', error);
     }
-  }
+  },
 };
 
 export default SplashSoundService;

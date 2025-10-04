@@ -55,12 +55,12 @@ playlistSchema.index({ user: 1, name: 1 }, { unique: true });
  * @returns {Promise<boolean>}
  */
 playlistSchema.statics.isNameTaken = async function (name, userId, excludePlaylistId) {
-  const playlist = await this.findOne({ 
-    name, 
-    user: userId, 
-    _id: { $ne: excludePlaylistId } 
+  const playlist = await this.findOne({
+    name,
+    user: userId,
+    _id: { $ne: excludePlaylistId },
   });
-  
+
   return !!playlist;
 };
 

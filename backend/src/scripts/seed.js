@@ -79,16 +79,16 @@ const seedPlaylists = async () => {
   // Get users
   const admin = await User.findOne({ email: 'admin@example.com' });
   const john = await User.findOne({ email: 'john@example.com' });
-  
+
   // Get music
   const music = await Music.find({});
-  
+
   const playlists = [
     {
       name: 'My Favorites',
       description: 'My favorite tracks',
       user: admin._id,
-      tracks: music.map(m => m._id),
+      tracks: music.map((m) => m._id),
       isPublic: true,
       coverImage: 'https://i.scdn.co/image/ab67706c0000bebbc9b9e8b7e8d8b7e8d8b7e8d8',
     },
@@ -111,11 +111,11 @@ const seedDatabase = async () => {
   try {
     await mongoose.connect(config.mongoose.url, config.mongoose.options);
     console.log('Connected to MongoDB');
-    
+
     await seedUsers();
     await seedMusic();
     await seedPlaylists();
-    
+
     console.log('Database seeding completed successfully');
     process.exit(0);
   } catch (error) {

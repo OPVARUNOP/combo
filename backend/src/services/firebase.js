@@ -1,45 +1,82 @@
 const admin = require('firebase-admin');
+const logger = require('../config/logger');
 
-// Initialize Firebase Admin with environment variables
-if (!admin.apps.length) {
+let isInitialized = false;
+let db = null;
+let auth = null;
+
+/**
+ * Initialize Firebase Admin SDK with the provided configuration
+ */
+async function initializeFirebase() {
+  if (admin.apps.length > 0) {
+    return admin.apps[0];
+  }
+
   try {
-    // For development, you can use environment variables or a service account file
-    if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-      const serviceAccount = {
-        type: "service_account",
-        project_id: process.env.FIREBASE_PROJECT_ID,
-        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-        private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        client_email: process.env.FIREBASE_CLIENT_EMAIL,
-        client_id: process.env.FIREBASE_CLIENT_ID,
-        auth_uri: "https://accounts.google.com/o/oauth2/auth",
-        token_uri: "https://oauth2.googleapis.com/token",
-        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
-      };
+    let firebaseConfig = {};
 
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.FIREBASE_DATABASE_URL
-      });
+    // For development, use database secret if no service account is provided
+    if (process.env.FIREBASE_DATABASE_SECRET) {
+      firebaseConfig = {
+        credential: admin.credential.cert({
+          projectId: 'combo-music-app',
+          clientEmail: 'firebase-adminsdk@combo-music-app.iam.gserviceaccount.com',
+          privateKey: process.env.FIREBASE_DATABASE_SECRET.replace(/\\\\n/g, '\\n'),
+        }),
+        databaseURL: 'https://combo-music-app-default-rtdb.firebaseio.com',
+        storageBucket: 'combo-music-app.appspot.com',
+      };
+    } else if (process.env.FIREBASE_PRIVATE_KEY) {
+      // For production with service account
+      firebaseConfig = {
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\\\n/g, '\\n'),
+        }),
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      };
     } else {
-      // Fallback for development - you'll need to create the service account file
-      const serviceAccount = require('../config/firebase-service-account.json');
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.FIREBASE_DATABASE_URL || "https://combo-music-app-default-rtdb.firebaseio.com"
-      });
+      throw new Error(
+        'Missing Firebase configuration. Please set up the required environment variables.'
+      );
     }
+
+    // Initialize the app
+    const app = admin.initializeApp(firebaseConfig);
+
+    // Initialize services
+    db = admin.firestore();
+    auth = admin.auth();
+
+    // Verify Firestore connection
+    await db.listCollections();
+
+    isInitialized = true;
+    logger.info('Firebase Admin SDK initialized successfully');
+    return app;
   } catch (error) {
-    console.error('Firebase initialization error:', error.message);
-    console.log('Please set up Firebase service account credentials in .env file or firebase-service-account.json');
+    logger.error('Firebase initialization error:', error);
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(`Failed to initialize Firebase: ${error.message}`);
+    } else {
+      logger.warn('Running without Firebase. Some features may not work.');
+      return null;
+    }
   }
 }
 
-const db = admin.firestore();
-const auth = admin.auth();
+// Initialize Firebase when this module is loaded
+initializeFirebase().catch((error) => {
+  logger.error('Failed to initialize Firebase:', error);
+});
 
 module.exports = {
-  admin,
+  admin: isInitialized ? admin : null,
   db,
-  auth
+  auth,
+  isFirebaseInitialized: isInitialized,
+  initializeFirebase, // Export for manual initialization if needed
 };

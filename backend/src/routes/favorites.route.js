@@ -44,7 +44,7 @@ router.post('/:songId', authenticate, async (req, res) => {
     }
 
     // Get current favorites
-    const userFavorites = await database.get(`users/${req.user.id}/favorites`) || { songIds: [] };
+    const userFavorites = (await database.get(`users/${req.user.id}/favorites`)) || { songIds: [] };
 
     // Check if already in favorites
     if (userFavorites.songIds.includes(songId)) {
@@ -78,7 +78,7 @@ router.delete('/:songId', authenticate, async (req, res) => {
     }
 
     // Remove from favorites
-    userFavorites.songIds = userFavorites.songIds.filter(id => id !== songId);
+    userFavorites.songIds = userFavorites.songIds.filter((id) => id !== songId);
     userFavorites.updatedAt = new Date().toISOString();
 
     await database.set(`users/${req.user.id}/favorites`, userFavorites);

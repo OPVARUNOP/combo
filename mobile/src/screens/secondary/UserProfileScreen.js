@@ -13,20 +13,20 @@ const UserProfileScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 10,
+    flex: 1,
+    justifyContent: 'center',
   },
   subtitle: {
-    fontSize: 16,
     color: colors.textSecondary,
+    fontSize: 16,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 

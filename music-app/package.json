@@ -1,0 +1,25 @@
+{
+  "name": "music-app",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start:backend": "yarn workspace @music-app/backend start",
+    "start:web": "yarn workspace @music-app/web start",
+    "start:mobile": "yarn workspace @music-app/mobile start",
+    "build": "yarn workspaces run build",
+    "test": "yarn workspaces run test",
+    "lint": "yarn workspaces run lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
+  },
+  "devDependencies": {
+    "lerna": "^6.0.3",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

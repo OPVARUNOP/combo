@@ -1,116 +1,42 @@
-# Node.js
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+# /home/vrn/combo/.gitignore
+# Previous content remains the same...
 
-# Environment variables
+# Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+*.env.*
+!.env.example
 
-# Build directories
-build/
-dist/
-.next/
-.nuxt/
+# Firebase Admin SDK
+firebase-service-account.json
+**/firebase-service-account*.json
+**/service-account*.json
+**/*.serviceAccountKey.json
+**/google-credentials.json
+config/firebase-service-account.json
 
-# Coverage directory used by testing tools
-coverage/
+# Node modules
+**/node_modules/
 
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
+# Build output
+**/dist/
+**/build/
+**/.next/
+**/out/
 
 # Logs
-logs
+**/logs
 *.log
-
-# Local development
-.cache/
-.temp/
-
-# Firebase
-.firebase/
-firebase-debug.log
-firebase-debug.*.log
-
-# Local development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local development
-.vercel
-.next
-out
-
-# Local development
-*.pem
-*.p12
-*.key
-*.csr
-*.crt
-
-# Local development
-.vercel
-.next
-out
-
-# Local development
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Local development
-.idea
-.vscode
+# Editor directories and files
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Ignore git submodules
-mobile/
-
-# Ignore all files and directories
-*/
-
-# But allow specific files
-!.gitignore
-!.github/
-!.github/workflows/
-!.github/workflows/deploy.yml
-
-# Allow backend app to be tracked
-!backend/
-!backend/**
-
-# Allow these specific files
-!README.md
-!package.json
-!package-lock.json
-!yarn.lock
+node_modules
 node_modules

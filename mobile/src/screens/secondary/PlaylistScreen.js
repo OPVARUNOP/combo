@@ -54,11 +54,11 @@ const playlistAPI = {
               duration: 240,
               artwork: null,
             },
-          ]
-        }
-      }
+          ],
+        },
+      },
     };
-  }
+  },
 };
 
 const trackAPI = {
@@ -66,17 +66,17 @@ const trackAPI = {
     // Mock track data
     return {
       data: {
-        tracks: ids.map(id => ({
+        tracks: ids.map((id) => ({
           id,
           title: `Track ${id}`,
           artist: `Artist ${id}`,
           album: `Album ${id}`,
           duration: 180,
           artwork: null,
-        }))
-      }
+        })),
+      },
     };
-  }
+  },
 };
 
 const socialAPI = {
@@ -85,7 +85,7 @@ const socialAPI = {
   },
   unfollowPlaylist: async (id) => {
     return { data: { success: true } };
-  }
+  },
 };
 
 // Theme
@@ -220,7 +220,10 @@ const PlaylistScreen = () => {
 
   const handleShufflePlay = () => {
     const shuffledTracks = [...tracks].sort(() => Math.random() - 0.5);
-    navigation.navigate('Player', { track: shuffledTracks[0], queue: shuffledTracks });
+    navigation.navigate('Player', {
+      track: shuffledTracks[0],
+      queue: shuffledTracks,
+    });
   };
 
   const onRefresh = async () => {
@@ -249,7 +252,7 @@ const PlaylistScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size='large' />
       </View>
     );
   }
@@ -266,35 +269,24 @@ const PlaylistScreen = () => {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradientBackground}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradientBackground}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name='arrow-back' size={24} color={colors.text} />
           </TouchableOpacity>
 
           <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleShare}
-            >
-              <Ionicons name="share-outline" size={20} color={colors.text} />
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+              <Ionicons name='share-outline' size={20} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => console.log('More options')}
             >
-              <Ionicons name="ellipsis-horizontal" size={20} color={colors.text} />
+              <Ionicons name='ellipsis-horizontal' size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -304,7 +296,7 @@ const PlaylistScreen = () => {
           <FastImage
             source={{ uri: playlistData.coverImage }}
             style={styles.coverImage}
-            resizeMode="cover"
+            resizeMode='cover'
           />
 
           <View style={styles.playlistDetails}>
@@ -320,9 +312,7 @@ const PlaylistScreen = () => {
               <Text style={styles.statsText}>
                 {tracks.length} tracks • {calculateTotalDuration()}
               </Text>
-              {playlistData.isPublic && (
-                <Text style={styles.publicText}>Public</Text>
-              )}
+              {playlistData.isPublic && <Text style={styles.publicText}>Public</Text>}
             </View>
 
             <Text style={styles.description} numberOfLines={3}>
@@ -333,19 +323,13 @@ const PlaylistScreen = () => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={handlePlayAll}
-          >
-            <Ionicons name="play" size={20} color={colors.white} />
+          <TouchableOpacity style={styles.primaryButton} onPress={handlePlayAll}>
+            <Ionicons name='play' size={20} color={colors.white} />
             <Text style={styles.primaryButtonText}>Play All</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleShufflePlay}
-          >
-            <Ionicons name="shuffle" size={20} color={colors.text} />
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleShufflePlay}>
+            <Ionicons name='shuffle' size={20} color={colors.text} />
             <Text style={styles.secondaryButtonText}>Shuffle</Text>
           </TouchableOpacity>
 
@@ -354,7 +338,7 @@ const PlaylistScreen = () => {
             onPress={handleLikePress}
           >
             <Ionicons
-              name={isLiked ? "heart" : "heart-outline"}
+              name={isLiked ? 'heart' : 'heart-outline'}
               size={20}
               color={isLiked ? colors.error : colors.text}
             />
@@ -366,7 +350,7 @@ const PlaylistScreen = () => {
               onPress={handleFollowPress}
             >
               <Ionicons
-                name={isFollowing ? "person-remove" : "person-add"}
+                name={isFollowing ? 'person-remove' : 'person-add'}
                 size={20}
                 color={colors.text}
               />
@@ -374,11 +358,8 @@ const PlaylistScreen = () => {
           )}
 
           {playlistData.userId === 'currentUserId' && (
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={handleEditPlaylist}
-            >
-              <Ionicons name="pencil" size={20} color={colors.text} />
+            <TouchableOpacity style={styles.iconButton} onPress={handleEditPlaylist}>
+              <Ionicons name='pencil' size={20} color={colors.text} />
             </TouchableOpacity>
           )}
         </View>
@@ -391,10 +372,7 @@ const PlaylistScreen = () => {
             <FlatList
               data={tracks}
               renderItem={({ item, index }) => (
-                <TouchableOpacity
-                  style={styles.trackItem}
-                  onPress={() => handleTrackPress(item)}
-                >
+                <TouchableOpacity style={styles.trackItem} onPress={() => handleTrackPress(item)}>
                   <View style={styles.trackNumber}>
                     <Text style={styles.trackNumberText}>{index + 1}</Text>
                   </View>
@@ -409,11 +387,9 @@ const PlaylistScreen = () => {
                   </View>
 
                   <View style={styles.trackActions}>
-                    <Text style={styles.trackDuration}>
-                      {formatDuration(item.duration)}
-                    </Text>
+                    <Text style={styles.trackDuration}>{formatDuration(item.duration)}</Text>
                     <TouchableOpacity style={styles.moreButton}>
-                      <Ionicons name="ellipsis-horizontal" size={16} color={colors.textSecondary} />
+                      <Ionicons name='ellipsis-horizontal' size={16} color={colors.textSecondary} />
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
@@ -437,114 +413,134 @@ const PlaylistScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  actionButton: {
+    padding: spacing.sm,
+  },
+  actionButtons: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  backButton: {
+    padding: spacing.sm,
+  },
+  bottomSpacing: {
+    height: 100,
+  },
   container: {
-    flex: 1,
     backgroundColor: colors.background,
+    flex: 1,
+  },
+  coverImage: {
+    alignSelf: 'center',
+    borderRadius: radius.xl,
+    height: width * 0.6,
+    marginBottom: spacing.lg,
+    width: width * 0.6,
+  },
+  description: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+    textAlign: 'center',
+  },
+  emptyTracks: {
+    alignItems: 'center',
+    paddingVertical: spacing['4xl'],
+  },
+  errorContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  errorText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+  },
+  followingButton: {
+    backgroundColor: colors.primary + '20',
+    borderColor: colors.primary,
   },
   gradientBackground: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  errorText: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-  },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'space-between',
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingTop: Platform.OS === 'ios' ? spacing['3xl'] : spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  backButton: {
-    padding: spacing.sm,
   },
   headerActions: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  actionButton: {
-    padding: spacing.sm,
+  iconButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.white10,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
   },
-  playlistInfo: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
+  likedButton: {
+    backgroundColor: colors.error + '20',
+    borderColor: colors.error,
   },
-  coverImage: {
-    width: width * 0.6,
-    height: width * 0.6,
-    borderRadius: radius.xl,
-    marginBottom: spacing.lg,
-    alignSelf: 'center',
+  loadingContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  moreButton: {
+    padding: spacing.xs,
   },
   playlistDetails: {
     alignItems: 'center',
   },
-  playlistTitle: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: '700',
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  playlistSubtitle: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+  playlistInfo: {
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
   playlistStats: {
-    flexDirection: 'row',
     alignItems: 'center',
+    flexDirection: 'row',
     marginBottom: spacing.md,
   },
-  statsText: {
-    fontSize: typography.fontSize.sm,
+  playlistSubtitle: {
     color: colors.textSecondary,
-    marginRight: spacing.md,
+    fontSize: typography.fontSize.lg,
+    marginBottom: spacing.sm,
   },
-  publicText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.primary,
-    backgroundColor: colors.primary + '20',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: radius.sm,
-  },
-  description: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
+  playlistTitle: {
+    color: colors.text,
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: '700',
+    marginBottom: spacing.sm,
     textAlign: 'center',
-    lineHeight: 22,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.xl,
-    gap: spacing.md,
   },
   primaryButton: {
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.full,
-    paddingVertical: spacing.md,
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
     paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
     ...shadows.md,
   },
   primaryButtonText: {
@@ -553,17 +549,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: spacing.sm,
   },
+  publicText: {
+    backgroundColor: colors.primary + '20',
+    borderRadius: radius.sm,
+    color: colors.primary,
+    fontSize: typography.fontSize.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
   secondaryButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.white10,
+    borderRadius: radius.full,
+    borderWidth: 1,
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.full,
-    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.white10,
+    paddingVertical: spacing.md,
   },
   secondaryButtonText: {
     color: colors.text,
@@ -571,83 +575,55 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: spacing.sm,
   },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.white10,
-  },
-  likedButton: {
-    backgroundColor: colors.error + '20',
-    borderColor: colors.error,
-  },
-  followingButton: {
-    backgroundColor: colors.primary + '20',
-    borderColor: colors.primary,
-  },
-  tracksSection: {
-    paddingHorizontal: spacing.lg,
-  },
-  trackItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    marginHorizontal: -spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white10,
-  },
-  trackNumber: {
-    width: 30,
-    alignItems: 'center',
-  },
-  trackNumberText: {
-    fontSize: typography.fontSize.sm,
+  statsText: {
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontSize: typography.fontSize.sm,
+    marginRight: spacing.md,
+  },
+  trackActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  trackArtist: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+  },
+  trackDuration: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    minWidth: 40,
+    textAlign: 'right',
   },
   trackInfo: {
     flex: 1,
     marginLeft: spacing.md,
   },
+  trackItem: {
+    alignItems: 'center',
+    borderBottomColor: colors.white10,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    marginHorizontal: -spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  trackNumber: {
+    alignItems: 'center',
+    width: 30,
+  },
+  trackNumberText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    fontWeight: '500',
+  },
   trackTitle: {
-    fontSize: typography.fontSize.base,
     color: colors.text,
+    fontSize: typography.fontSize.base,
     marginBottom: 2,
   },
-  trackArtist: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  trackActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  trackDuration: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    minWidth: 40,
-    textAlign: 'right',
-  },
-  moreButton: {
-    padding: spacing.xs,
-  },
-  emptyTracks: {
-    alignItems: 'center',
-    paddingVertical: spacing['4xl'],
-  },
-  emptyText: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  bottomSpacing: {
-    height: 100,
+  tracksSection: {
+    paddingHorizontal: spacing.lg,
   },
 });
 

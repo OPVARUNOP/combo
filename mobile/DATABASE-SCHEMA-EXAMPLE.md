@@ -5,6 +5,7 @@
 Since we're using Jamendo as our music source, the database schema is simplified:
 
 ### tracks table:
+
 ```sql
 -- Track record with Jamendo data
 INSERT INTO tracks (
@@ -27,6 +28,7 @@ INSERT INTO tracks (
 ```
 
 ### albums table:
+
 ```sql
 -- Album record with Jamendo data
 INSERT INTO albums (
@@ -45,6 +47,7 @@ INSERT INTO albums (
 ```
 
 ### artists table:
+
 ```sql
 -- Artist record with Jamendo data
 INSERT INTO artists (
@@ -63,6 +66,7 @@ INSERT INTO artists (
 ## Updated Mobile App Data Flow with Jamendo
 
 ### 1. User Requests Track:
+
 ```javascript
 // User taps play button
 const playTrack = async (trackId) => {
@@ -78,6 +82,7 @@ const playTrack = async (trackId) => {
 ```
 
 ### 2. Database Response Format (Jamendo):
+
 ```json
 {
   "data": {
@@ -98,6 +103,7 @@ const playTrack = async (trackId) => {
 ```
 
 ### 3. Jamendo API Response Format:
+
 ```json
 // Raw Jamendo API response
 {
@@ -123,6 +129,7 @@ const playTrack = async (trackId) => {
 ## Jamendo Database Schema
 
 ### Complete PostgreSQL Schema:
+
 ```sql
 -- Tracks table (Jamendo data)
 CREATE TABLE tracks (
@@ -194,6 +201,7 @@ CREATE TABLE playlist_tracks (
 ## Jamendo Data Mapping
 
 ### Track Data Mapping:
+
 ```javascript
 // Jamendo → Database mapping
 const mapJamendoTrack = (jamendoTrack) => ({
@@ -205,11 +213,12 @@ const mapJamendoTrack = (jamendoTrack) => ({
   genre: jamendoTrack.genre,
   jamendo_audio_url: jamendoTrack.audio,
   jamendo_artwork_url: jamendoTrack.album_image,
-  release_date: jamendoTrack.releasedate
+  release_date: jamendoTrack.releasedate,
 });
 ```
 
 ### Album Data Mapping:
+
 ```javascript
 const mapJamendoAlbum = (jamendoAlbum) => ({
   jamendo_id: jamendoAlbum.id,
@@ -217,33 +226,37 @@ const mapJamendoAlbum = (jamendoAlbum) => ({
   artist_id: findOrCreateArtist(jamendoAlbum.artist_name, jamendoAlbum.artist_id),
   jamendo_artwork_url: jamendoAlbum.image,
   release_date: jamendoAlbum.releasedate,
-  total_tracks: jamendoAlbum.tracks_count
+  total_tracks: jamendoAlbum.tracks_count,
 });
 ```
 
 ### Artist Data Mapping:
+
 ```javascript
 const mapJamendoArtist = (jamendoArtist) => ({
   jamendo_id: jamendoArtist.id,
   name: jamendoArtist.name,
   jamendo_image_url: jamendoArtist.image,
-  verified: false // Jamendo doesn't provide verification status
+  verified: false, // Jamendo doesn't provide verification status
 });
 ```
 
 ## Jamendo Integration Workflow
 
 ### 1. Search & Discovery:
+
 ```
 User searches "rock" → Backend calls Jamendo API → Format results → Store in database → Return to mobile app
 ```
 
 ### 2. Track Playback:
+
 ```
 User clicks play → Backend gets Jamendo track → Return streaming URL → Mobile app plays directly from Jamendo
 ```
 
 ### 3. Data Synchronization:
+
 ```sql
 -- Sync new tracks from Jamendo
 INSERT INTO tracks (jamendo_id, title, artist_id, ...)
@@ -255,18 +268,24 @@ WHERE jamendo_id NOT IN (SELECT jamendo_id FROM tracks);
 ## Jamendo Audio Quality
 
 ### Streaming URLs:
+
 - **MP3 32kbps**: `https://mp3d.jamendo.com/?trackid=123&format=mp32`
 - **MP3 128kbps**: `https://mp3d.jamendo.com/?trackid=123&format=mp31`
 - **MP3 320kbps**: `https://mp3d.jamendo.com/?trackid=123&format=mp3`
 
 ### Quality Selection:
+
 ```javascript
 const getJamendoQualityUrl = (baseUrl, quality) => {
   switch (quality) {
-    case 'low': return baseUrl.replace('format=mp32', 'format=mp32');
-    case 'medium': return baseUrl.replace('format=mp32', 'format=mp31');
-    case 'high': return baseUrl.replace('format=mp32', 'format=mp3');
-    default: return baseUrl;
+    case 'low':
+      return baseUrl.replace('format=mp32', 'format=mp32');
+    case 'medium':
+      return baseUrl.replace('format=mp32', 'format=mp31');
+    case 'high':
+      return baseUrl.replace('format=mp32', 'format=mp3');
+    default:
+      return baseUrl;
   }
 };
 ```
@@ -274,6 +293,7 @@ const getJamendoQualityUrl = (baseUrl, quality) => {
 ## Performance Optimization
 
 ### Database Indexes:
+
 ```sql
 -- Optimize searches
 CREATE INDEX idx_tracks_jamendo_id ON tracks(jamendo_id);
@@ -288,6 +308,7 @@ CREATE INDEX idx_tracks_release_date ON tracks(release_date);
 ```
 
 ### Caching Strategy:
+
 - Cache Jamendo API responses (Redis)
 - Cache popular tracks and artists
 - Cache search results for 1 hour
@@ -296,11 +317,13 @@ CREATE INDEX idx_tracks_release_date ON tracks(release_date);
 ## Security Considerations
 
 ### API Rate Limiting:
+
 - Jamendo allows 30 requests/minute (free tier)
 - Implement request queuing
 - Cache responses to reduce API calls
 
 ### Data Validation:
+
 ```javascript
 // Validate Jamendo data before storing
 const validateJamendoTrack = (track) => {
@@ -316,6 +339,6 @@ const validateJamendoTrack = (track) => {
 ✅ **Simple database schema** - Just store metadata  
 ✅ **Direct streaming** - No S3 upload/download  
 ✅ **Automatic updates** - Fresh content from Jamendo  
-✅ **Quality options** - Multiple audio bitrates available  
+✅ **Quality options** - Multiple audio bitrates available
 
 This architecture is perfect for a legal, free music streaming app! 🎵

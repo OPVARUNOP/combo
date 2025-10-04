@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Image,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   interpolate,
@@ -19,25 +13,14 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions;
 
-const AlbumArt = ({
-  source,
-  size = 200,
-  style,
-  blur = false,
-  animated = true,
-  onPress,
-}) => {
+const AlbumArt = ({ source, size = 200, style, blur = false, animated = true, onPress }) => {
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
   const { playbackState } = useSelector((state) => state.player);
 
   React.useEffect(() => {
     if (animated && playbackState.isPlaying) {
-      rotation.value = withRepeat(
-        withTiming(360, { duration: 10000 }),
-        -1,
-        false
-      );
+      rotation.value = withRepeat(withTiming(360, { duration: 10000 }), -1, false);
     } else {
       rotation.value = withTiming(0);
     }
@@ -45,10 +28,7 @@ const AlbumArt = ({
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        { rotate: `${rotation.value}deg` },
-        { scale: scale.value },
-      ],
+      transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
     };
   });
 
@@ -56,7 +36,7 @@ const AlbumArt = ({
     if (onPress) {
       scale.value = withSequence(
         withTiming(0.9, { duration: 100 }),
-        withTiming(1, { duration: 100 })
+        withTiming(1, { duration: 100 }),
       );
       onPress();
     }
@@ -83,22 +63,14 @@ const AlbumArt = ({
       <Animated.View style={[styles.animatedContainer, animatedStyle]}>
         {blur ? (
           <View style={styles.blurContainer}>
-            <Image
-              source={{ uri: source }}
-              style={imageStyle}
-              blurRadius={20}
-            />
+            <Image source={{ uri: source }} style={imageStyle} blurRadius={20} />
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
               style={styles.gradient}
             />
           </View>
         ) : (
-          <Image
-            source={{ uri: source }}
-            style={imageStyle}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: source }} style={imageStyle} resizeMode='cover' />
         )}
 
         {/* Vinyl effect for playing state */}
@@ -113,16 +85,9 @@ const AlbumArt = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   animatedContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  image: {
-    backgroundColor: '#333',
+    justifyContent: 'center',
   },
   blur: {
     opacity: 0.6,
@@ -130,22 +95,21 @@ const styles = StyleSheet.create({
   blurContainer: {
     position: 'relative',
   },
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   gradient: {
     ...StyleSheet.absoluteFillObject,
   },
-  vinylEffect: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: width * 0.35,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  image: {
+    backgroundColor: '#333',
   },
   vinylCenter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
     backgroundColor: colors.primary,
+    borderRadius: 10,
+    elevation: 10,
+    height: 20,
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
@@ -153,7 +117,15 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.8,
     shadowRadius: 10,
-    elevation: 10,
+    width: 20,
+  },
+  vinylEffect: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: width * 0.35,
+    borderWidth: 2,
+    justifyContent: 'center',
   },
 });
 

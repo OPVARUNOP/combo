@@ -1,7 +1,12 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, MaterialIcons, Feather } from '@expo/vector-icons';
+import { colors, animation } from '../styles/theme';
+import DownloadsScreen from '../screens/secondary/DownloadsScreen';
+import LikedSongsScreen from '../screens/secondary/LikedSongsScreen';
+import RecentPlaysScreen from '../screens/secondary/RecentPlaysScreen';
+import CreatePlaylistScreen from '../screens/secondary/CreatePlaylistScreen';
+import EditPlaylistScreen from '../screens/secondary/EditPlaylistScreen';
 
 // Screens
 import HomeScreen from '../screens/main/HomeScreen';
@@ -15,18 +20,23 @@ import SettingsScreen from '../screens/settings/SettingsScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import SocialScreen from '../screens/social/SocialScreen';
 
-// Components
-import MiniPlayer from '../components/player/MiniPlayer';
+// Auth screens
+import AuthScreen from '../screens/auth/AuthScreen';
 
-// Theme
-import { colors, spacing } from '../styles/theme';
+// Artist/creator screens
+import ArtistPortalScreen from '../screens/artist/ArtistPortalScreen';
+import UploadMusicScreen from '../screens/artist/UploadMusicScreen';
+import ArtistAnalyticsScreen from '../screens/artist/ArtistAnalyticsScreen';
 
 // Create navigators
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import { useTheme } from '../context/ThemeContext';
+
 // Tab Navigator
 const MainTabs = () => {
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -47,10 +57,10 @@ const MainTabs = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: theme.colors.surface,
           borderTopWidth: 0,
           paddingBottom: 4,
           height: 60,
@@ -58,59 +68,43 @@ const MainTabs = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ title: 'Home' }}
-      />
-      <Tab.Screen
-        name="Search"
-        component={SearchScreen}
-        options={{ title: 'Search' }}
-      />
-      <Tab.Screen
-        name="Library"
-        component={LibraryScreen}
-        options={{ title: 'Library' }}
-      />
-      <Tab.Screen
-        name="Social"
-        component={SocialScreen}
-        options={{ title: 'Social' }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: 'Profile' }}
-      />
+      <Tab.Screen name='Home' component={HomeScreen} options={{ title: 'Home' }} />
+      <Tab.Screen name='Search' component={SearchScreen} options={{ title: 'Search' }} />
+      <Tab.Screen name='Library' component={LibraryScreen} options={{ title: 'Library' }} />
+      <Tab.Screen name='Social' component={SocialScreen} options={{ title: 'Social' }} />
+      <Tab.Screen name='Profile' component={ProfileScreen} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );
 };
 
 // Main Stack Navigator
 const MainStack = () => {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: theme.colors.background,
           elevation: 0,
           shadowOpacity: 0,
         },
-        headerTintColor: colors.text,
+        headerTintColor: theme.colors.text,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
-        cardStyle: { backgroundColor: colors.background },
+        cardStyle: { backgroundColor: theme.colors.background },
+        cardStyleInterpolator: forHorizontalIOS,
+        gestureEnabled: true,
+        gestureDirection: 'horizontal',
+        transitionSpec: {
+          open: animation.presets.page,
+          close: animation.presets.page,
+        },
       }}
     >
+      <Stack.Screen name='MainTabs' component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen
-        name="MainTabs"
-        component={MainTabs}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Player"
+        name='Player'
         component={PlayerScreen}
         options={{
           headerShown: false,
@@ -144,7 +138,7 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="Playlist"
+        name='Playlist'
         component={PlaylistScreen}
         options={({ route }) => ({
           title: route.params?.title || 'Playlist',
@@ -152,7 +146,7 @@ const MainStack = () => {
         })}
       />
       <Stack.Screen
-        name="Album"
+        name='Album'
         component={AlbumScreen}
         options={({ route }) => ({
           title: route.params?.title || 'Album',
@@ -160,7 +154,7 @@ const MainStack = () => {
         })}
       />
       <Stack.Screen
-        name="Artist"
+        name='Artist'
         component={ArtistScreen}
         options={({ route }) => ({
           title: route.params?.name || 'Artist',
@@ -168,7 +162,7 @@ const MainStack = () => {
         })}
       />
       <Stack.Screen
-        name="Settings"
+        name='Settings'
         component={SettingsScreen}
         options={{
           title: 'Settings',
@@ -176,7 +170,7 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="Downloads"
+        name='Downloads'
         component={DownloadsScreen}
         options={{
           title: 'Downloads',
@@ -184,7 +178,7 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="LikedSongs"
+        name='LikedSongs'
         component={LikedSongsScreen}
         options={{
           title: 'Liked Songs',
@@ -192,7 +186,7 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="RecentPlays"
+        name='RecentPlays'
         component={RecentPlaysScreen}
         options={{
           title: 'Recently Played',
@@ -200,7 +194,7 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="CreatePlaylist"
+        name='CreatePlaylist'
         component={CreatePlaylistScreen}
         options={{
           title: 'Create Playlist',
@@ -208,35 +202,31 @@ const MainStack = () => {
         }}
       />
       <Stack.Screen
-        name="EditPlaylist"
+        name='EditPlaylist'
         component={EditPlaylistScreen}
         options={({ route }) => ({
           title: route.params?.isNew ? 'Create Playlist' : 'Edit Playlist',
           headerBackTitle: 'Cancel',
         })}
       />
-      <Stack.Screen
-        name="Recommendations"
-        component={RecommendationsScreen}
-        options={{
-          title: 'Recommendations',
-          headerBackTitle: 'Back',
-        }}
-      />
+      <Stack.Screen name='ArtistPortal' component={ArtistPortalScreen} />
+      <Stack.Screen name='UploadMusic' component={UploadMusicScreen} />
+      <Stack.Screen name='ArtistAnalytics' component={ArtistAnalyticsScreen} />
     </Stack.Navigator>
   );
 };
 
 // Auth Stack Navigator
 const AuthStack = () => {
+  const { theme } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: colors.background },
+        cardStyle: { backgroundColor: theme.colors.background },
       }}
     >
-      <Stack.Screen name="Auth" component={AuthScreen} />
+      <Stack.Screen name='Auth' component={AuthScreen} />
     </Stack.Navigator>
   );
 };
@@ -249,28 +239,12 @@ const RootNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="MainApp" component={MainStack} />
+        <Stack.Screen name='MainApp' component={MainStack} />
       ) : (
-        <Stack.Screen name="Auth" component={AuthStack} />
+        <Stack.Screen name='Auth' component={AuthStack} />
       )}
     </Stack.Navigator>
   );
 };
 
-// Main App Navigator
-const AppNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="Player" component={PlayerScreen} />
-      <Stack.Screen name="Playlist" component={PlaylistScreen} />
-      <Stack.Screen name="Album" component={AlbumScreen} />
-      <Stack.Screen name="Artist" component={ArtistScreen} />
-      <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Social" component={SocialScreen} />
-    </Stack.Navigator>
-  );
-};
-
-export default AppNavigator;
+export default RootNavigator;

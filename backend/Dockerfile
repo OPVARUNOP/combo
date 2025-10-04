@@ -1,8 +1,15 @@
-# Use Node.js 20 for better Firebase compatibility
+# Use Node.js 20 LTS
 FROM node:20-slim
 
 # Set working directory
 WORKDIR /app
+
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
@@ -21,8 +28,19 @@ RUN addgroup --gid 1001 --system nodejs && \
 # Switch to non-root user
 USER nextjs
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=8080
+
 # Expose port
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', (res) => { if (res.statusCode !== 200) throw new Error('Health check failed') })"
+
+# Start the application
+CMD ["node", "server.js"]
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -33,5 +51,5 @@ ENV HOST=0.0.0.0
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Start the application with node directly instead of npm for better signal handling
+# Start the application with node directly for better signal handling
 CMD ["node", "server.js"]

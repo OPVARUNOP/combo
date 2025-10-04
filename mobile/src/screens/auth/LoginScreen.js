@@ -31,7 +31,7 @@ const LoginScreen = () => {
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const { isLoading, error } = useSelector(state => state.auth);
+  const { isLoading, error } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // Clear any existing errors when component mounts
@@ -113,10 +113,7 @@ const LoginScreen = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradient}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradient}>
         {/* Logo/Brand Section */}
         <View style={styles.headerSection}>
           <View style={styles.logoContainer}>
@@ -133,22 +130,24 @@ const LoginScreen = () => {
           {/* Email Input */}
           <View style={styles.inputContainer}>
             <Ionicons
-              name="mail"
+              name='mail'
               size={20}
               color={emailError ? colors.error : colors.textSecondary}
               style={styles.inputIcon}
             />
             <TextInput
               style={[styles.input, emailError && styles.inputError]}
-              placeholder="Email"
+              placeholder='Email'
               placeholderTextColor={colors.textSecondary}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
-                if (emailError) setEmailError('');
+                if (emailError) {
+                  setEmailError('');
+                }
               }}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              keyboardType='email-address'
+              autoCapitalize='none'
               autoCorrect={false}
             />
           </View>
@@ -157,28 +156,27 @@ const LoginScreen = () => {
           {/* Password Input */}
           <View style={styles.inputContainer}>
             <Ionicons
-              name="lock-closed"
+              name='lock-closed'
               size={20}
               color={passwordError ? colors.error : colors.textSecondary}
               style={styles.inputIcon}
             />
             <TextInput
               style={[styles.input, passwordError && styles.inputError]}
-              placeholder="Password"
+              placeholder='Password'
               placeholderTextColor={colors.textSecondary}
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
-                if (passwordError) setPasswordError('');
+                if (passwordError) {
+                  setPasswordError('');
+                }
               }}
               secureTextEntry={!showPassword}
-              autoCapitalize="none"
+              autoCapitalize='none'
               autoCorrect={false}
             />
-            <TouchableOpacity
-              onPress={togglePasswordVisibility}
-              style={styles.eyeIcon}
-            >
+            <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIcon}>
               <Ionicons
                 name={showPassword ? 'eye-off' : 'eye'}
                 size={20}
@@ -189,10 +187,7 @@ const LoginScreen = () => {
           {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 
           {/* Forgot Password */}
-          <TouchableOpacity
-            onPress={handleForgotPassword}
-            style={styles.forgotPasswordContainer}
-          >
+          <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordContainer}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -203,7 +198,7 @@ const LoginScreen = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color={colors.white} size="small" />
+              <ActivityIndicator color={colors.white} size='small' />
             ) : (
               <Text style={styles.loginButtonText}>Sign In</Text>
             )}
@@ -219,13 +214,13 @@ const LoginScreen = () => {
           {/* Social Login Buttons */}
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-google" size={20} color={colors.text} />
+              <Ionicons name='logo-google' size={20} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-apple" size={20} color={colors.text} />
+              <Ionicons name='logo-apple' size={20} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-facebook" size={20} color={colors.text} />
+              <Ionicons name='logo-facebook' size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -246,78 +241,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
+  divider: {
+    backgroundColor: colors.white10,
     flex: 1,
-    justifyContent: 'space-between',
+    height: 1,
   },
-  headerSection: {
+  dividerContainer: {
     alignItems: 'center',
-    paddingTop: height * 0.15,
-    paddingHorizontal: spacing.xl,
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: typography.fontSize['6xl'],
-    fontWeight: 'bold',
-    color: colors.white,
-    letterSpacing: typography.letterSpacing.wider,
-  },
-  tagline: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  formSection: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: 'bold',
-    color: colors.white,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing['3xl'],
-  },
-  inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.white10,
+    marginVertical: spacing.xl,
   },
-  inputIcon: {
-    marginRight: spacing.md,
-  },
-  input: {
-    flex: 1,
-    color: colors.text,
-    fontSize: typography.fontSize.base,
-    paddingVertical: spacing.md,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  eyeIcon: {
-    padding: spacing.sm,
+  dividerText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginHorizontal: spacing.md,
   },
   errorText: {
     color: colors.error,
     fontSize: typography.fontSize.sm,
     marginBottom: spacing.md,
     marginLeft: spacing.sm,
+  },
+  eyeIcon: {
+    padding: spacing.sm,
+  },
+  footerSection: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingBottom: height * 0.05,
+    paddingHorizontal: spacing.xl,
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
@@ -328,12 +281,48 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontWeight: '500',
   },
+  formSection: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  gradient: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  headerSection: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: height * 0.15,
+  },
+  input: {
+    color: colors.text,
+    flex: 1,
+    fontSize: typography.fontSize.base,
+    paddingVertical: spacing.md,
+  },
+  inputContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.white10,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  inputError: {
+    borderColor: colors.error,
+  },
+  inputIcon: {
+    marginRight: spacing.md,
+  },
   loginButton: {
+    alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
     marginBottom: spacing.xl,
+    paddingVertical: spacing.md,
     ...shadows.md,
   },
   loginButtonDisabled: {
@@ -344,51 +333,57 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.lg,
     fontWeight: '600',
   },
-  dividerContainer: {
-    flexDirection: 'row',
+  logoContainer: {
     alignItems: 'center',
-    marginVertical: spacing.xl,
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.white10,
-  },
-  dividerText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSize.sm,
-    marginHorizontal: spacing.md,
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.lg,
-  },
-  socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.white10,
-  },
-  footerSection: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: height * 0.05,
-    paddingHorizontal: spacing.xl,
-  },
-  signUpText: {
-    color: colors.textSecondary,
-    fontSize: typography.fontSize.base,
+  logoText: {
+    color: colors.white,
+    fontSize: typography.fontSize['6xl'],
+    fontWeight: 'bold',
+    letterSpacing: typography.letterSpacing.wider,
   },
   signUpLink: {
     color: colors.primary,
     fontSize: typography.fontSize.base,
     fontWeight: '600',
+  },
+  signUpText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.base,
+  },
+  socialButton: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.white10,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    height: 50,
+    justifyContent: 'center',
+    width: 50,
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    justifyContent: 'center',
+  },
+  subtitle: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.lg,
+    marginBottom: spacing['3xl'],
+    textAlign: 'center',
+  },
+  tagline: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.lg,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  title: {
+    color: colors.white,
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: 'bold',
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
 });
 

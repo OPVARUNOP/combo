@@ -2,12 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const routes = require('./routes');
-
 const app = express();
 
 // Set security HTTP headers
@@ -17,16 +17,17 @@ app.use(helmet());
 app.use(cors());
 app.options('*', cors());
 
-// Parse JSON request body
-app.use(express.json());
-
-// Parse URL-encoded request body
-app.use(express.urlencoded({ extended: true }));
+// Set maximum request body size
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging in development
 if (config.env === 'development') {
   app.use(morgan('dev'));
 }
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // API routes
 app.use('/api', routes);

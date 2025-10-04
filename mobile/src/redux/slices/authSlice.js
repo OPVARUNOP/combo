@@ -17,7 +17,7 @@ export const login = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const register = createAsyncThunk(
@@ -29,19 +29,16 @@ export const register = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
-export const logout = createAsyncThunk(
-  'auth/logout',
-  async (_, { rejectWithValue }) => {
-    try {
-      await authService.logout();
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    await authService.logout();
+  } catch (error) {
+    return rejectWithValue(error.message);
   }
-);
+});
 
 const authSlice = createSlice({
   name: 'auth',

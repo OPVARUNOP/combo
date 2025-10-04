@@ -43,12 +43,12 @@ const options = {
             },
             name: {
               type: 'string',
-              description: 'User\'s full name',
+              description: "User's full name",
             },
             email: {
               type: 'string',
               format: 'email',
-              description: 'User\'s email address',
+              description: "User's email address",
             },
             role: {
               type: 'string',
@@ -64,7 +64,7 @@ const options = {
             profilePicture: {
               type: 'string',
               format: 'uri',
-              description: 'URL to user\'s profile picture',
+              description: "URL to user's profile picture",
             },
             preferences: {
               type: 'object',

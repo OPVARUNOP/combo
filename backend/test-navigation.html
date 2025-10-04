@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Navigation</h1>
+    
+    <div>
+        <a href="http://localhost:5000/test-upload.html" class="btn">Direct Link to Test Upload</a>
+        <a href="test-upload.html" class="btn">Relative Link to Test Upload</a>
+        <a href="/test-upload.html" class="btn">Root-Relative Link to Test Upload</a>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <p>Try these links to see which one works:</p>
+        <ol style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <li>Click the first link to test direct access to the upload page</li>
+            <li>If that works, the issue is with the navigation in your app</li>
+            <li>If not, there might be an issue with the server configuration</li>
+        </ol>
+    </div>
+</body>
+</html>

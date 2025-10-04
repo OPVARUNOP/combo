@@ -9,12 +9,12 @@ import {
   Dimensions,
   RefreshControl,
   Alert,
-  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import FastImage from 'react-native-fast-image';
+import { useDispatch, useSelector } from 'react-redux';
 
 // Components
 import TrackCard from '../components/cards/TrackCard';
@@ -30,12 +30,20 @@ import { userAPI, trackAPI, playlistAPI, albumAPI, artistAPI } from '../services
 // Theme
 import { colors, spacing, typography, radius } from '../styles/theme';
 
+// Redux
+import { addRecentActivity } from '../../store/slices/personalizationSlice';
+
 const { width } = Dimensions.get('window');
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Redux state
+  const currentUser = useSelector((state) => state.auth.user);
+  const { recentActivities } = useSelector((state) => state.personalization);
 
   // State for user profile and content
   const [userProfile, setUserProfile] = useState(null);
@@ -46,11 +54,20 @@ const ProfileScreen = () => {
     totalArtists: 0,
     totalMinutes: 0,
   });
+
+  // Social features state
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [topTracks, setTopTracks] = useState([]);
-  const [topArtists, setTopArtists] = useState([]);
-  const [topAlbums, setTopAlbums] = useState([]);
-  const [createdPlaylists, setCreatedPlaylists] = useState([]);
+  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [userAlbums, setUserAlbums] = useState([]);
+  const [userArtists, setUserArtists] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
 
   useEffect(() => {
     loadProfileData();
@@ -67,6 +84,8 @@ const ProfileScreen = () => {
         loadTopArtists(),
         loadTopAlbums(),
         loadCreatedPlaylists(),
+        loadActivityFeed(),
+        loadSocialData(),
       ]);
     } catch (error) {
       console.error('Error loading profile data:', error);
@@ -175,12 +194,78 @@ const ProfileScreen = () => {
     }
   };
 
-  const loadCreatedPlaylists = async () => {
+  const loadSocialData = async () => {
     try {
-      const response = await playlistAPI.getMyPlaylists();
-      setCreatedPlaylists(response.data.playlists || []);
+      // Mock social data - replace with actual API calls
+      setFollowers([
+        {
+          id: '1',
+          name: 'Alice Johnson',
+          avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
+        },
+        {
+          id: '2',
+          name: 'Bob Smith',
+          avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
+        },
+      ]);
+      setFollowing([
+        {
+          id: '1',
+          name: 'Charlie Brown',
+          avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+        },
+        {
+          id: '2',
+          name: 'Diana Prince',
+          avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+        },
+      ]);
+      setFollowersCount(1234);
+      setFollowingCount(567);
+      setIsFollowing(false); // Current user viewing their own profile
     } catch (error) {
-      console.error('Error loading created playlists:', error);
+      console.error('Error loading social data:', error);
+    }
+  };
+
+  const loadActivityFeed = async () => {
+    try {
+      // Mock activity feed - replace with actual API calls
+      setActivityFeed([
+        {
+          id: '1',
+          type: 'playlist_created',
+          user: {
+            name: 'John Doe',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          },
+          content: 'Created playlist "Chill Vibes"',
+          timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+        },
+        {
+          id: '2',
+          type: 'track_liked',
+          user: {
+            name: 'John Doe',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          },
+          content: 'Liked "Blinding Lights" by The Weeknd',
+          timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+        },
+        {
+          id: '3',
+          type: 'artist_followed',
+          user: {
+            name: 'John Doe',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          },
+          content: 'Started following Taylor Swift',
+          timestamp: new Date(Date.now() - 10800000).toISOString(), // 3 hours ago
+        },
+      ]);
+    } catch (error) {
+      console.error('Error loading activity feed:', error);
     }
   };
 
@@ -215,24 +300,20 @@ const ProfileScreen = () => {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          // Implement logout logic
+          console.log('User logged out');
         },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            // Implement logout logic
-            console.log('User logged out');
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   const formatMinutes = (minutes) => {
@@ -252,41 +333,52 @@ const ProfileScreen = () => {
   };
 
   const renderTrackItem = ({ item }) => (
-    <TrackCard
-      track={item}
-      onPress={() => handleTrackPress(item)}
-    />
+    <TrackCard track={item} onPress={() => handleTrackPress(item)} />
   );
 
   const renderPlaylistItem = ({ item }) => (
-    <PlaylistCard
-      playlist={item}
-      onPress={() => handlePlaylistPress(item)}
-    />
+    <PlaylistCard playlist={item} onPress={() => handlePlaylistPress(item)} />
   );
 
   const renderAlbumItem = ({ item }) => (
-    <AlbumCard
-      album={item}
-      onPress={() => handleAlbumPress(item)}
-    />
+    <AlbumCard album={item} onPress={() => handleAlbumPress(item)} />
   );
 
-  const renderArtistItem = ({ item }) => (
-    <ArtistCard
-      artist={item}
-      onPress={() => handleArtistPress(item)}
-    />
+  const renderActivityItem = ({ item }) => (
+    <View style={styles.activityItem}>
+      <FastImage source={{ uri: item.user.avatar }} style={styles.activityAvatar} />
+      <View style={styles.activityContent}>
+        <Text style={styles.activityText}>
+          <Text style={styles.activityUser}>{item.user.name}</Text> {item.content}
+        </Text>
+        <Text style={styles.activityTime}>{formatTimeAgo(new Date(item.timestamp))}</Text>
+      </View>
+    </View>
   );
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / 60000);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+
+    if (diffInMinutes < 1) {
+      return 'Just now';
+    }
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    }
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
+    return `${Math.floor(diffInHours / 24)}d ago`;
+  };
 
   const ProfileHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => navigation.openDrawer()}
-        >
-          <Ionicons name="menu" size={24} color={colors.text} />
+        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+          <Ionicons name='menu' size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -295,11 +387,8 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.headerRight}>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={handleSettings}
-        >
-          <Ionicons name="settings-outline" size={20} color={colors.text} />
+        <TouchableOpacity style={styles.settingsButton} onPress={handleSettings}>
+          <Ionicons name='settings-outline' size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -311,7 +400,7 @@ const ProfileScreen = () => {
         <FastImage source={{ uri: userProfile?.avatar }} style={styles.avatar} />
         {userProfile?.isPremium && (
           <View style={styles.premiumBadge}>
-            <MaterialIcons name="star" size={16} color={colors.secondary} />
+            <MaterialIcons name='star' size={16} color={colors.secondary} />
           </View>
         )}
       </View>
@@ -320,27 +409,25 @@ const ProfileScreen = () => {
         <Text style={styles.userName}>{userProfile?.name}</Text>
         <Text style={styles.username}>@{userProfile?.username}</Text>
 
-        {userProfile?.bio && (
-          <Text style={styles.bio}>{userProfile.bio}</Text>
-        )}
+        {userProfile?.bio && <Text style={styles.bio}>{userProfile.bio}</Text>}
 
         <View style={styles.userMeta}>
           {userProfile?.location && (
             <View style={styles.metaItem}>
-              <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+              <Ionicons name='location-outline' size={16} color={colors.textSecondary} />
               <Text style={styles.metaText}>{userProfile.location}</Text>
             </View>
           )}
 
           {userProfile?.website && (
             <View style={styles.metaItem}>
-              <Ionicons name="link" size={16} color={colors.textSecondary} />
+              <Ionicons name='link' size={16} color={colors.textSecondary} />
               <Text style={styles.metaText}>{userProfile.website}</Text>
             </View>
           )}
 
           <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
+            <Ionicons name='calendar-outline' size={16} color={colors.textSecondary} />
             <Text style={styles.metaText}>
               Joined {new Date(userProfile?.joinedDate).toLocaleDateString()}
             </Text>
@@ -364,17 +451,11 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditProfile}
-          >
+          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
         </View>
@@ -409,7 +490,7 @@ const ProfileScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <LoadingSpinner size="large" />
+        <LoadingSpinner size='large' />
       </View>
     );
   }
@@ -418,14 +499,9 @@ const ProfileScreen = () => {
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <LinearGradient
-        colors={colors.gradientBg}
-        style={styles.gradientBackground}
-      >
+      <LinearGradient colors={colors.gradientBg} style={styles.gradientBackground}>
         {/* Header */}
         <ProfileHeader />
 
@@ -439,7 +515,7 @@ const ProfileScreen = () => {
         {recentlyPlayed.length > 0 && (
           <View style={styles.section}>
             <SectionHeader
-              title="Recently Played"
+              title='Recently Played'
               onSeeAll={() => navigation.navigate('RecentPlays')}
             />
             <FlatList
@@ -456,10 +532,7 @@ const ProfileScreen = () => {
         {/* Top Tracks */}
         {topTracks.length > 0 && (
           <View style={styles.section}>
-            <SectionHeader
-              title="Top Tracks"
-              onSeeAll={() => navigation.navigate('TopTracks')}
-            />
+            <SectionHeader title='Top Tracks' onSeeAll={() => navigation.navigate('TopTracks')} />
             <FlatList
               data={topTracks}
               renderItem={renderTrackItem}
@@ -474,10 +547,7 @@ const ProfileScreen = () => {
         {/* Top Artists */}
         {topArtists.length > 0 && (
           <View style={styles.section}>
-            <SectionHeader
-              title="Top Artists"
-              onSeeAll={() => navigation.navigate('TopArtists')}
-            />
+            <SectionHeader title='Top Artists' onSeeAll={() => navigation.navigate('TopArtists')} />
             <FlatList
               data={topArtists}
               renderItem={renderArtistItem}
@@ -492,10 +562,7 @@ const ProfileScreen = () => {
         {/* Top Albums */}
         {topAlbums.length > 0 && (
           <View style={styles.section}>
-            <SectionHeader
-              title="Top Albums"
-              onSeeAll={() => navigation.navigate('TopAlbums')}
-            />
+            <SectionHeader title='Top Albums' onSeeAll={() => navigation.navigate('TopAlbums')} />
             <FlatList
               data={topAlbums}
               renderItem={renderAlbumItem}
@@ -507,218 +574,283 @@ const ProfileScreen = () => {
           </View>
         )}
 
-        {/* Created Playlists */}
-        {createdPlaylists.length > 0 && (
+        {/* Activity Feed */}
+        {activityFeed.length > 0 && (
           <View style={styles.section}>
             <SectionHeader
-              title="Your Playlists"
-              onSeeAll={() => navigation.navigate('MyPlaylists')}
+              title='Recent Activity'
+              onSeeAll={() => navigation.navigate('ActivityFeed')}
             />
             <FlatList
-              data={createdPlaylists}
-              renderItem={renderPlaylistItem}
+              data={activityFeed}
+              renderItem={renderActivityItem}
               keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalList}
+              scrollEnabled={false}
+              contentContainerStyle={styles.activityList}
             />
           </View>
         )}
 
-        {/* Bottom spacing */}
-        <View style={styles.bottomSpacing} />
+        {/* Followers/Following Preview */}
+        <View style={styles.section}>
+          <SectionHeader title='Social' onSeeAll={() => navigation.navigate('SocialOverview')} />
+          <View style={styles.socialPreview}>
+            <TouchableOpacity style={styles.socialItem}>
+              <Text style={styles.socialNumber}>{formatNumber(followersCount)}</Text>
+              <Text style={styles.socialLabel}>Followers</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialItem}>
+              <Text style={styles.socialNumber}>{formatNumber(followingCount)}</Text>
+              <Text style={styles.socialLabel}>Following</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </LinearGradient>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  gradientBackground: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  header: {
+  actionButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    width: '100%',
+  },
+  activityAvatar: {
+    borderRadius: radius.full,
+    height: 32,
+    marginRight: spacing.md,
+    width: 32,
+  },
+  activityContent: {
+    flex: 1,
+  },
+  activityItem: {
+    alignItems: 'flex-start',
+    backgroundColor: colors.white10,
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    marginBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingTop: Platform.OS === 'ios' ? spacing['3xl'] : spacing.xl,
-    paddingBottom: spacing.lg,
+    paddingVertical: spacing.md,
   },
-  headerLeft: {
-    flex: 1,
+  activityList: {
+    paddingHorizontal: spacing.lg,
   },
-  headerCenter: {
-    flex: 2,
-    alignItems: 'center',
-  },
-  headerRight: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  headerTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: '700',
+  activityText: {
     color: colors.text,
-    letterSpacing: 2,
+    fontSize: typography.fontSize.sm,
+    lineHeight: 20,
   },
-  menuButton: {
-    padding: spacing.sm,
+  activityTime: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.xs,
+    marginTop: spacing.xs,
   },
-  settingsButton: {
-    padding: spacing.sm,
-  },
-  userInfoContainer: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: spacing.lg,
+  activityUser: {
+    color: colors.text,
+    fontWeight: '600',
   },
   avatar: {
-    width: 120,
-    height: 120,
+    borderColor: colors.primary,
     borderRadius: radius['3xl'],
     borderWidth: 3,
-    borderColor: colors.primary,
+    height: 120,
+    width: 120,
   },
-  premiumBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: colors.background,
-    borderRadius: radius.full,
-    padding: 4,
-  },
-  userDetails: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  userName: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  username: {
-    fontSize: typography.fontSize.lg,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
+  avatarContainer: {
+    marginBottom: spacing.lg,
+    position: 'relative',
   },
   bio: {
-    fontSize: typography.fontSize.base,
     color: colors.text,
-    textAlign: 'center',
+    fontSize: typography.fontSize.base,
     lineHeight: 24,
     marginBottom: spacing.md,
+    textAlign: 'center',
   },
-  userMeta: {
-    width: '100%',
-    marginBottom: spacing.lg,
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
   },
-  metaItem: {
-    flexDirection: 'row',
+  editButton: {
     alignItems: 'center',
-    marginBottom: spacing.sm,
-    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    flex: 1,
+    marginRight: spacing.sm,
+    paddingVertical: spacing.md,
   },
-  metaText: {
-    fontSize: typography.fontSize.sm,
+  editButtonText: {
+    color: colors.white,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+  },
+  followLabel: {
     color: colors.textSecondary,
-    marginLeft: spacing.xs,
+    fontSize: typography.fontSize.sm,
   },
-  followStats: {
-    flexDirection: 'row',
-    marginBottom: spacing.lg,
+  followNumber: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
   },
   followStat: {
     alignItems: 'center',
     marginHorizontal: spacing.lg,
   },
-  followNumber: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  followLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-  },
-  actionButtons: {
+  followStats: {
     flexDirection: 'row',
-    width: '100%',
+    marginBottom: spacing.lg,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  editButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    marginRight: spacing.sm,
-  },
-  editButtonText: {
-    fontSize: typography.fontSize.base,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    flex: 1,
-    backgroundColor: colors.white10,
-    paddingVertical: spacing.md,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    marginLeft: spacing.sm,
-  },
-  logoutButtonText: {
-    fontSize: typography.fontSize.base,
-    color: colors.text,
-    fontWeight: '600',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing['2xl'],
+    paddingTop: Platform.OS === 'ios' ? spacing['3xl'] : spacing.xl,
   },
-  statItem: {
+  headerCenter: {
     alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.white10,
-    minWidth: 80,
+    flex: 2,
   },
-  statNumber: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: '700',
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+    flex: 1,
+  },
+  headerTitle: {
     color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  statLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  section: {
-    marginBottom: spacing['2xl'],
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: '700',
+    letterSpacing: 2,
   },
   horizontalList: {
     paddingHorizontal: spacing.lg,
   },
-  bottomSpacing: {
-    height: 100,
+  loadingContainer: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  logoutButton: {
+    alignItems: 'center',
+    backgroundColor: colors.white10,
+    borderRadius: radius.lg,
+    flex: 1,
+    marginLeft: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  logoutButtonText: {
+    color: colors.text,
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+  },
+  menuButton: {
+    padding: spacing.sm,
+  },
+  metaItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  metaText: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    marginLeft: spacing.xs,
+  },
+  premiumBadge: {
+    backgroundColor: colors.background,
+    borderRadius: radius.full,
+    bottom: 0,
+    padding: 4,
+    position: 'absolute',
+    right: 0,
+  },
+  section: {
+    marginBottom: spacing['2xl'],
+  },
+  settingsButton: {
+    padding: spacing.sm,
+  },
+  socialItem: {
+    alignItems: 'center',
+    backgroundColor: colors.white10,
+    borderRadius: radius.md,
+    flex: 1,
+    marginHorizontal: spacing.xs,
+    padding: spacing.md,
+  },
+  socialLabel: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+  },
+  socialNumber: {
+    color: colors.text,
+    fontSize: typography.fontSize.lg,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  socialPreview: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+  },
+  statItem: {
+    alignItems: 'center',
+    backgroundColor: colors.white10,
+    borderRadius: radius.lg,
+    minWidth: 80,
+    padding: spacing.md,
+  },
+  statLabel: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.sm,
+    fontWeight: '500',
+  },
+  statNumber: {
+    color: colors.text,
+    fontSize: typography.fontSize.xl,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: spacing['2xl'],
+    paddingHorizontal: spacing.lg,
+  },
+  userDetails: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  userInfoContainer: {
+    alignItems: 'center',
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  userMeta: {
+    marginBottom: spacing.lg,
+    width: '100%',
+  },
+  userName: {
+    color: colors.text,
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+  },
+  username: {
+    color: colors.textSecondary,
+    fontSize: typography.fontSize.lg,
+    marginBottom: spacing.md,
   },
 });
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combo App - All-in-One Solution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Combo App">
+                <span>Combo App</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#screenshots">Screenshots</a>
+                <a href="#download">Download</a>
+                <a href="#faq">FAQ</a>
+                <a href="#contact" class="btn btn-outline">Contact</a>
+            </div>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>All your favorite features — in one combo.</h1>
+                <p>Experience the ultimate all-in-one solution for your digital life. Fast, secure, and packed with features.</p>
+                <div class="cta-buttons">
+                    <a href="#download" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Download APK
+                    </a>
+                    <a href="#features" class="btn btn-secondary">
+                        <i class="fas fa-play"></i> Watch Demo
+                    </a>
+                </div>
+                <div class="badge">
+                    <i class="fab fa-android"></i> Available for Android
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="images/app-mockup.png" alt="Combo App Preview">
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <h2>Why Combo App?</h2>
+            <p class="section-subtitle">Everything you need in one powerful application</p>
+            
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Fast & Lightweight</h3>
+                    <p>Optimized for speed and performance, even on older devices.</p>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Smart All-in-One</h3>
+                    <p>Multiple tools integrated seamlessly in one app.</p>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Secure & Private</h3>
+                    <p>Your data stays on your device, always encrypted.</p>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3>Customizable UI</h3>
+                    <p>Make it yours with themes and layouts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Carousel -->
+    <section class="screenshots" id="screenshots">
+        <div class="container">
+            <h2>App Screenshots</h2>
+            <p class="section-subtitle">Take a look at what's inside</p>
+            
+            <div class="screenshot-carousel">
+                <div class="carousel-container">
+                    <div class="carousel-track">
+                        <div class="carousel-slide">
+                            <img src="images/screenshots/screen1.jpg" alt="App Screen 1">
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="images/screenshots/screen2.jpg" alt="App Screen 2">
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="images/screenshots/screen3.jpg" alt="App Screen 3">
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn prev">❮</button>
+                <button class="carousel-btn next">❯</button>
+            </div>
+            <div class="carousel-dots"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2>Powerful Features</h2>
+            <p class="section-subtitle">Everything you need in one place</p>
+            
+            <div class="feature-row">
+                <div class="feature-text" data-aos="fade-right">
+                    <h3>Chat & Social Connect</h3>
+                    <p>Stay connected with friends and family through our secure messaging platform. Share moments, send files, and create group chats effortlessly.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> End-to-end encryption</li>
+                        <li><i class="fas fa-check"></i> Group video calls</li>
+                        <li><i class="fas fa-check"></i> File sharing up to 2GB</li>
+                    </ul>
+                </div>
+                <div class="feature-image" data-aos="fade-left">
+                    <img src="images/feature-chat.png" alt="Chat Feature">
+                </div>
+            </div>
+            
+            <div class="feature-row reverse">
+                <div class="feature-text" data-aos="fade-left">
+                    <h3>Media Vault</h3>
+                    <p>Keep your private photos and videos secure with our encrypted vault. Access them with fingerprint or face recognition.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Military-grade encryption</li>
+                        <li><i class="fas fa-check"></i> Hidden mode</li>
+                        <li><i class="fas fa-check"></i> Cloud backup</li>
+                    </ul>
+                </div>
+                <div class="feature-image" data-aos="fade-right">
+                    <img src="images/feature-vault.png" alt="Vault Feature">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="container">
+            <div class="download-content">
+                <h2>Download Combo App</h2>
+                <p>Get started with the ultimate all-in-one app today.</p>
+                
+                <div class="download-info">
+                    <div class="info-item">
+                        <i class="fas fa-download"></i>
+                        <div>
+                            <span>Version</span>
+                            <strong>1.0.0</strong>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-file"></i>
+                        <div>
+                            <span>Size</span>
+                            <strong>28.5 MB</strong>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <div>
+                            <span>Updated</span>
+                            <strong>October 4, 2025</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="#" class="btn btn-download">
+                    <i class="fab fa-android"></i> Download APK
+                </a>
+                
+                <div class="qr-code">
+                    <img src="images/qr-code.png" alt="Scan to download">
+                    <p>Scan to download on your phone</p>
+                </div>
+                
+                <div class="install-guide">
+                    <h4>How to install APK:</h4>
+                    <ol>
+                        <li>Download the APK file</li>
+                        <li>Open your device settings > Security</li>
+                        <li>Enable "Unknown Sources"</li>
+                        <li>Open the downloaded APK file</li>
+                        <li>Tap "Install" and you're done!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <h2>What Our Users Say</h2>
+            <p class="section-subtitle">Join thousands of satisfied users</p>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial-card" data-aos="fade-up">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>"This app replaced 5 different apps I was using. The all-in-one solution I've been waiting for!"</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="images/avatars/user1.jpg" alt="User">
+                        <div>
+                            <h4>Alex Johnson</h4>
+                            <span>Product Designer</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p>"The media vault is a game-changer. I feel much more secure about my private photos now."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="images/avatars/user2.jpg" alt="User">
+                        <div>
+                            <h4>Sarah Miller</h4>
+                            <span>Photographer</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p>"Incredible app! The UI is so intuitive and the performance is buttery smooth."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="images/avatars/user3.jpg" alt="User">
+                        <div>
+                            <h4>Michael Chen</h4>
+                            <span>Software Engineer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <p class="section-subtitle">Find answers to common questions</p>
+            
+            <div class="faq-container">
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-question">
+                        Is Combo App safe to use?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, Combo App is completely safe to use. We prioritize your privacy and security with end-to-end encryption for all your data. The app doesn't collect any personal information without your permission.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-question">
+                        How do I install the APK?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>To install the APK:</p>
+                        <ol>
+                            <li>Download the APK file from our website</li>
+                            <li>Go to Settings > Security</li>
+                            <li>Enable "Unknown Sources"</li>
+                            <li>Open the downloaded APK and tap "Install"</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-question">
+                        Is Combo App free?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, Combo App is completely free to download and use. We offer premium features through in-app purchases, but the core functionality is available at no cost.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-aos="fade-up">
+                    <button class="faq-question">
+                        Does it require login?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No, you can use most features of Combo App without creating an account. However, some features like cloud backup and cross-device sync will require you to sign in.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="contact-container">
+                <div class="contact-info" data-aos="fade-right">
+                    <h2>Get In Touch</h2>
+                    <p>Have questions or feedback? We'd love to hear from you!</p>
+                    
+                    <div class="contact-method">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email Us</h4>
+                            <a href="mailto:support@comboapp.com">support@comboapp.com</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Call Us</h4>
+                            <a href="tel:+1234567890">+1 (234) 567-890</a>
+                        </div>
+                    </div>
+                    
+                    <div class="social-links">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <form class="contact-form" data-aos="fade-left">
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Subject">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Your Message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <img src="images/logo.png" alt="Combo App">
+                        <span>Combo App</span>
+                    </div>
+                    <p>All-in-one solution for your digital life. Fast, secure, and packed with features.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#screenshots">Screenshots</a>
+                        <a href="#download">Download</a>
+                        <a href="#pricing">Pricing</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <a href="#about">About Us</a>
+                        <a href="#blog">Blog</a>
+                        <a href="#careers">Careers</a>
+                        <a href="#contact">Contact</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="#privacy">Privacy Policy</a>
+                        <a href="#terms">Terms of Service</a>
+                        <a href="#cookies">Cookie Policy</a>
+                        <a href="#gdpr">GDPR</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Combo App. All rights reserved. Built with ❤️ by Varun</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-telegram"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

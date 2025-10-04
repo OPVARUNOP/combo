@@ -14,7 +14,7 @@ import {
   serverTimestamp,
   onSnapshot,
   arrayUnion,
-  arrayRemove
+  arrayRemove,
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
 
@@ -32,7 +32,7 @@ export const playlistService = {
   async createPlaylist(playlistData) {
     try {
       const uid = await this.getCurrentUserId();
-      
+
       const playlistsRef = collection(db, 'playlists');
       const newPlaylist = {
         ...playlistData,
@@ -57,7 +57,7 @@ export const playlistService = {
     try {
       const playlistDocRef = doc(db, 'playlists', playlistId);
       const playlistDoc = await getDoc(playlistDocRef);
-      
+
       if (playlistDoc.exists()) {
         return { id: playlistDoc.id, ...playlistDoc.data() };
       } else {
@@ -72,18 +72,14 @@ export const playlistService = {
   // Get user's playlists
   async getUserPlaylists(userId = null) {
     try {
-      const uid = userId || await this.getCurrentUserId();
-      
+      const uid = userId || (await this.getCurrentUserId());
+
       const playlistsRef = collection(db, 'playlists');
-      const q = query(
-        playlistsRef,
-        where('userId', '==', uid),
-        orderBy('updatedAt', 'desc')
-      );
-      
+      const q = query(playlistsRef, where('userId', '==', uid), orderBy('updatedAt', 'desc'));
+
       const querySnapshot = await getDocs(q);
       const playlists = [];
-      
+
       querySnapshot.forEach((doc) => {
         playlists.push({ id: doc.id, ...doc.data() });
       });
@@ -103,12 +99,12 @@ export const playlistService = {
         playlistsRef,
         where('isPublic', '==', true),
         orderBy('updatedAt', 'desc'),
-        limit(limitCount)
+        limit(limitCount),
       );
-      
+
       const querySnapshot = await getDocs(q);
       const playlists = [];
-      
+
       querySnapshot.forEach((doc) => {
         playlists.push({ id: doc.id, ...doc.data() });
       });
@@ -153,18 +149,18 @@ export const playlistService = {
   async addTrackToPlaylist(playlistId, trackData) {
     try {
       const playlistDocRef = doc(db, 'playlists', playlistId);
-      
+
       // Get current playlist to update track count
       const playlistDoc = await getDoc(playlistDocRef);
       if (!playlistDoc.exists()) {
         throw new Error('Playlist not found');
       }
-      
+
       const playlistData = playlistDoc.data();
       const currentTracks = playlistData.tracks || [];
-      
+
       // Check if track already exists
-      const trackExists = currentTracks.some(track => track.trackId === trackData.trackId);
+      const trackExists = currentTracks.some((track) => track.trackId === trackData.trackId);
       if (trackExists) {
         throw new Error('Track already exists in playlist');
       }
@@ -181,7 +177,11 @@ export const playlistService = {
         updatedAt: serverTimestamp(),
       });
 
-      return { playlistId, track: newTrack, message: 'Track added to playlist' };
+      return {
+        playlistId,
+        track: newTrack,
+        message: 'Track added to playlist',
+      };
     } catch (error) {
       console.error('Error adding track to playlist:', error);
       throw new Error(error.message || 'Failed to add track to playlist');
@@ -192,18 +192,18 @@ export const playlistService = {
   async removeTrackFromPlaylist(playlistId, trackId) {
     try {
       const playlistDocRef = doc(db, 'playlists', playlistId);
-      
+
       // Get current playlist
       const playlistDoc = await getDoc(playlistDocRef);
       if (!playlistDoc.exists()) {
         throw new Error('Playlist not found');
       }
-      
+
       const playlistData = playlistDoc.data();
       const currentTracks = playlistData.tracks || [];
-      
+
       // Find the track to remove
-      const trackToRemove = currentTracks.find(track => track.trackId === trackId);
+      const trackToRemove = currentTracks.find((track) => track.trackId === trackId);
       if (!trackToRemove) {
         throw new Error('Track not found in playlist');
       }
@@ -238,7 +238,7 @@ export const playlistService = {
     try {
       const uid = await this.getCurrentUserId();
       const playlistDocRef = doc(db, 'playlists', playlistId);
-      
+
       await updateDoc(playlistDocRef, {
         likedBy: arrayUnion(uid),
         updatedAt: serverTimestamp(),
@@ -255,7 +255,7 @@ export const playlistService = {
     try {
       const uid = await this.getCurrentUserId();
       const playlistDocRef = doc(db, 'playlists', playlistId);
-      
+
       await updateDoc(playlistDocRef, {
         likedBy: arrayRemove(uid),
         updatedAt: serverTimestamp(),
@@ -271,18 +271,18 @@ export const playlistService = {
   // Get liked playlists
   async getLikedPlaylists(userId = null) {
     try {
-      const uid = userId || await this.getCurrentUserId();
-      
+      const uid = userId || (await this.getCurrentUserId());
+
       const playlistsRef = collection(db, 'playlists');
       const q = query(
         playlistsRef,
         where('likedBy', 'array-contains', uid),
-        orderBy('updatedAt', 'desc')
+        orderBy('updatedAt', 'desc'),
       );
-      
+
       const querySnapshot = await getDocs(q);
       const playlists = [];
-      
+
       querySnapshot.forEach((doc) => {
         playlists.push({ id: doc.id, ...doc.data() });
       });
@@ -302,12 +302,12 @@ export const playlistService = {
         playlistsRef,
         where('isPublic', '==', true),
         orderBy('updatedAt', 'desc'),
-        limit(limitCount)
+        limit(limitCount),
       );
-      
+
       const querySnapshot = await getDocs(q);
       const playlists = [];
-      
+
       querySnapshot.forEach((doc) => {
         const playlist = { id: doc.id, ...doc.data() };
         // Simple text search in title and description
@@ -335,12 +335,12 @@ export const playlistService = {
         playlistsRef,
         where('isPublic', '==', true),
         orderBy('likedBy', 'desc'),
-        limit(limitCount)
+        limit(limitCount),
       );
-      
+
       const querySnapshot = await getDocs(q);
       const playlists = [];
-      
+
       querySnapshot.forEach((doc) => {
         playlists.push({ id: doc.id, ...doc.data() });
       });
@@ -371,18 +371,14 @@ export const playlistService = {
   onUserPlaylistsChange(userId = null, callback) {
     try {
       const uid = userId || auth.currentUser?.uid;
-      
+
       if (!uid) {
         throw new Error('User not authenticated');
       }
 
       const playlistsRef = collection(db, 'playlists');
-      const q = query(
-        playlistsRef,
-        where('userId', '==', uid),
-        orderBy('updatedAt', 'desc')
-      );
-      
+      const q = query(playlistsRef, where('userId', '==', uid), orderBy('updatedAt', 'desc'));
+
       return onSnapshot(q, (querySnapshot) => {
         const playlists = [];
         querySnapshot.forEach((doc) => {

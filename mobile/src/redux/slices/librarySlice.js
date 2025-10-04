@@ -21,7 +21,7 @@ export const fetchPlaylists = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const createPlaylist = createAsyncThunk(
@@ -33,7 +33,7 @@ export const createPlaylist = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchDownloadedTracks = createAsyncThunk(
@@ -45,7 +45,7 @@ export const fetchDownloadedTracks = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const librarySlice = createSlice({
@@ -57,17 +57,17 @@ const librarySlice = createSlice({
     },
     addToFavorites: (state, action) => {
       const track = action.payload;
-      if (!state.favoriteTracks.find(t => t.id === track.id)) {
+      if (!state.favoriteTracks.find((t) => t.id === track.id)) {
         state.favoriteTracks.push(track);
       }
     },
     removeFromFavorites: (state, action) => {
       const trackId = action.payload;
-      state.favoriteTracks = state.favoriteTracks.filter(t => t.id !== trackId);
+      state.favoriteTracks = state.favoriteTracks.filter((t) => t.id !== trackId);
     },
     addToRecentlyPlayed: (state, action) => {
       const track = action.payload;
-      const existingIndex = state.recentlyPlayed.findIndex(t => t.id === track.id);
+      const existingIndex = state.recentlyPlayed.findIndex((t) => t.id === track.id);
 
       if (existingIndex > -1) {
         state.recentlyPlayed.splice(existingIndex, 1);
@@ -94,13 +94,13 @@ const librarySlice = createSlice({
     },
     addDownloadedTrack: (state, action) => {
       const track = action.payload;
-      if (!state.downloadedTracks.find(t => t.id === track.id)) {
+      if (!state.downloadedTracks.find((t) => t.id === track.id)) {
         state.downloadedTracks.push(track);
       }
     },
     removeDownloadedTrack: (state, action) => {
       const trackId = action.payload;
-      state.downloadedTracks = state.downloadedTracks.filter(t => t.id !== trackId);
+      state.downloadedTracks = state.downloadedTracks.filter((t) => t.id !== trackId);
     },
   },
   extraReducers: (builder) => {

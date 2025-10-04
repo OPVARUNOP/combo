@@ -34,21 +34,25 @@ A React Native music streaming application with modern UI/UX design.
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. For iOS:
+
 ```bash
 cd ios && pod install
 ```
 
 3. Start Metro bundler:
+
 ```bash
 npm start
 ```
 
 4. Run on device:
+
 ```bash
 # iOS
 npm run ios
@@ -82,6 +86,7 @@ src/
 ## Design System
 
 ### Colors
+
 - Primary: #1DB954 (Spotify Green)
 - Secondary: #121212 (Dark Background)
 - Accent: #FF6B6B (Coral)
@@ -90,10 +95,12 @@ src/
 - Surface: #181818
 
 ### Typography
+
 - Primary Font: Circular (Spotify's font)
 - Fallback: System font stack
 
 ### Spacing
+
 - xs: 4px
 - sm: 8px
 - md: 16px
@@ -104,6 +111,7 @@ src/
 ## Core Components
 
 ### Music Player
+
 - Full-screen player with gesture controls
 - Mini player for background playback
 - Queue management with drag & drop
@@ -111,12 +119,14 @@ src/
 - Sleep timer functionality
 
 ### Search Interface
+
 - Instant search with debouncing
 - Voice search integration
 - Advanced filters (genre, artist, mood)
 - Search history and suggestions
 
 ### Home Screen
+
 - Personalized recommendations algorithm
 - Recently played tracks
 - Mood-based playlist suggestions
@@ -124,6 +134,7 @@ src/
 - Horizontal scrolling sections
 
 ### Library Management
+
 - Downloaded music management
 - Playlist organization with folders
 - Favorite artists and tracks
@@ -132,7 +143,9 @@ src/
 ## Development Guidelines
 
 ### Component Structure
+
 All components should follow this pattern:
+
 ```javascript
 const ComponentName = ({ prop1, prop2 }) => {
   // Custom hooks
@@ -140,11 +153,7 @@ const ComponentName = ({ prop1, prop2 }) => {
   // Event handlers
   // Render logic
 
-  return (
-    <View style={styles.container}>
-      {/* Component JSX */}
-    </View>
-  );
+  return <View style={styles.container}>{/* Component JSX */}</View>;
 };
 
 const styles = StyleSheet.create({
@@ -155,14 +164,18 @@ const styles = StyleSheet.create({
 ```
 
 ### State Management
+
 Use Redux Toolkit for global state:
+
 - Auth slice for user authentication
 - Player slice for music playback state
 - Library slice for user library
 - Search slice for search functionality
 
 ### API Integration
+
 All API calls should be handled through services:
+
 - Authentication service
 - Music service
 - User service
@@ -185,11 +198,13 @@ All API calls should be handled through services:
 ## Deployment
 
 ### iOS
+
 - Code signing with certificates
 - App Store Connect configuration
 - TestFlight for beta testing
 
 ### Android
+
 - Keystore management
 - Play Store Console configuration
 - Internal testing track

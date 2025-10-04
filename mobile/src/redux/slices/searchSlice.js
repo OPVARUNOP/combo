@@ -37,7 +37,7 @@ export const searchMusic = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const getSuggestions = createAsyncThunk(
@@ -49,7 +49,7 @@ export const getSuggestions = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const voiceSearch = createAsyncThunk(
@@ -61,7 +61,7 @@ export const voiceSearch = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const searchSlice = createSlice({
@@ -95,7 +95,7 @@ const searchSlice = createSlice({
     },
     addToHistory: (state, action) => {
       const query = action.payload;
-      const existingIndex = state.history.findIndex(item => item.query === query);
+      const existingIndex = state.history.findIndex((item) => item.query === query);
 
       if (existingIndex > -1) {
         state.history.splice(existingIndex, 1);

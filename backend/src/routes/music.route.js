@@ -57,7 +57,7 @@ router.post('/', authenticate, validate(songRules()), async (req, res) => {
       duration,
       genre,
       album,
-      createdBy: req.user.id
+      createdBy: req.user.id,
     });
 
     apiResponse.created(song, 'Song created successfully');

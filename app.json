@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "0b854618-7373-4bf6-b11a-dcaac40690a0"
+      }
+    },
+    "android": {
+      "package": "com.vrnx.combo"
+    }
+  }
+}

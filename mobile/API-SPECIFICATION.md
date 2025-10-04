@@ -5,9 +5,11 @@ This file documents the API endpoints and their usage for the COMBO Music Stream
 ## 🔐 Authentication Endpoints
 
 ### POST /auth/signup
+
 Create a new user account.
 
 **Request Body:**
+
 ```json
 {
   "username": "johndoe",
@@ -19,6 +21,7 @@ Create a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "user": { ... },
@@ -28,9 +31,11 @@ Create a new user account.
 ```
 
 ### POST /auth/login
+
 Authenticate user and return JWT token.
 
 **Request Body:**
+
 ```json
 {
   "email": "john.doe@example.com",
@@ -39,6 +44,7 @@ Authenticate user and return JWT token.
 ```
 
 **Response:**
+
 ```json
 {
   "user": { ... },
@@ -48,20 +54,24 @@ Authenticate user and return JWT token.
 ```
 
 ### GET /me
+
 Get current user profile (requires Authorization header with Bearer token).
 
 ## 🔍 Search Endpoints
 
 ### GET /search?q={query}&type={track,album,artist,playlist}
+
 Perform search across all content types.
 
 **Query Parameters:**
+
 - `q`: Search query string
 - `type`: Filter by content type (optional)
 - `limit`: Number of results (default: 20)
 - `offset`: Pagination offset (default: 0)
 
 **Example:**
+
 ```
 GET /search?q=blinding%20lights&type=track&limit=10
 ```
@@ -69,48 +79,61 @@ GET /search?q=blinding%20lights&type=track&limit=10
 ## 🎵 Track Endpoints
 
 ### GET /tracks/{id}
+
 Get track details.
 
 ### GET /tracks/{id}/stream
+
 Get audio stream URL (returns pre-signed S3 URL for secure streaming).
 
 ### PUT /me/liked-songs/{track_id}
+
 Like a song (adds to user's library).
 
 ### DELETE /me/liked-songs/{track_id}
+
 Unlike a song (removes from user's library).
 
 ## 💿 Album Endpoints
 
 ### GET /albums/{id}
+
 Get album details and track listing.
 
 ### GET /albums/{id}/tracks
+
 Get all tracks in an album.
 
 ## 🎤 Artist Endpoints
 
 ### GET /artists/{id}
+
 Get artist details.
 
 ### GET /artists/{id}/top-tracks
+
 Get artist's most popular tracks.
 
 ### PUT /me/follow/artists/{artist_id}
+
 Follow an artist.
 
 ### DELETE /me/follow/artists/{artist_id}
+
 Unfollow an artist.
 
 ## 📝 Playlist Endpoints
 
 ### GET /playlists/{id}
+
 Get playlist details and tracks.
 
 ### POST /playlists
+
 Create a new empty playlist.
 
 **Request Body:**
+
 ```json
 {
   "title": "My Awesome Playlist",
@@ -120,12 +143,15 @@ Create a new empty playlist.
 ```
 
 ### PUT /playlists/{id}
+
 Update playlist details.
 
 ### POST /playlists/{id}/tracks
+
 Add a track to a playlist.
 
 **Request Body:**
+
 ```json
 {
   "track_id": "track_uuid_here"
@@ -133,25 +159,31 @@ Add a track to a playlist.
 ```
 
 ### DELETE /playlists/{id}/tracks?track_id={track_id}
+
 Remove a track from a playlist.
 
 ### GET /me/playlists
+
 Get playlists created or followed by the user.
 
 ## 👤 User Library Endpoints
 
 ### GET /me/liked-songs
+
 Get all tracks liked by the user.
 
 ### PUT /me/follow/artists/{artist_id}
+
 Follow an artist.
 
 ### DELETE /me/follow/artists/{artist_id}
+
 Unfollow an artist.
 
 ## 🔧 Configuration
 
 ### Environment Setup
+
 Update the API base URL in `src/services/api.js`:
 
 ```javascript
@@ -165,6 +197,7 @@ const api = axios.create({
 ```
 
 ### JWT Token Usage
+
 All protected endpoints require an Authorization header:
 
 ```
@@ -172,6 +205,7 @@ Authorization: Bearer <jwt_token_here>
 ```
 
 The mobile app automatically:
+
 - Adds JWT tokens to request headers
 - Handles token refresh on 401 responses
 - Stores tokens securely in AsyncStorage
@@ -183,14 +217,14 @@ The API service is organized into modules:
 
 ```javascript
 import {
-  authAPI,      // Authentication endpoints
-  userAPI,      // User profile and library
-  searchAPI,    // Search functionality
-  trackAPI,     // Track operations
-  albumAPI,     // Album operations
-  artistAPI,    // Artist operations
-  playlistAPI,  // Playlist management
-  socialAPI,    // Social features
+  authAPI, // Authentication endpoints
+  userAPI, // User profile and library
+  searchAPI, // Search functionality
+  trackAPI, // Track operations
+  albumAPI, // Album operations
+  artistAPI, // Artist operations
+  playlistAPI, // Playlist management
+  socialAPI, // Social features
 } from '../services/api';
 ```
 
@@ -215,6 +249,7 @@ All API responses follow this structure:
 ```
 
 Error responses:
+
 ```json
 {
   "message": "Error description",
