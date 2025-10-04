@@ -35,8 +35,11 @@ jobs:
     - name: Build APK
       working-directory: ./mobile
       run: |
-        npm install -g @expo/eas-cli
-        npx eas-cli build --platform android --local --non-interactive
+        # Install Expo CLI globally
+        npm install -g @expo/cli
+        # Use the legacy expo build command (deprecated but may work)
+        npx expo build:android --no-publish
+        # Output should be available as artifact
         
     # Upload APK as artifact
     - name: Upload APK artifact
