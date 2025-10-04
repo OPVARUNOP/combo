@@ -39,10 +39,6 @@ jobs:
         
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
-      working-directory: ./mobile/android
 
     # Build the app
     - name: Build APK
@@ -51,6 +47,8 @@ jobs:
         # Use the new Expo CLI (bundled with expo package)
         # For managed workflow, we'll use prebuild to generate native code
         npx expo prebuild --platform android --no-install
+        # Then make gradlew executable (after prebuild generates it)
+        chmod +x ./android/gradlew
         # Then build with traditional Android build tools
         cd android && ./gradlew assembleRelease
         
