@@ -33,7 +33,7 @@ jobs:
       working-directory: ./mobile
       run: |
         npm install -g @expo/eas-cli
-        eas build --platform android --local
+        npx eas-cli build --platform android --local --non-interactive
         
     # Upload APK as artifact
     - name: Upload APK artifact
