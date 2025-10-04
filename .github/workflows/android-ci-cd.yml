@@ -29,7 +29,11 @@ jobs:
 
     - name: Install dependencies
       working-directory: ./mobile
-      run: npm ci
+      run: |
+        # Clear npm cache to ensure fresh install
+        npm cache clean --force
+        # Install dependencies fresh
+        npm ci
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
