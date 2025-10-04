@@ -31,38 +31,19 @@ jobs:
       working-directory: ./mobile
       run: npm ci
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
-      working-directory: ./mobile
-      
-    # Set up keystore for signing
-    - name: Set up keystore
-      run: |
-        mkdir -p android/app
-        echo "${{ secrets.KEYSTORE }}" | base64 -d > android/app/upload-keystore.jks
-      shell: bash
-        
     # Build the app
     - name: Build APK
       working-directory: ./mobile
       run: |
-        ./gradlew assembleRelease
+        npm install -g @expo/eas-cli
+        eas build --platform android --local
         
     # Upload APK as artifact
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-release
-        path: mobile/app/build/outputs/apk/release/app-release.apk
+        path: mobile/dist/*.apk
         retention-days: 7
         
     # Deploy to Firebase App Distribution
@@ -73,7 +54,7 @@ jobs:
         appId: ${{ secrets.FIREBASE_APP_ID }}
         token: ${{ secrets.FIREBASE_TOKEN }}
         groups: testers
-        file: mobile/app/build/outputs/apk/release/app-release.apk
+        file: mobile/dist/*.apk
         releaseNotes: "${{ github.event.head_commit.message }}"
     
     # Create GitHub Release for tags
@@ -82,7 +63,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          mobile/app/build/outputs/apk/release/app-release.apk
+          mobile/dist/*.apk
         generate_release_notes: true
         draft: false
         prerelease: false
