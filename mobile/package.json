@@ -45,7 +45,6 @@
     "@reduxjs/toolkit": "2.0.1",
     "axios": "1.6.2",
     "expo": "49.0.21",
-    "expo-analytics-amplitude": "~11.3.0",
     "expo-app-loading": "~2.1.0",
     "expo-constants": "~14.4.2",
     "expo-dev-client": "~2.4.13",
