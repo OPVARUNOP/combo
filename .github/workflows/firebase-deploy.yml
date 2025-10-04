@@ -27,23 +27,36 @@ jobs:
     - name: Install dependencies
       working-directory: ./mobile
       run: npm ci
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      working-directory: ./mobile/android
       
     # Build the app
     - name: Build APK
       working-directory: ./mobile
       run: |
-        # Install Expo CLI globally
-        npm install -g @expo/cli
-        # Use the legacy expo build command (deprecated but may work)
-        npx expo build:android --no-publish
-        # Output should be available as artifact
+        # Use the new Expo CLI (bundled with expo package)
+        # For managed workflow, we'll use prebuild to generate native code
+        npx expo prebuild --platform android --no-install
+        # Then build with traditional Android build tools
+        cd android && ./gradlew assembleRelease
         
     # Upload APK as artifact
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-release
-        path: mobile/dist/*.apk
+        path: mobile/android/app/build/outputs/apk/release/app-release.apk
         retention-days: 5
         
     # Deploy to Firebase App Distribution
@@ -55,14 +68,14 @@ jobs:
         token: ${{ secrets.FIREBASE_TOKEN }}
         groups: testers  # Add your testers group here
         releaseNotes: "New release: ${{ github.sha }}"
-        file: mobile/dist/*.apk
+        file: mobile/android/app/build/outputs/apk/release/app-release.apk
         
     # Create GitHub Release for tags
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v2
       with:
-        files: mobile/dist/*.apk
+        files: mobile/android/app/build/outputs/apk/release/app-release.apk
         name: Release ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
         body: |
