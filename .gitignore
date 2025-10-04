@@ -40,3 +40,5 @@ yarn-error.log*
 *.sw?
 node_modules
 node_modules
+backend/serviceAccountKey.json
+backend/backups/firebase-service-account.json.backup-*
