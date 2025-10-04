@@ -3,7 +3,6 @@
     "name": "COMBO - Music Streaming",
     "slug": "combo-music",
     "version": "1.0.0",
-    "versionCode": 1,
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0F0F23",
@@ -15,18 +14,6 @@
       "url": "https://u.expo.dev/your-project-id"
     },
     "assetBundlePatterns": ["**/*"],
-    "web": {
-      "bundler": "metro",
-      "name": "COMBO Music",
-      "shortName": "COMBO",
-      "lang": "en",
-      "scope": "/",
-      "themeColor": "#3B82F6",
-      "backgroundColor": "#0F0F23",
-      "display": "standalone",
-      "orientation": "portrait",
-      "startUrl": "/",
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.combo.app",
@@ -56,37 +43,9 @@
         "android.permission.RECORD_AUDIO",
         "com.google.android.gms.permission.AD_ID"
       ],
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "combo.app",
-              "pathPrefix": "/"
-            },
-            {
-              "scheme": "https",
-              "host": "combo-624e1.web.app"
-            },
-            {
-              "scheme": "https",
-              "host": "combo-music.com"
-            }
-          ],
-          "category": ["BROWSABLE", "DEFAULT"]
-        }
-      ],
       "backgroundColor": "#0F0F23",
       "googleServicesFile": "./google-services.json",
-      "useNextNotificationsApi": true,
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
-        "googleSignIn": {
-          "certificateHash": "your_certificate_hash_here"
-        }
-      }
+      "useNextNotificationsApi": true
     },
     "extra": {
       "eas": {
