@@ -33,7 +33,7 @@ jobs:
 
     - name: Setup Expo and EAS
       run: |
-        npm install -g @expo/eas-cli@latest
+        npx eas --version@latest
 
     - name: Login to Expo
       run: |

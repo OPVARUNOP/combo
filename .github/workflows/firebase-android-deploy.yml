@@ -60,7 +60,7 @@ jobs:
     - name: Build APK for Android
       run: |
         # Install EAS CLI
-        npm install -g @expo/eas-cli@latest
+        npx eas --version@latest
         
         # Login to Expo
         echo "${{ secrets.EXPO_ACCESS_TOKEN }}" | npx eas login --non-interactive
