@@ -51,6 +51,7 @@ jobs:
         firebase deploy --only hosting --project ${{ env.FIREBASE_PROJECT_ID }} --non-interactive
 
     - name: Comment deployment URL
+      if: github.event_name == 'pull_request' && github.event.action != 'closed'
       uses: actions/github-script@v7
       with:
         script: |

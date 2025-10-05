@@ -60,7 +60,7 @@ jobs:
     - name: Build APK for Android
       run: |
         # Install EAS CLI
-        npm install -g @expo/eas-cli
+        npm install -g @expo/eas-cli@latest
         
         # Login to Expo
         echo "${{ secrets.EXPO_ACCESS_TOKEN }}" | npx eas login --non-interactive
@@ -86,7 +86,7 @@ jobs:
           --non-interactive
 
     - name: Comment deployment URL on PR
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.event.action != 'closed'
       uses: actions/github-script@v7
       with:
         script: |
