@@ -33,7 +33,7 @@ jobs:
 
     - name: Setup Expo and EAS
       run: |
-        npx eas --version@latest
+        npx eas --version
 
     - name: Login to Expo
       run: |
