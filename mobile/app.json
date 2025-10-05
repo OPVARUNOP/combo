@@ -13,7 +13,9 @@
       "checkAutomatically": "ON_LOAD",
       "url": "https://u.expo.dev/your-project-id"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.combo.app",
@@ -26,7 +28,9 @@
         "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select profile pictures and artwork.",
         "NSAppleMusicUsageDescription": "This app needs access to Apple Music to provide personalized recommendations."
       },
-      "associatedDomains": ["applinks:combo-music.com"],
+      "associatedDomains": [
+        "applinks:combo-music.com"
+      ],
       "usesAppleSignIn": true,
       "usesIcloudStorage": true
     },
@@ -52,6 +56,8 @@
         "projectId": "your-eas-project-id"
       }
     },
-    "plugins": []
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
