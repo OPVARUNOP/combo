@@ -1,0 +1,92 @@
+name: Android Firebase Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'mobile/**'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  build-and-deploy:
+    name: Build APK and Deploy to Firebase
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install dependencies
+      run: |
+        npm ci
+
+    - name: Install EAS CLI
+      run: |
+        npm install -g @expo/eas-cli@latest
+
+    - name: Login to Expo
+      run: |
+        echo "${{ secrets.EXPO_ACCESS_TOKEN }}" | npx eas login --non-interactive
+
+    - name: Build APK
+      run: |
+        npx eas build --platform android --profile preview --non-interactive --output-path app-release.apk
+
+    - name: Install Firebase CLI
+      run: |
+        npm install -g firebase-tools
+
+    - name: Authenticate with Firebase
+      run: |
+        echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > service-account.json
+        export GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+
+    - name: Upload to Firebase App Distribution
+      run: |
+        firebase appdistribution:distribute app-release.apk \
+          --app ${{ secrets.FIREBASE_APP_ID }} \
+          --groups "testers" \
+          --release-notes "Build from commit ${{ github.sha }}" \
+          --project ${{ secrets.FIREBASE_PROJECT_ID }}
+
+    - name: Comment deployment URL
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `???? Android APK deployed to Firebase App Distribution!\n\n**Commit:** ${{ github.sha }}\n**Build Time:** ${new Date().toISOString()}`
+          })
+
+    - name: Notify on failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `??? Android deployment failed. Check the workflow logs for details.`
+          })
