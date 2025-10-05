@@ -1,0 +1,83 @@
+name: Android EAS Build
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*' # Push events matching v1.0, v20.15.10, etc.
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  PACKAGE_NAME: com.combo.app
+
+jobs:
+  build:
+    name: Build with EAS
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: 'package-lock.json'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+
+    - name: Setup Expo and EAS
+      run: |
+        npm install -g @expo/eas-cli
+        npm install -g expo-cli
+
+    - name: Login to Expo
+      run: |
+        echo "${{ secrets.EXPO_ACCESS_TOKEN }}" | npx eas login --non-interactive
+
+    - name: Build with EAS (Preview)
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+      run: |
+        npx eas build --platform android --profile preview --non-interactive
+
+    - name: Build with EAS (Development)
+      if: github.event_name == 'pull_request'
+      run: |
+        npx eas build --platform android --profile development --non-interactive
+
+    - name: Comment build URL on PR
+      if: github.event_name == 'pull_request' && github.event.action != 'closed'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `???? EAS Build completed! Check the build status at: https://expo.dev/accounts/${{ secrets.EXPO_ACCOUNT }}/projects/${{ secrets.EXPO_PROJECT }}/builds`
+          })
+
+    - name: Create GitHub Release for tags
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        # Get the latest build URL (you might want to customize this)
+        echo "Creating release for tag: ${{ github.ref }}"
+        # You can add logic here to get the actual build download URL
+        # For now, we'll create a release with build instructions
+
+    - name: Notify on build failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `??? EAS Build failed. Check the build logs for details.`
+          })

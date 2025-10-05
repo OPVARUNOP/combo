@@ -2,24 +2,41 @@
 
 buildscript {
     ext {
-        buildToolsVersion = findProperty('android.buildToolsVersion') ?: '33.0.0'
-        minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '21')
-        compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '33')
-        targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '33')
-        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.8.10'
-        frescoVersion = findProperty('expo.frescoVersion') ?: '2.5.0'
-
-        // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 23 // Updated from 21 to 23 for Firebase Auth compatibility
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        kotlinVersion = "1.9.0"
         ndkVersion = "23.1.7779620"
+        javaVersion = JavaVersion.VERSION_17 // Added this line
+        
+        // Google Services
+        googlePlayServicesVersion = "18.1.0"
+        firebaseMessagingVersion = "23.1.2"
+        supportLibVersion = "28.0.0"
+        playServicesVersion = "18.0.0"
+        frescoVersion = findProperty('expo.frescoVersion') ?: '2.5.0'
     }
+    
     repositories {
         google()
         mavenCentral()
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url("$rootDir/../node_modules/react-native/android")
+        }
+        maven {
+            // Android JSC is installed from npm
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
+        maven { url 'https://www.jitpack.io' }
     }
+    
     dependencies {
-        classpath 'com.google.gms:google-services:4.3.3'
-        classpath('com.android.tools.build:gradle:7.4.2')
-        classpath('com.facebook.react:react-native-gradle-plugin')
+        classpath 'com.google.gms:google-services:4.3.15'
+        classpath "com.android.tools.build:gradle:7.4.2"
+        classpath "com.facebook.react:react-native-gradle-plugin"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }
 
@@ -27,15 +44,90 @@ allprojects {
     repositories {
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url(new File(['node', '--print', "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), '../android'))
+            url("$rootDir/../node_modules/react-native/android")
         }
         maven {
             // Android JSC is installed from npm
-            url(new File(['node', '--print', "require.resolve('jsc-android/package.json')"].execute(null, rootDir).text.trim(), '../dist'))
+            url("$rootDir/../node_modules/jsc-android/dist")
         }
-
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
+        
+        // React Native Firebase
+        maven {
+            url "$rootDir/../node_modules/@react-native-firebase/app/android"
+        }
+        mavenCentral {
+            // We don't want to fetch react-native from Maven Central as there are
+            // older versions over there.
+            content {
+                excludeGroup "com.facebook.react"
+            }
+        }
+        google()
+        maven { url 'https://www.jitpack.io' }
     }
+    
+    // Configure Java version for all projects
+    tasks.withType(JavaCompile).configureEach { task ->
+        task.sourceCompatibility = JavaVersion.VERSION_17
+        task.targetCompatibility = JavaVersion.VERSION_17
+        task.options.encoding = 'UTF-8'
+        task.options.compilerArgs << "-Xlint:deprecation"
+    }
+    
+    // For Android projects
+    plugins.withId('com.android.application') {
+        android {
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+            // kotlinOptions is only available when the Kotlin plugin is applied
+            project.plugins.withId('org.jetbrains.kotlin.android') {
+                kotlinOptions {
+                    jvmTarget = '17'
+                }
+            }
+        }
+    }
+    
+    plugins.withId('com.android.library') {
+        android {
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+            // kotlinOptions is only available when the Kotlin plugin is applied
+            project.plugins.withId('org.jetbrains.kotlin.android') {
+                kotlinOptions {
+                    jvmTarget = '17'
+                }
+            }
+        }
+    }
+    
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion rootProject.ext.compileSdkVersion
+                defaultConfig {
+                    minSdkVersion rootProject.ext.minSdkVersion
+                    targetSdkVersion rootProject.ext.targetSdkVersion
+                }
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                }
+                // kotlinOptions is only available when the Kotlin plugin is applied
+                if (project.plugins.hasPlugin('org.jetbrains.kotlin.android')) {
+                    kotlinOptions {
+                        jvmTarget = '17'
+                    }
+                }
+            }
+        }
+    }
+    
 }

@@ -1,0 +1,104 @@
+{
+  "expo": {
+    "name": "COMBO - Music Streaming",
+    "slug": "combo-music",
+    "version": "1.0.0",
+    "versionCode": 1,
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F23"
+    },
+    "notification": {
+      "icon": "./assets/images/notification-icon.png",
+      "color": "#3B82F6"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "bundler": "metro",
+      "name": "COMBO Music",
+      "shortName": "COMBO",
+      "lang": "en",
+      "scope": "/",
+      "themeColor": "#3B82F6",
+      "backgroundColor": "#0F0F23",
+      "display": "standalone",
+      "orientation": "portrait",
+      "startUrl": "/",
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.combo.app",
+      "buildNumber": "1.0.0",
+      "requireFullScreen": false,
+      "backgroundColor": "#0F0F23",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to camera to upload profile pictures and artwork.",
+        "NSMicrophoneUsageDescription": "This app needs access to microphone for voice search and recording features.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select profile pictures and artwork.",
+        "NSAppleMusicUsageDescription": "This app needs access to Apple Music to provide personalized recommendations."
+      },
+      "associatedDomains": ["applinks:combo-music.com"],
+      "usesAppleSignIn": true,
+      "usesIcloudStorage": true
+    },
+    "android": {
+      "package": "com.combo.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.RECORD_AUDIO",
+        "com.google.android.gms.permission.AD_ID"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "combo.app",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "combo-624e1.web.app"
+            },
+            {
+              "scheme": "https",
+              "host": "combo-music.com"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "backgroundColor": "#0F0F23",
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true,
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
+        "googleSignIn": {
+          "certificateHash": "your_certificate_hash_here"
+        }
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "plugins": []
+  }
+}
